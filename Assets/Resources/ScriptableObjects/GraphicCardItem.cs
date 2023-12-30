@@ -13,7 +13,7 @@ public class GraphicCardItem : ScriptableObject
     public Sprite Icon;
     public bool IsLocked;
     public double PerSecondEarn;
-    public double Price;
+    public long Price;
     public double PerSecondLoseVolt;
     public int Quantity;
 }
