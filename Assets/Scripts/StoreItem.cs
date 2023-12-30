@@ -5,5 +5,5 @@ using UnityEngine;
 public class StoreItem : MonoBehaviour
 {
     public SpriteRenderer Renderer;
-    public TextMesh text
+    [HideInInspector] public GraphicCardItem Item;
 }
