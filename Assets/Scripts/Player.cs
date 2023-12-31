@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 /// <summary>
 /// for testing temporary
@@ -19,12 +20,14 @@ public class Player : MonoBehaviour
     public int TechPoint;
     public List<Skill> Skills;
     public long Money;
+    public Text text;
     public TextMeshProUGUI TextMoney;
     public int TotalCardNum;
     //the current building player at;
     public Building currBuildingAt;
     private readonly double SECOND = 1.0f;
     private double Timer = 0;
+    private AnimationManager animation = new AnimationManager();
 
     private void Awake()
     {
@@ -51,14 +54,20 @@ public class Player : MonoBehaviour
         Timer += Time.deltaTime;
         if (Timer >= SECOND)
         {
+            
             long totalMoney = 0;
             foreach(Building building in Buildings)
             {
                 totalMoney += building.MoneyPerSecond;
             }
+            long preMoney = Money;
             Money += totalMoney;
+            DOTween.To(value => { text.text = Mathf.Floor(value).ToString(); }, startValue: preMoney, endValue: Money, duration: 0.1f);
+            //animation.DelayFunc(Money, totalMoney);
+
             Timer -= SECOND;
-            TextMoney.text = StringUtils.ConvertMoneyNumToString(Money);
+            
+            //TextMoney.text = StringUtils.ConvertMoneyNumToString(Money);
         }
     }
 }
