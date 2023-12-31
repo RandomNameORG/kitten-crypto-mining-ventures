@@ -28,4 +28,15 @@ public class ItemManager : MonoBehaviour
 
         Debug.Log("Item Manager Done!s");
     }
+
+    public GraphicCardItem FindGraphicCardItem(string id)
+    {
+        return GraphicCardItems.FirstOrDefault(item => item.Id.Equals(id));
+    }
+    // Read: Find a GraphicCardItem by its name
+    public GraphicCardItem FindGraphicCardItemByName(string name)
+    {
+        return GraphicCardItems.FirstOrDefault(item => item.Name.Equals(name));
+    }
+
 }
