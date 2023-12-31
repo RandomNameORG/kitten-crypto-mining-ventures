@@ -27,7 +27,6 @@ public class Player : MonoBehaviour
     public Building currBuildingAt;
     private readonly double SECOND = 1.0f;
     private double Timer = 0;
-    private AnimationManager animation = new AnimationManager();
 
     private void Awake()
     {
