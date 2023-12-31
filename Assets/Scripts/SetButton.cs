@@ -6,8 +6,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-
-public class StartButton : MonoBehaviour
+public class SetButton : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
@@ -23,8 +22,7 @@ public class StartButton : MonoBehaviour
     void ButtonClick()
     {
         SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene().buildIndex);
-        SceneManager.LoadScene("Main");
+        SceneManager.LoadScene("Setting");
     }
 
-   
 }

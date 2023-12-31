@@ -6,10 +6,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-
-public class StartButton : MonoBehaviour
+public class QuitButton : MonoBehaviour
 {
-    // Start is called before the first frame update
     void Start()
     {
         GetComponent<Button>().onClick.AddListener(ButtonClick);
@@ -22,9 +20,6 @@ public class StartButton : MonoBehaviour
     }
     void ButtonClick()
     {
-        SceneManager.UnloadSceneAsync(SceneManager.GetActiveScene().buildIndex);
-        SceneManager.LoadScene("Main");
+        Application.Quit();//ÍË³öÓÎÏ·
     }
-
-   
 }
