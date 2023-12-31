@@ -6,6 +6,7 @@ public static class Utils
 {
     public static T[] GetAllInstance<T>() where T : ScriptableObject
     {
-        return Resources.LoadAll<T>("ScriptableObjects/GraphicCardItems");
+        return Resources.LoadAll<T>("ScriptableObjects/" + typeof(T).Name + "s")
+;
     }
 }
