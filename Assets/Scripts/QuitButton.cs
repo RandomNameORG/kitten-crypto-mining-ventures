@@ -1,8 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,6 +15,6 @@ public class QuitButton : MonoBehaviour
     }
     void ButtonClick()
     {
-        Application.Quit();//ÍË³öÓÎÏ·
+        Application.Quit();//ï¿½Ë³ï¿½ï¿½ï¿½Ï·
     }
 }
