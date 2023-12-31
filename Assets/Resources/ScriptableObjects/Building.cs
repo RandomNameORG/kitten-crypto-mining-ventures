@@ -16,12 +16,6 @@ public class Building : ScriptableObject
 
     public void AddingGraphicCard(GraphicCardItem card)
     {
-        if(Cards.Count > Capacity)
-        {
-            ///TODO trigger you cannot do this on page
-            Debug.LogError("This room " + Id + " over capacity");
-            return;
-        }
         this.Cards.Add(card);
         this.MoneyPerSecond += card.PerSecondEarn;
         this.VoltPerSecond += card.PerSecondLoseVolt;
@@ -41,5 +35,6 @@ public class Building : ScriptableObject
             return false;
         }
     }
+    public int CardSize() { return this.Cards.Count; }
 }
 
