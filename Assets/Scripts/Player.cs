@@ -21,7 +21,8 @@ public class Player : MonoBehaviour
     public long Money;
     public TextMeshProUGUI TextMoney;
     public int TotalCardNum;
-
+    //the current building player at;
+    public Building currBuildingAt;
     private readonly double SECOND = 1.0f;
     private double Timer = 0;
 
@@ -44,7 +45,6 @@ public class Player : MonoBehaviour
     {
         PerSecondEarnMoney();
     }
-
     private void PerSecondEarnMoney()
     {
         //update money pane
