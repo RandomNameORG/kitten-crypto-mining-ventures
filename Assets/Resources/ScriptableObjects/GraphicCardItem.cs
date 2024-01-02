@@ -16,4 +16,6 @@ public class GraphicCardItem : ScriptableObject
     public long Price;
     public long PerSecondLoseVolt;
     public int Quantity;
+    public string resourcePath;
+
 }

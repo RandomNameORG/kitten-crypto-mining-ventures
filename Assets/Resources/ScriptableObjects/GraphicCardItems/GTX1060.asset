@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Name: GTX1060
   Id: 001
-  Icon: {fileID: 21300000, guid: 8510ca3a47f6c23479e9992c04455698, type: 3}
+  Icon: {fileID: -6104881556593889428, guid: 42f6887d3be524120b3388b624d9dcb7, type: 3}
   IsLocked: 1
   PerSecondEarn: 1
   Price: 123
   PerSecondLoseVolt: 1
   Quantity: 0
+  resourcePath: Assets/Artwork/DemoGraphicCard.aseprite

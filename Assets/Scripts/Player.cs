@@ -69,4 +69,7 @@ public class Player : MonoBehaviour
             //TextMoney.text = StringUtils.ConvertMoneyNumToString(Money);
         }
     }
+
+    
+
 }

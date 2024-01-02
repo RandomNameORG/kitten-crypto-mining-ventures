@@ -1,8 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using static UnityEditor.Progress;
+using static CheckStoreButton;
 
 public class StoreItemSlot : MonoBehaviour
 {
@@ -11,6 +14,7 @@ public class StoreItemSlot : MonoBehaviour
 	public TextMeshProUGUI MoneyText;
 	public Button Button;
 	Player _player;
+	public Dictionary<Object, int> items = new Dictionary<Object, int>();
 	public void AddItem(GraphicCardItem item)
 	{
 		_player = Player.Instance;
@@ -36,13 +40,19 @@ public class StoreItemSlot : MonoBehaviour
     // Use this for initialization
     void Start()
 	{
-
+		
 	}
 
 	// Update is called once per frame
 	void Update()
-	{
+	{ 
+
+		if(CheckStoreButton.isFinish){
 			
+			FinishBuy();
+			CheckStoreButton.isFinish = false;
+		}
+		
 	}
 	void OnBuy()
 	{
@@ -57,15 +67,23 @@ public class StoreItemSlot : MonoBehaviour
 		Debug.Log(building.Capacity);
         Debug.Log(building.CardSize());
 
-        if (building.Capacity < building.CardSize())
-		{
-            //todo no mroe capacity
-            Debug.Log("no capacity");
-            return;
-		}
+        
+		
 		_player.currBuildingAt.AddingGraphicCard(this.Item);
 		_player.Money -= this.Item.Price;
+		if (items.ContainsKey(Item))
+		{
+			items[Item] += 1;
+		}
+		else
+		{
+			items[Item] = 1;
+		}
 		//TODO animation loading decreasing value smoothing papaap
+	}
+
+	public void FinishBuy(){
+		new package(items);
 	}
 
 }
