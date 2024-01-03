@@ -5,7 +5,6 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro;
 using static UnityEditor.Progress;
-using static CheckStoreButton;
 
 public class StoreItemSlot : MonoBehaviour
 {
@@ -15,6 +14,11 @@ public class StoreItemSlot : MonoBehaviour
 	public Button Button;
 	Player _player;
 	public Dictionary<Object, int> items = new Dictionary<Object, int>();
+
+	private float passedTime; // default 0
+    public float targetTime = 5.0f;  // set time interval
+	
+
 	public void AddItem(GraphicCardItem item)
 	{
 		_player = Player.Instance;
@@ -38,22 +42,29 @@ public class StoreItemSlot : MonoBehaviour
 
     }
     // Use this for initialization
-    void Start()
+    void Update()
 	{
-		
+		if(passedTime>targetTime)
+        {
+            if(items.Count != 0){
+				finishbuy();
+				items.Clear();
+			}
+            
+            passedTime = 0;
+        }
+        passedTime += Time.deltaTime;
 	}
-
-	// Update is called once per frame
-	void Update()
-	{ 
-
-		if(CheckStoreButton.isFinish){
-			
-			FinishBuy();
-			CheckStoreButton.isFinish = false;
+	void OnDisable(){
+		if(items.Count != 0){
+			finishbuy();
+			items.Clear();
 		}
-		
 	}
+	public void finishbuy(){
+		new package(items);
+    }
+	
 	void OnBuy()
 	{
 		if(_player.Money < Item.Price)
@@ -80,10 +91,6 @@ public class StoreItemSlot : MonoBehaviour
 			items[Item] = 1;
 		}
 		//TODO animation loading decreasing value smoothing papaap
-	}
-
-	public void FinishBuy(){
-		new package(items);
 	}
 
 }

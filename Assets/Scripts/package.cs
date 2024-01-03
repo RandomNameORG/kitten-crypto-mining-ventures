@@ -23,5 +23,11 @@ public class package : MonoBehaviour
         Transform canvasTransform = GameObject.Find("Canvas").transform;
         GameObject cardPrefab = Resources.Load<GameObject>("package");
         Instantiate(cardPrefab, canvasTransform.position, Quaternion.identity, canvasTransform);
+        
+        foreach (var item in items)
+        {
+            Debug.Log(item.Key + " " +  item.Value);
+        }
+
     }
 }
