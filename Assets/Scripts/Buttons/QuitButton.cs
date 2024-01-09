@@ -6,6 +6,7 @@ public class QuitButton : MonoBehaviour
     void Start()
     {
         GetComponent<Button>().onClick.AddListener(ButtonClick);
+
     }
 
     // Update is called once per frame
