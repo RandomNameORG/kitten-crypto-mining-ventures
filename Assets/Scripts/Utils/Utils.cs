@@ -9,4 +9,14 @@ public static class Utils
         return Resources.LoadAll<T>("ScriptableObjects/" + typeof(T).Name + "s")
 ;
     }
+
+    public static void PauseGame()
+    {
+        Time.timeScale = 0;
+    }
+    public static void ResumeGame()
+    {
+        Time.timeScale = 1;
+    }
+
 }
