@@ -21,7 +21,7 @@ public class PlacementSystem : MonoBehaviour
     // private GameObject gridVisualization;
 
     public void Start(){
-        StopPlacement();
+        // StopPlacement();
         // floorData = new();
         // furnitureData = new();
         // previewRender  =  cellIndicator.GetComponentInChildren<Render>();
@@ -65,7 +65,6 @@ public class PlacementSystem : MonoBehaviour
 
     }
     public void Update(){
-        
         
         if(selectedObjectIndex < 0){
             return;
