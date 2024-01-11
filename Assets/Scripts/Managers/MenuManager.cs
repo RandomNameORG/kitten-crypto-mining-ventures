@@ -23,11 +23,11 @@ public class KeyBindingManager : MonoBehaviour
             {
                 if (Pane.activeSelf)
                 {
-                    Utils.ResumeGame();
+                    TimeUtils.ResumeGame();
                 }
                 else
                 {
-                    Utils.PauseGame();
+                    TimeUtils.PauseGame();
                 }
 
                 Pane.SetActive(!Pane.activeSelf);
