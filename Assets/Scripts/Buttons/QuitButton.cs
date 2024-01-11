@@ -12,10 +12,10 @@ public class QuitButton : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
     void ButtonClick()
     {
-        Application.Quit();//�˳���Ϸ
+        Application.Quit();
     }
 }
