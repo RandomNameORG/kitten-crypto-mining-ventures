@@ -12,7 +12,7 @@ public class TestInit : MonoBehaviour
 	{
 		
 		Player player = Player.Instance;
-		player.Money = 50000;
+		player.Money = 2;
         BuildingManager buildingManager = BuildingManager.Instance;
         Building demoRoom = buildingManager.FindBuildingByName("DemoRoom");
 
