@@ -13,11 +13,12 @@ public class StoreItemSlot : MonoBehaviour
 	public TextMeshProUGUI MoneyText;
 	public Button Button;
 	Player _player;
-	public Dictionary<Object, int> items = new Dictionary<Object, int>();
+	public Dictionary<Object, int> Items = new Dictionary<Object, int>();
 
-	private float passedTime; // default 0
-    public float targetTime = 5.0f;  // set time interval
+	private float PassedTime; // default 0
+    public float TargetTime = 5.0f;  // set time interval
 	
+    public GameObject LogPane;
 
 	public void AddItem(GraphicCardItem item)
 	{
@@ -41,54 +42,54 @@ public class StoreItemSlot : MonoBehaviour
         MoneyText.text = "";
 
     }
-    // Use this for initialization
+	// Use this for initialization
     void Update()
 	{
-		if(passedTime>targetTime)
+		
+		if(PassedTime>TargetTime)
         {
-            if(items.Count != 0){
+            if(Items.Count != 0){
 				finishbuy();
-				items.Clear();
+				Items.Clear();
 			}
             
-            passedTime = 0;
+            PassedTime = 0;
         }
-        passedTime += Time.deltaTime;
+        PassedTime += Time.deltaTime;
 	}
 	void OnDisable(){
-		if(items.Count != 0){
+		if(Items.Count != 0){
 			finishbuy();
-			items.Clear();
+			Items.Clear();
 		}
 	}
 	public void finishbuy(){
-		new package(items);
+		new package(Items);
     }
 	
+
 	void OnBuy()
 	{
 		if(_player.Money < Item.Price)
         {
-			//TODO no money you can't buy
+			PopLogManager._instance.Show(LogType.NO_ENOUGH_MONEY);
 			Debug.Log("no money");
 			return;
 		}
 		Building building = _player.currBuildingAt;
-
-		Debug.Log(building.Capacity);
-        Debug.Log(building.CardSize());
+		
 
         
 		
 		_player.currBuildingAt.AddingGraphicCard(this.Item);
 		_player.Money -= this.Item.Price;
-		if (items.ContainsKey(Item))
+		if (Items.ContainsKey(Item))
 		{
-			items[Item] += 1;
+			Items[Item] += 1;
 		}
 		else
 		{
-			items[Item] = 1;
+			Items[Item] = 1;
 		}
 		//TODO animation loading decreasing value smoothing papaap
 	}
