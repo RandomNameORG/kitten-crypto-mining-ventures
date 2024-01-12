@@ -7,6 +7,10 @@
         {
             "Type": 2,
             "Filename": "poplogs.json"
+        },
+        {
+            "Type": 3,
+            "Filename": "buildings.json"
         }
     ]
 }

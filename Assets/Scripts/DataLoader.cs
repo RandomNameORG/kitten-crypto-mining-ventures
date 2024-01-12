@@ -6,8 +6,9 @@ using System.IO;
 [Serializable]
 public enum DataType : int
 {
-    PopLogData = 2,
     DataLoaderData = 1,
+    PopLogData = 2,
+    BuildingData = 3,
 }
 [Serializable]
 public class DataTypeEntry
@@ -101,7 +102,6 @@ public class DataLoader : MonoBehaviour
 
     public static T LoadData<T>(DataType dataType)
     {
-
         //TODO temp deal with large json file
         var entry = DataTypes[dataType];
         var filepath = GetPath(entry.Filename);
@@ -115,7 +115,7 @@ public class DataLoader : MonoBehaviour
 
         var entry = DataTypes[dataType];
         var filepath = GetPath(entry.Filename);
-        using StreamWriter writer = new(filepath);
+        using StreamWriter writer = new(filepath, true);
         var json = JsonUtility.ToJson(data);
         writer.Write(json);
         writer.Close();
