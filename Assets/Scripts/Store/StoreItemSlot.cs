@@ -16,71 +16,75 @@ public class StoreItemSlot : MonoBehaviour
 	public Dictionary<Object, int> Items = new Dictionary<Object, int>();
 
 	private float PassedTime; // default 0
-    public float TargetTime = 5.0f;  // set time interval
-	
-    public GameObject LogPane;
+	public float TargetTime = 5.0f;  // set time interval
+
+	public GameObject LogPane;
 
 	public void AddItem(GraphicCardItem item)
 	{
 		_player = Player.Instance;
-		this.Item = item	;
+		this.Item = item;
 		this.Icon.sprite = this.Item.Icon;
 		this.Icon.enabled = true;
-        MoneyText.text = "$ "+Item.Price + "";
-        MoneyText.enabled = true;
+		MoneyText.text = "$ " + Item.Price + "";
+		MoneyText.enabled = true;
 
 		//when click the item, bought it!
 		Button.onClick.AddListener(OnBuy);
 
-    }
+	}
 	public void ClearSlot()
 	{
 		Item = null;
 		Icon.enabled = false;
 		Icon.sprite = null;
-        MoneyText.enabled = false;
-        MoneyText.text = "";
+		MoneyText.enabled = false;
+		MoneyText.text = "";
 
-    }
+	}
 	// Use this for initialization
-    void Update()
+	void Update()
 	{
-		
-		if(PassedTime>TargetTime)
-        {
-            if(Items.Count != 0){
+
+		if (PassedTime > TargetTime)
+		{
+			if (Items.Count != 0)
+			{
 				finishbuy();
 				Items.Clear();
 			}
-            
-            PassedTime = 0;
-        }
-        PassedTime += Time.deltaTime;
+
+			PassedTime = 0;
+		}
+		PassedTime += Time.deltaTime;
 	}
-	void OnDisable(){
-		if(Items.Count != 0){
+	void OnDisable()
+	{
+		if (Items.Count != 0)
+		{
 			finishbuy();
 			Items.Clear();
 		}
 	}
-	public void finishbuy(){
+	public void finishbuy()
+	{
 		new package(Items);
-    }
-	
+	}
+
 
 	void OnBuy()
 	{
-		if(_player.Money < Item.Price)
-        {
+		if (_player.Money < Item.Price)
+		{
 			PopLogManager._instance.Show(LogType.NO_ENOUGH_MONEY);
 			Debug.Log("no money");
 			return;
 		}
 		Building building = _player.currBuildingAt;
-		
 
-        
-		
+
+
+
 		_player.currBuildingAt.AddingGraphicCard(this.Item);
 		_player.Money -= this.Item.Price;
 		if (Items.ContainsKey(Item))
