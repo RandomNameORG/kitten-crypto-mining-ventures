@@ -124,7 +124,7 @@ public class PopLogManager : MonoBehaviour
     /// <param name="obj"></param>
     /// <param name="fadeDuration"></param>
     /// <returns></returns>
-    private IEnumerator ShowLogFadeSeq(LogType logType, float fadeDuration)
+    private void ShowLogFadeSeq(LogType logType, float fadeDuration)
     {
         var animation = AnimationManager._instance;
         StartCoroutine(animation.FadeSequence(LogPane, fadeDuration / 2, fadeDuration));
