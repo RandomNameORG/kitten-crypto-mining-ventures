@@ -1,0 +1,25 @@
+{
+    "Buildings": [
+        {
+            "Id": 1,
+            "Name": "Demo Room",
+            "GridSize": 100,
+            "BuildingMaterial": {
+                "RightWallMaterial": "rightwall.asd",
+                "LeftWallMaterial": "asdd",
+                "RightFloorMaterial": "01",
+                "LeftFloorMaterial": "201"
+            },
+            "VoltPerSecond": 500,
+            "MoneyPerSecond": 1000,
+            "MaxVolt": 10000,
+            "MaxCardNum": 5,
+            "ProbabilityOfBeingAttacked": 10,
+            "HeatDissipationLevel": 3,
+            "LocationOfTheBuilding": 1,
+            "Decorations": [],
+            "Cats": [],
+            "CardSlots": []
+        }
+    ]
+}
