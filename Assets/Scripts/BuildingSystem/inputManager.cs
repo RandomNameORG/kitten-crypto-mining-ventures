@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class inputManager : MonoBehaviour
+public class InputManager : MonoBehaviour
 {
     [SerializeField]
     private Camera sceneCamera;
