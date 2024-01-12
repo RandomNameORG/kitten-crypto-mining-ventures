@@ -13,82 +13,87 @@ public class StoreItemSlot : MonoBehaviour
 	public TextMeshProUGUI MoneyText;
 	public Button Button;
 	Player _player;
-	public Dictionary<Object, int> items = new Dictionary<Object, int>();
+	public Dictionary<Object, int> Items = new Dictionary<Object, int>();
 
-	private float passedTime; // default 0
-    public float targetTime = 5.0f;  // set time interval
-	
+	private float PassedTime; // default 0
+	public float TargetTime = 5.0f;  // set time interval
+
+	public GameObject LogPane;
 
 	public void AddItem(GraphicCardItem item)
 	{
 		_player = Player.Instance;
-		this.Item = item	;
+		this.Item = item;
 		this.Icon.sprite = this.Item.Icon;
 		this.Icon.enabled = true;
-        MoneyText.text = "$ "+Item.Price + "";
-        MoneyText.enabled = true;
+		MoneyText.text = "$ " + Item.Price + "";
+		MoneyText.enabled = true;
 
 		//when click the item, bought it!
 		Button.onClick.AddListener(OnBuy);
 
-    }
+	}
 	public void ClearSlot()
 	{
 		Item = null;
 		Icon.enabled = false;
 		Icon.sprite = null;
-        MoneyText.enabled = false;
-        MoneyText.text = "";
+		MoneyText.enabled = false;
+		MoneyText.text = "";
 
-    }
-    // Use this for initialization
-    void Update()
-	{
-		if(passedTime>targetTime)
-        {
-            if(items.Count != 0){
-				finishbuy();
-				items.Clear();
-			}
-            
-            passedTime = 0;
-        }
-        passedTime += Time.deltaTime;
 	}
-	void OnDisable(){
-		if(items.Count != 0){
+	// Use this for initialization
+	void Update()
+	{
+
+		if (PassedTime > TargetTime)
+		{
+			if (Items.Count != 0)
+			{
+				finishbuy();
+				Items.Clear();
+			}
+
+			PassedTime = 0;
+		}
+		PassedTime += Time.deltaTime;
+	}
+	void OnDisable()
+	{
+		if (Items.Count != 0)
+		{
 			finishbuy();
-			items.Clear();
+			Items.Clear();
 		}
 	}
-	public void finishbuy(){
-		new package(items);
-    }
-	
+	public void finishbuy()
+	{
+		new package(Items);
+	}
+
+
 	void OnBuy()
 	{
-		if(_player.Money < Item.Price)
-        {
-			//TODO no money you can't buy
+		if (_player.Money < Item.Price)
+		{
+			PopLogManager._instance.Show(LogType.NO_ENOUGH_MONEY);
 			Debug.Log("no money");
 			return;
 		}
 		Building building = _player.currBuildingAt;
 
-		Debug.Log(building.Capacity);
-        Debug.Log(building.CardSize());
 
-        
-		
+
+
 		_player.currBuildingAt.AddingGraphicCard(this.Item);
 		_player.Money -= this.Item.Price;
-		if (items.ContainsKey(Item))
+		if (Items.ContainsKey(Item))
 		{
-			items[Item] += 1;
+			Items[Item] += 1;
 		}
 		else
 		{
-			items[Item] = 1;
+			Items[Item] = 1;
 		}
 		//TODO animation loading decreasing value smoothing papaap
 	}

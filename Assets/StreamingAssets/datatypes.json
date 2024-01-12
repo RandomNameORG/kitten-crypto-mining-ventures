@@ -1,0 +1,12 @@
+{
+    "DataTypes": [
+        {
+            "Type": 1,
+            "Filename": "datatypes.json"
+        },
+        {
+            "Type": 2,
+            "Filename": "poplogs.json"
+        }
+    ]
+}
