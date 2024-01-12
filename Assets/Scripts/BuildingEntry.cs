@@ -101,6 +101,8 @@ public class BuildingEntry
 
 }
 
+
+
 [Serializable]
 public class Decoration
 {
