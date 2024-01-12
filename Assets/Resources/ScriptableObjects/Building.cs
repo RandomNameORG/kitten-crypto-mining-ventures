@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using AlternatorProject;
+using DG.Tweening;
+using TMPro;
 
 [CreateAssetMenu(fileName = "NewBuilding", menuName = "ScriptableObjects/Buildings")]
 public class Building : ScriptableObject
@@ -14,8 +17,9 @@ public class Building : ScriptableObject
     public double EventHappenProbs;
     public long MoneyPerSecond;
     public  List<Alternator> alts;
-    public long MaxVolt = 0;
-    public long VoltPerSecond = 0;
+    public long MaxVolt;
+    public long VoltPerSecond;
+    public Text voltText;
 
     public void AddingGraphicCard(GraphicCardItem card)
     {
@@ -62,6 +66,8 @@ public class Building : ScriptableObject
         
 
     }
+
+    
 
     
 }

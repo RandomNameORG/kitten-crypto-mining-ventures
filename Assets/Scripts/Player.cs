@@ -20,8 +20,8 @@ public class Player : MonoBehaviour
     public int TechPoint;
     public List<Skill> Skills;
     public long Money;
-    public Text text;
-    public TextMeshProUGUI TextMoney;
+    public Text MoneyText;
+    public Text voltText;
     public int TotalCardNum;
     //the current building player at;
     public Building currBuildingAt;
@@ -44,16 +44,24 @@ public class Player : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
-        PerSecondEarnMoney();
-    }
-    private void PerSecondEarnMoney()
-    {
-        //update money pane
+    {//update money pane
         Timer += Time.deltaTime;
         if (Timer >= SECOND)
         {
+            PerSecondEarnMoney();
+            DisplayVoltage();
+
+            Timer -= SECOND;
             
+            //TextMoney.text = StringUtils.ConvertMoneyNumToString(Money);
+        }
+        
+    }
+
+    private void PerSecondEarnMoney()
+    {
+        
+        
             long totalMoney = 0;
             foreach(Building building in Buildings)
             {
@@ -61,13 +69,13 @@ public class Player : MonoBehaviour
             }
             long preMoney = Money;
             Money += totalMoney;
-            DOTween.To(value => { text.text = Mathf.Floor(value).ToString(); }, startValue: preMoney, endValue: Money, duration: 0.1f);
+            DOTween.To(value => { MoneyText.text = Mathf.Floor(value).ToString(); }, startValue: preMoney, endValue: Money, duration: 0.1f);
             //animation.DelayFunc(Money, totalMoney);
+    }
 
-            Timer -= SECOND;
-            
-            //TextMoney.text = StringUtils.ConvertMoneyNumToString(Money);
-        }
+    private void DisplayVoltage(){
+        DOTween.To(value => { voltText.text = Mathf.Floor(value).ToString() + "/" + currBuildingAt.MaxVolt; }, 
+        startValue: currBuildingAt.VoltPerSecond, endValue: currBuildingAt.VoltPerSecond, duration: 0.1f);
     }
 
     

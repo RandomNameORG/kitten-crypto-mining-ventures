@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 42f6887d3be524120b3388b624d9dcb7
+guid: 73444eaeebc60ba4ebfdae3428513f8a
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -75,7 +75,7 @@ ScriptedImporter:
     importHiddenLayers: 0
     layerImportMode: 1
     defaultPivotSpace: 0
-    defaultPivotAlignment: 0
+    defaultPivotAlignment: 7
     customPivotPosition: {x: 0.5, y: 0.5}
     spritePadding: 0
     generateModelPrefab: 1
@@ -87,7 +87,7 @@ ScriptedImporter:
     importHiddenLayers: 0
     layerImportMode: 1
     defaultPivotSpace: 0
-    defaultPivotAlignment: 0
+    defaultPivotAlignment: 7
     customPivotPosition: {x: 0.5, y: 0.5}
     spritePadding: 0
     generateModelPrefab: 1
@@ -95,7 +95,7 @@ ScriptedImporter:
     addSortingGroup: 1
     addShadowCasters: 0
   importFileNodeState: 1
-  platformSettingsDirtyTick: 638404247476827814
+  platformSettingsDirtyTick: 0
   textureAssetName: 
   singleSpriteImportData:
   - name: 
@@ -119,18 +119,18 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: DemoGraphicCard
+  - name: cellIndicator_Frame_1
     originalName: 
-    pivot: {x: 0.4827586, y: 0.5555556}
-    alignment: 9
+    pivot: {x: 0.5, y: 0.5}
+    alignment: 0
     border: {x: 0, y: 0, z: 0, w: 0}
     rect:
       serializedVersion: 2
       x: 4
       y: 4
-      width: 29
-      height: 18
-    spriteID: 57550c2a775c64fa19e603658f41147e
+      width: 143
+      height: 73
+    spriteID: 7f15db390c539664bba80d4f1673a571
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -139,62 +139,54 @@ ScriptedImporter:
     edges: []
     tessellationDetail: 0
     uvTransform: {x: 4, y: 4}
+  - name: cellIndicator_Frame_0
+    originalName: 
+    pivot: {x: 36, y: -29.333332}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 155
+      y: 4
+      width: 2
+      height: 3
+    spriteID: 4410b80163c2c314f8ef2f631d9fbdd8
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 155, y: 4}
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
-    guid: 1964312393
-    name: DemoGraphicCard
+    guid: 742022175
+    name: cellIndicator
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: DemoGraphicCard
+    - name: cellIndicator_Frame_0
       frameIndex: 0
       cellRect:
-        x: 2
-        y: 6
-        width: 29
-        height: 18
-      spriteId: 57550c2a775c64fa19e603658f41147e
+        x: 0
+        y: 88
+        width: 2
+        height: 3
+      spriteId: 4410b80163c2c314f8ef2f631d9fbdd8
+    - name: cellIndicator_Frame_1
+      frameIndex: 1
+      cellRect:
+        x: 0
+        y: 53
+        width: 143
+        height: 73
+      spriteId: 7f15db390c539664bba80d4f1673a571
     linkedCells: []
     parentIndex: -1
-  platformSettings:
-  - name: DefaultTexturePlatform
-    overridden: 0
-    ignorePlatformSupport: 0
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 0
-    compressionQuality: 50
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    androidETC2FallbackOverride: 0
-  - name: Standalone
-    overridden: 0
-    ignorePlatformSupport: 0
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 0
-    compressionQuality: 50
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    androidETC2FallbackOverride: 0
-  - name: Server
-    overridden: 0
-    ignorePlatformSupport: 0
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 0
-    compressionQuality: 50
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    androidETC2FallbackOverride: 0
+  platformSettings: []
   secondarySpriteTextures: []
   spritePackingTag: 
-  canvasSize: {x: 32, y: 32}
+  canvasSize: {x: 144, y: 144}
