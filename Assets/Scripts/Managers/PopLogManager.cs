@@ -120,29 +120,14 @@ public class PopLogManager : MonoBehaviour
 
     /// <summary>
     /// FadeAnimation
-    /// havent implement AnimationManager, put here first 
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="fadeDuration"></param>
     /// <returns></returns>
     private IEnumerator ShowLogFadeSeq(LogType logType, float fadeDuration)
     {
-        fadeDuration /= 2;
-        var shadow = LogPane.transform.Find("Shadow").gameObject;
-        var wood = LogPane.transform.Find("Wood").gameObject;
-        var outline = LogPane.transform.Find("Outline").gameObject;
-        var text = LogPane.transform.Find("Text (TMP)").gameObject;
-        text.GetComponent<TextMeshProUGUI>().text = PopLogMap[logType].Message;
-
-        StartCoroutine(ImageUtils.ImageFadeIn(wood, fadeDuration));
-        StartCoroutine(ImageUtils.ImageFadeIn(shadow, fadeDuration));
-        StartCoroutine(ImageUtils.ImageFadeIn(outline, fadeDuration));
-        StartCoroutine(ImageUtils.TextFadeIn(text, fadeDuration));
-        yield return new WaitForSeconds(fadeDuration * 2);
-        StartCoroutine(ImageUtils.ImageFadeOut(wood, fadeDuration));
-        StartCoroutine(ImageUtils.ImageFadeOut(shadow, fadeDuration));
-        StartCoroutine(ImageUtils.ImageFadeOut(outline, fadeDuration));
-        StartCoroutine(ImageUtils.TextFadeOut(text, fadeDuration));
+        var animation = AnimationManager._instance;
+        StartCoroutine(animation.FadeSequence(LogPane, fadeDuration / 2, fadeDuration));
     }
 
 
@@ -152,9 +137,7 @@ public class PopLogManager : MonoBehaviour
         switch (logType)
         {
             case LogType.NO_ENOUGH_MONEY:
-                Debug.Log("debug bei calll lalfasldal");
-                StartCoroutine(ShowLogFadeSeq(logType, fadeDuration));
-
+                ShowLogFadeSeq(LogType.NO_ENOUGH_MONEY, fadeDuration);
                 break;
         }
     }
