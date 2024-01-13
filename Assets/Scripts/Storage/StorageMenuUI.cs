@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using static UnityEditor.Progress;
@@ -7,11 +8,11 @@ public class StorageMenuUI : MonoBehaviour
 {
     // Start is called before the first frame update
     public StoreItemSlot[] Slots;
-    ItemManager _itemManager;
+    GraphicCardManager _graphicCardManager;
     public GameObject originSlot;
     void Start()
     {
-        _itemManager = ItemManager.Instance;
+        _graphicCardManager = GraphicCardManager._instance;
         Transform slotGridTras = transform.Find("StoreItemSlotGrid");
         Slots = transform.GetComponentsInChildren<StoreItemSlot>();
         UpdateUI();
@@ -20,14 +21,13 @@ public class StorageMenuUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+
     }
     void UpdateUI()
     {
-        GraphicCardItem[] items = _itemManager.GraphicCardItems;
-        for (int i = 0; i < _itemManager.GraphicCardItems.Length; i++)
+        List<GraphicCard> items = _graphicCardManager.Cards;
+        for (int i = 0; i < items.Count; i++)
         {
-            
             Slots[i].AddItem(items[i]);
         }
     }

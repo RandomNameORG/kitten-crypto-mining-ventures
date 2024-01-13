@@ -8,7 +8,7 @@ using static UnityEditor.Progress;
 
 public class StoreItemSlot : MonoBehaviour
 {
-	GraphicCardItem Item;
+	GraphicCard Item;
 	public Image Icon;
 	public TextMeshProUGUI MoneyText;
 	public Button Button;
@@ -20,9 +20,9 @@ public class StoreItemSlot : MonoBehaviour
 
 	public GameObject LogPane;
 
-	public void AddItem(GraphicCardItem item)
+	public void AddItem(GraphicCard item)
 	{
-		_player = Player.Instance;
+		_player = Player._instance;
 		this.Item = item;
 		this.Icon.sprite = this.Item.Icon;
 		this.Icon.enabled = true;
@@ -76,7 +76,7 @@ public class StoreItemSlot : MonoBehaviour
 	{
 		if (_player.Money < Item.Price)
 		{
-			PopLogManager._instance.Show(LogType.NO_ENOUGH_MONEY);
+			PopLogManager._instance.Show(PaneLogType.NO_ENOUGH_MONEY);
 			Debug.Log("no money");
 			return;
 		}
