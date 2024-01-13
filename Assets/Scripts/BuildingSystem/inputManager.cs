@@ -7,36 +7,39 @@ using UnityEngine.EventSystems;
 public class InputManager : MonoBehaviour
 {
     [SerializeField]
-    private Camera sceneCamera;
+    private Camera SceneCamera;
 
-    private Vector3 lastPosition;
+    private Vector3 LastPosition;
 
     [SerializeField]
-    private LayerMask placementLayermask;
+    private LayerMask PlacementLayermask;
 
     public event Action OnClicked, OnExit;
 
     private void Update()
     {
-        if(Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
             OnClicked?.Invoke();
-        if(Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape))
             OnExit?.Invoke();
     }
 
     public bool IsPointerOverUI()
         => EventSystem.current.IsPointerOverGameObject();
 
-    public Vector2 StartPosition(){
+    public Vector2 StartPosition()
+    {
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         return mousePos;
     }
-    public Vector2 GetSelectedMapPosition(){
+    public Vector2 GetSelectedMapPosition()
+    {
         Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero, 0f, placementLayermask);
-        if(hit.collider != null){
-            lastPosition = hit.point;
+        RaycastHit2D hit = Physics2D.Raycast(mousePos, Vector2.zero, 0f, PlacementLayermask);
+        if (hit.collider != null)
+        {
+            LastPosition = hit.point;
         }
-        return lastPosition;
+        return LastPosition;
     }
 }
