@@ -1,0 +1,16 @@
+{
+    "GraphicCards": [
+        {
+            "Name": "GTX1060",
+            "Id": "1",
+            "IsLocked": false,
+            "PerSecondEarn": 2,
+            "Price": 1233,
+            "PerSecondLoseVolt": 1,
+            "Quantity": 1,
+            "ImageSource": {
+                "Path": "DemoGraphicCard"
+            }
+        }
+    ]
+}

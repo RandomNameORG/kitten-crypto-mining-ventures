@@ -11,6 +11,14 @@
         {
             "Type": 3,
             "Filename": "buildings.json"
+        },
+        {
+            "Type": 4,
+            "Filename": "graphiccards.json"
+        },
+        {
+            "Type": 5,
+            "Filename": "player.json"
         }
     ]
 }

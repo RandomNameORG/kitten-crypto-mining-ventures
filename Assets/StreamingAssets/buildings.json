@@ -1,8 +1,8 @@
 {
     "Buildings": [
         {
-            "Id": 1,
-            "Name": "Demo Room",
+            "Id": "1",
+            "Name": "DemoRoom",
             "GridSize": 100,
             "BuildingMaterial": {
                 "RightWallMaterial": "rightwall.asd",
@@ -10,16 +10,25 @@
                 "RightFloorMaterial": "01",
                 "LeftFloorMaterial": "201"
             },
-            "VoltPerSecond": 500,
-            "MoneyPerSecond": 1000,
-            "MaxVolt": 10000,
+            "VoltPerSecond": 1,
+            "MoneyPerSecond": 2,
+            "MaxVolt": 50,
             "MaxCardNum": 5,
             "ProbabilityOfBeingAttacked": 10,
             "HeatDissipationLevel": 3,
             "LocationOfTheBuilding": 1,
             "Decorations": [],
             "Cats": [],
-            "CardSlots": []
+            "CardSlots": [
+                {
+                    "Name": "GTX1060",
+                    "Id": "1",
+                    "Pos": {
+                        "X": 0,
+                        "Y": 0
+                    }
+                }
+            ]
         }
     ]
 }

@@ -1,0 +1,16 @@
+{
+    "Name": "Woshishabiyouxi",
+    "TechPoint": 1,
+    "Money": 148,
+    "TotalCardNum": 0,
+    "CurrBuildingAt": {
+        "Id": "1",
+        "Name": "DemoRoom"
+    },
+    "BuildingsRef": [
+        {
+            "Id": "1",
+            "Name": "DemoRoom"
+        }
+    ]
+}
