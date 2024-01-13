@@ -13,7 +13,7 @@ using UnityEngine.UI;
 /// LogType ENUM, Explicit all Type please
 /// </summary>
 [Serializable]
-public enum LogType : int
+public enum PaneLogType : int
 {
     NO_ENOUGH_MONEY = 0,
     TEST = 1
@@ -22,7 +22,7 @@ public enum LogType : int
 [Serializable]
 public class PopLogEntry
 {
-    public LogType LogType;
+    public PaneLogType LogType;
     public string Message;//value
 }
 
@@ -40,7 +40,7 @@ public class PopLogManager : MonoBehaviour
 
     public static PopLogManager _instance;
 
-    private Dictionary<LogType, PopLogEntry> PopLogMap = new Dictionary<LogType, PopLogEntry>();
+    private Dictionary<PaneLogType, PopLogEntry> PopLogMap = new Dictionary<PaneLogType, PopLogEntry>();
 
 
     //the pane we generate log
@@ -53,25 +53,12 @@ public class PopLogManager : MonoBehaviour
     void LoadLogs()
     {
         var loadLists = DataLoader.LoadData<PopLogList>(DataType.PopLogData);
-
         loadLists.Logs.ForEach(e => PopLogMap.Add(e.LogType, e));
     }
     private void Awake()
     {
 
     }
-
-    //we dont have to save it for now
-    // private void OnApplicationQuit()
-    // {
-    //     PopLogList list = new PopLogList();
-    //     foreach (var entry in PopLogMap.Values)
-    //     {
-    //         list.Logs.Add(entry);
-    //     }
-    //     DataLoader.SaveData<PopLogList>(DataType.PopLogData, list);
-    //     Debug.Log("log save correct");
-    // }
 
     private void SetTransparency(GameObject obj, float alpha)
     {
@@ -102,8 +89,10 @@ public class PopLogManager : MonoBehaviour
     private void Start()
     {
         _instance = this;
+        Logger.Log(LogType.INIT);
         LoadLogs();
         InitLogPane();
+        Logger.Log(LogType.INIT_DONE);
     }
     private void Update()
     {
@@ -124,7 +113,7 @@ public class PopLogManager : MonoBehaviour
     /// <param name="obj"></param>
     /// <param name="fadeDuration"></param>
     /// <returns></returns>
-    private void ShowLogFadeSeq(LogType logType, float fadeDuration)
+    private void ShowLogFadeSeq(PaneLogType logType, float fadeDuration)
     {
         var animation = AnimationManager._instance;
         StartCoroutine(animation.FadeSequence(LogPane, fadeDuration / 2, fadeDuration));
@@ -132,12 +121,12 @@ public class PopLogManager : MonoBehaviour
 
 
 
-    public void Show(LogType logType, float fadeDuration = 1f)
+    public void Show(PaneLogType logType, float fadeDuration = 1f)
     {
         switch (logType)
         {
-            case LogType.NO_ENOUGH_MONEY:
-                ShowLogFadeSeq(LogType.NO_ENOUGH_MONEY, fadeDuration);
+            case PaneLogType.NO_ENOUGH_MONEY:
+                ShowLogFadeSeq(PaneLogType.NO_ENOUGH_MONEY, fadeDuration);
                 break;
         }
     }
