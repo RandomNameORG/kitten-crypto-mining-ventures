@@ -11,18 +11,15 @@ public class TestInit : MonoBehaviour
 	void Start()
 	{
 
-		// Player player = Player.Instance;
+		// Player player = Player._instance;
+		// Debug.Log(player + "player here");
 		// player.Money = 2;
 		// BuildingManager buildingManager = BuildingManager._instance;
-		// Building demoRoom = buildingManager.FindBuildingByName("DemoRoom");
+		// Debug.Log(buildingManager + "building manager here");
 
-		// ItemManager itemManager = ItemManager.Instance;
-		// GraphicCardItem card = itemManager.FindGraphicCardItemByName("GTX1060");
-		// for (int i = 0; i < 1; i++)
-		// {
-		// 	demoRoom.AddingGraphicCard(card);
-		// 	Debug.Log(card + " and " + demoRoom + " correct");
-		// }
+		// GameObject demoObj = buildingManager.FindBuildingObjectByName("DemoRoom");
+		// Debug.Log("demo room here: " + demoObj);
+		// var demoRoom = demoObj.GetComponent<Building>();
 
 		// player.currBuildingAt = demoRoom;
 		// player.Buildings.Add(demoRoom);
