@@ -34,6 +34,9 @@ public class BuildingManager : MonoBehaviour
         //get json data
         _building_entries = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
         ;
+
+        //TODO we need to make this process more easy to write, this way so stupid...
+        //or pust some where else
         //convert to building object list
         _building_entries.Buildings.ForEach(e =>
         {
@@ -55,8 +58,6 @@ public class BuildingManager : MonoBehaviour
             building.MoneyPerSecond = e.MoneyPerSecond;
             building.Alts = new List<Alternator>(e.alts);
             building.VoltPerSecond = e.VoltPerSecond;
-
-
             buildings.Add(building);
             Buildings.Add(obj);
 
@@ -67,6 +68,31 @@ public class BuildingManager : MonoBehaviour
         });
         Logger.Log(LogType.INIT_DONE);
     }
+    private void OnApplicationQuit()
+    {
+        _building_entries = new BuildingEntryList();
+        //TODO optimaztion this process plz
+        Buildings.ForEach(obj =>
+        {
+            var building = obj.GetComponent<Building>();
+            BuildingEntry e = new BuildingEntry();
+            e.Id = int.Parse(building.Id);
+            e.Name = building.Name;
+            e.MaxCardNum = building.Capacity; // Assuming MaxCardNum is equivalent to Capacity
+            e.MaxVolt = building.MaxVolt; // Assuming this assignment logic remains the same
+            // Assuming e has a CardSlots property that can be assigned from building.Cards
+            e.CardSlots = building.Cards.Select(gc =>
+            {
+                return new GraphicCardReference { Id = gc.Id, Name = gc.Name }; // Assuming CardSlot has an Id property and you can create new instances like this
+            }).ToList();
+            e.ProbabilityOfBeingAttacked = building.EventHappenProbs;
+            e.MoneyPerSecond = building.MoneyPerSecond;
+            e.VoltPerSecond = building.VoltPerSecond;
+            _building_entries.Buildings.Add(e);
+        });
+        DataLoader.SaveData<BuildingEntryList>(DataType.BuildingData, _building_entries);
+    }
+
 
     //TODO think about it, how we relate our json data to our actual gameobject?
     // Read: Find a Building by its ID

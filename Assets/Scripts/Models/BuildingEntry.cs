@@ -33,7 +33,7 @@ public class BuildingEntry
 
     public long MaxCardNum;
 
-    public int ProbabilityOfBeingAttacked;
+    public double ProbabilityOfBeingAttacked;
 
     public int HeatDissipationLevel;
 
