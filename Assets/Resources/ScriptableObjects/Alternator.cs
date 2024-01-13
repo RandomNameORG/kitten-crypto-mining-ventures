@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace AlternatorProject{
-	public class Alternator : MonoBehaviour
+namespace AlternatorProject
+{
+    public class Alternator : MonoBehaviour
     {
         public int AlternatorId = 0;
         public string Name = "Basic Alternator";
