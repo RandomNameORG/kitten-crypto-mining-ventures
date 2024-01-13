@@ -5,9 +5,9 @@ using static StoreItemSlot;
 
 public class Package : MonoBehaviour
 {
-    public Dictionary<Object, int> items = new Dictionary<Object, int>();
+    public Dictionary<object, int> items = new Dictionary<object, int>();
     // Start is called before the first frame update
-    public Package(Dictionary<Object, int> items)
+    public Package(Dictionary<object, int> items)
     {
         this.items = items;
         Delivery();

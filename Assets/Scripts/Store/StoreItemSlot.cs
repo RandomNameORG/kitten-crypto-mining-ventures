@@ -13,7 +13,7 @@ public class StoreItemSlot : MonoBehaviour
 	public TextMeshProUGUI MoneyText;
 	public Button Button;
 	Player _player;
-	public Dictionary<Object, int> Items = new Dictionary<Object, int>();
+	public Dictionary<object, int> Items = new Dictionary<object, int>();
 
 	private float PassedTime; // default 0
 	public float TargetTime = 5.0f;  // set time interval
