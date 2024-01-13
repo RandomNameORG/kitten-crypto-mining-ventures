@@ -10,6 +10,11 @@ public enum LogType
     INIT,
     INIT_DONE,
 }
+/// <summary>
+/// The logger system class help us prompt more infomation we need in unity monitor
+/// it causing more memo and cpu to do reflections.
+/// stop using it when we felt not confort
+/// </summary>
 public static class Logger
 {
     private static readonly Dictionary<LogType, string> Messages = new Dictionary<LogType, string>
@@ -17,7 +22,7 @@ public static class Logger
         { LogType.INIT, "start init..." },
         { LogType.INIT_DONE, "finish init..." },
     };
-    public static void Log(object text)
+    public static void Log(object obj)
     {
         StackTrace stackTrace = new StackTrace();
         var frame = stackTrace.GetFrames()?.FirstOrDefault(f => f.GetMethod().DeclaringType != typeof(Logger));
@@ -25,11 +30,11 @@ public static class Logger
         if (frame != null)
         {
             string className = frame.GetMethod().DeclaringType.Name;
-            UnityEngine.Debug.Log($"[{className}]: {text}");
+            UnityEngine.Debug.Log($"[{className}]: {obj}");
         }
         else
         {
-            UnityEngine.Debug.Log(text);
+            UnityEngine.Debug.Log(obj);
         }
     }
     public static void Log(LogType type)
@@ -37,4 +42,35 @@ public static class Logger
         Log(Messages[type]);
     }
 
+    public static void LogError(object obj)
+    {
+        StackTrace stackTrace = new StackTrace();
+        var frame = stackTrace.GetFrames()?.FirstOrDefault(f => f.GetMethod().DeclaringType != typeof(Logger));
+
+        if (frame != null)
+        {
+            string className = frame.GetMethod().DeclaringType.Name;
+            UnityEngine.Debug.Log($"[{className}]: {obj}");
+        }
+        else
+        {
+            UnityEngine.Debug.LogError(obj);
+        }
+    }
+
+    public static void LogWarning(object obj)
+    {
+        StackTrace stackTrace = new StackTrace();
+        var frame = stackTrace.GetFrames()?.FirstOrDefault(f => f.GetMethod().DeclaringType != typeof(Logger));
+
+        if (frame != null)
+        {
+            string className = frame.GetMethod().DeclaringType.Name;
+            UnityEngine.Debug.Log($"[{className}]: {obj}");
+        }
+        else
+        {
+            UnityEngine.Debug.LogWarning(obj);
+        }
+    }
 }
