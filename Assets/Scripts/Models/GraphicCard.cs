@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GraphicCard : ScriptableObject
+public class GraphicCard
 {
     public string Name;
     public string Id;
