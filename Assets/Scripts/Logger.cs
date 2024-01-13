@@ -1,7 +1,8 @@
 using UnityEngine;
 using System.Diagnostics; // 用于StackTrace
 using System.Linq;
-using System.Collections.Generic; // 用于Linq
+using System.Collections.Generic;
+using System; // 用于Linq
 
 
 public enum LogType
@@ -16,7 +17,7 @@ public static class Logger
         { LogType.INIT, "start init..." },
         { LogType.INIT_DONE, "finish init..." },
     };
-    public static void Log(string text)
+    public static void Log(object text)
     {
         StackTrace stackTrace = new StackTrace();
         var frame = stackTrace.GetFrames()?.FirstOrDefault(f => f.GetMethod().DeclaringType != typeof(Logger));
@@ -35,4 +36,5 @@ public static class Logger
     {
         Log(Messages[type]);
     }
+
 }
