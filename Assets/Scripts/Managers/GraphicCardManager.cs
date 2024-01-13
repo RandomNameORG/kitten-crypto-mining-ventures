@@ -31,8 +31,8 @@ public class GraphicCardManager : MonoBehaviour
             card.Quantity = e.Quantity;
             //deal with icon 
             card.Icon = Resources.Load<Sprite>(Paths.ArtworkFolderPath + e.ImageSource.Path);
-            Debug.Log("[GraphicCardManager]: loading card " + e.Name);
-            Debug.Log("[GraphicCardManager]: card icon is " + card.Icon);
+            Logger.Log("[GraphicCardManager]: loading card " + e.Name);
+            Logger.Log("[GraphicCardManager]: card icon is " + card.Icon);
             Cards.Add(card);
         });
     }

@@ -13,48 +13,54 @@ public class PlacementSystem : MonoBehaviour
 
     [SerializeField]
     private ObjectDataBaseSO Database;
-    private int SelectedObjectIndex = -1; 
+    private int SelectedObjectIndex = -1;
 
     Transform canvasTransform;
 
     // [SerializeField]
     // private GameObject gridVisualization;
 
-    public void Start(){
+    public void Start()
+    {
         // StopPlacement();
         // floorData = new();
         // furnitureData = new();
         // previewRender  =  cellIndicator.GetComponentInChildren<Render>();
     }
-    public void startPlacement(int ID){ 
+    public void startPlacement(int ID)
+    {
         Transform canvasTransform = GameObject.Find("Canvas").transform;
         StopPlacement();
-        SelectedObjectIndex = Database.Objects.FindIndex(data => data.ID == ID);    
-        Debug.Log(ID);
-        Debug.Log(SelectedObjectIndex);
-        if(SelectedObjectIndex < 0){
-            
+        SelectedObjectIndex = Database.Objects.FindIndex(data => data.ID == ID);
+        Logger.Log(ID);
+        Logger.Log(SelectedObjectIndex);
+        if (SelectedObjectIndex < 0)
+        {
+
             return;
         }
         //gridVisualization.SetActive(true);
         cellIndicator.SetActive(true);
         InputManager.OnClicked += PlaceStructure;
         InputManager.OnExit += StopPlacement;
-       
+
     }
-    private void StopPlacement(){
+    private void StopPlacement()
+    {
         SelectedObjectIndex = -1;
         //gridVisualization.SetActive(false);
         //cellIndicator.SetActive(false);
         InputManager.OnClicked -= PlaceStructure;
         InputManager.OnExit -= StopPlacement;
     }
-    private void PlaceStructure(){
-        if(InputManager.IsPointerOverUI()){ 
+    private void PlaceStructure()
+    {
+        if (InputManager.IsPointerOverUI())
+        {
             Debug.Log("return");
             return;
         }
-        
+
         Vector2 MousePosition = InputManager.StartPosition();
         Vector3Int GridPosition = grid.WorldToCell(new Vector3(MousePosition.x, MousePosition.y, 0f));
 
@@ -64,9 +70,11 @@ public class PlacementSystem : MonoBehaviour
         // Set the Canvas as the parent of the instantiated object
 
     }
-    public void Update(){
-        
-        if(SelectedObjectIndex < 0){
+    public void Update()
+    {
+
+        if (SelectedObjectIndex < 0)
+        {
             return;
         }
         Vector2 MousePosition = InputManager.StartPosition();

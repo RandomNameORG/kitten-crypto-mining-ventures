@@ -50,11 +50,10 @@ public class Player : MonoBehaviour
     void Start()
     {
         Logger.Log("start init...");
-        Debug.Log("player manager start init...");
         //load data
         var playerData = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
 
-        Debug.Log(playerData.ToString());
+        Logger.Log(playerData.ToString());
         Name = playerData.Name;
         TechPoint = playerData.TechPoint;
         Money = playerData.Money;
@@ -111,7 +110,6 @@ public class Player : MonoBehaviour
         long totalMoney = 0;
         foreach (Building building in Buildings)
         {
-            Debug.LogWarning("building:" + building);
             totalMoney += building.MoneyPerSecond;
         }
         long preMoney = Money;

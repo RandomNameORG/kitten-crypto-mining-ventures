@@ -77,7 +77,7 @@ public class StoreItemSlot : MonoBehaviour
 		if (_player.Money < Item.Price)
 		{
 			PopLogManager._instance.Show(PaneLogType.NO_ENOUGH_MONEY);
-			Debug.Log("no money");
+			Logger.Log("no money");
 			return;
 		}
 		Building building = _player.currBuildingAt;

@@ -30,7 +30,7 @@ public class BuildingManager : MonoBehaviour
     //Mention: before you starting code your loading data, you have to create init a file first
     void Start()
     {
-        Debug.Log("BuildingManager init...");
+        Logger.Log(LogType.INIT);
         //get json data
         _building_entries = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
         ;
@@ -65,7 +65,7 @@ public class BuildingManager : MonoBehaviour
             obj.transform.SetPositionAndRotation(new Vector3(0, 0, 0), Quaternion.identity);
             obj.transform.localScale = new Vector3(1, 1, 1);
         });
-        Debug.Log("BuildingManager init done");
+        Logger.Log(LogType.INIT_DONE);
     }
 
     //TODO think about it, how we relate our json data to our actual gameobject?

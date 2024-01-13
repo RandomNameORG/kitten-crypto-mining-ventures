@@ -33,10 +33,12 @@ public class Resctricion : MonoBehaviour
         // 处理碰撞结果
         if (!isColliding)
         {
-            Debug.Log("collidingh");
+            Logger.Log("collidingh");
             // 获取 BuildingSystem 物体上的 Renderer 组件
             buildingSystem.SetActive(false);
-        }else{
+        }
+        else
+        {
             buildingSystem.SetActive(true);
         }
     }

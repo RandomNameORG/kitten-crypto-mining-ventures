@@ -18,7 +18,7 @@ public class AnimationManager : MonoBehaviour
     private void Start()
     {
         _instance = this;
-        Debug.Log("animation manager init! " + this);
+        Logger.Log("animation manager init! " + this);
     }
 
     /// <summary>

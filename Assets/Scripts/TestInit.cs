@@ -12,13 +12,13 @@ public class TestInit : MonoBehaviour
 	{
 
 		// Player player = Player._instance;
-		// Debug.Log(player + "player here");
+		// Logger.Out(player + "player here");
 		// player.Money = 2;
 		// BuildingManager buildingManager = BuildingManager._instance;
-		// Debug.Log(buildingManager + "building manager here");
+		// Logger.Out(buildingManager + "building manager here");
 
 		// GameObject demoObj = buildingManager.FindBuildingObjectByName("DemoRoom");
-		// Debug.Log("demo room here: " + demoObj);
+		// Logger.Out("demo room here: " + demoObj);
 		// var demoRoom = demoObj.GetComponent<Building>();
 
 		// player.currBuildingAt = demoRoom;
