@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 
+
+/// <summary>
+/// The position where data store at
+/// </summary>
 [Serializable]
 public enum DataType : int
 {
     DataLoaderData = 1,
     PopLogData = 2,
     BuildingData = 3,
+    GraphicCardData = 4,
+    PlayerData = 5,
 }
 [Serializable]
 public class DataTypeEntry
@@ -115,8 +121,8 @@ public class DataLoader : MonoBehaviour
 
         var entry = DataTypes[dataType];
         var filepath = GetPath(entry.Filename);
-        using StreamWriter writer = new(filepath, true);
-        var json = JsonUtility.ToJson(data);
+        using StreamWriter writer = new(filepath, false);
+        var json = JsonUtility.ToJson(data, true);
         writer.Write(json);
         writer.Close();
     }
