@@ -21,7 +21,7 @@ public static class ImageUtils
         }
         else
         {
-            Debug.LogError("Image component not found on " + obj.name);
+            Logger.LogError("Image component not found on " + obj.name);
         }
     }
 
@@ -41,7 +41,7 @@ public static class ImageUtils
         }
         else
         {
-            Debug.LogError("text component not found on " + obj.name);
+            Logger.LogError("text component not found on " + obj.name);
         }
     }
 

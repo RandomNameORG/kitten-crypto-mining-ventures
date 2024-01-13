@@ -15,7 +15,7 @@ public class Resctricion : MonoBehaviour
         // 检查是否成功获取 Collider2D
         if (myCollider == null)
         {
-            Debug.LogError("Collider2D not found!");
+            Logger.LogError("Collider2D not found!");
         }
     }
 

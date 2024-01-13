@@ -71,7 +71,7 @@ public class PopLogManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Image component not found on " + obj.name);
+            Logger.LogError("Image component not found on " + obj.name);
         }
     }
     private void InitLogPane()

@@ -57,7 +57,7 @@ public class PlacementSystem : MonoBehaviour
     {
         if (InputManager.IsPointerOverUI())
         {
-            Debug.Log("return");
+            Logger.Log("return");
             return;
         }
 

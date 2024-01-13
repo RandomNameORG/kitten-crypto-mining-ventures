@@ -41,7 +41,7 @@ public class Building : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Card not found in " + Id);
+            Logger.LogError("Card not found in " + Id);
             return false;
         }
     }
@@ -60,7 +60,7 @@ public class Building : MonoBehaviour
         {
             if (VoltPerSecond - alternator.MaxVolt < 0)
             {
-                Debug.LogError("Power Failure in " + Id);
+                Logger.LogError("Power Failure in " + Id);
             }
             else
             {
@@ -71,7 +71,7 @@ public class Building : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Alternator not found in " + Id);
+            Logger.LogError("Alternator not found in " + Id);
             return false;
         }
 
