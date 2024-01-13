@@ -5,7 +5,7 @@
             "Id": "1",
             "IsLocked": false,
             "PerSecondEarn": 2,
-            "Price": 1233,
+            "Price": 123,
             "PerSecondLoseVolt": 1,
             "Quantity": 1,
             "ImageSource": {
