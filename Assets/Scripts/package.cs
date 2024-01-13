@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using static StoreItemSlot;
 
-public class package : MonoBehaviour
+public class Package : MonoBehaviour
 {
     public Dictionary<Object, int> items = new Dictionary<Object, int>();
     // Start is called before the first frame update
-    public package(Dictionary<Object, int> items)
+    public Package(Dictionary<Object, int> items)
     {
         this.items = items;
-        delivery();
+        Delivery();
     }
     void Start()
     {
@@ -18,7 +18,7 @@ public class package : MonoBehaviour
     }
 
     // Update is called once per frame
-    void delivery()
+    void Delivery()
     {
         Transform canvasTransform = GameObject.Find("Canvas").transform;
         GameObject cardPrefab = Resources.Load<GameObject>("package");

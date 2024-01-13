@@ -68,7 +68,7 @@ public class StoreItemSlot : MonoBehaviour
 	}
 	public void finishbuy()
 	{
-		new package(Items);
+		new Package(Items);
 	}
 
 
