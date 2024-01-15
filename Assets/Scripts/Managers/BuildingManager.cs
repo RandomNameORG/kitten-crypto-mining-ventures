@@ -76,7 +76,7 @@ public class BuildingManager : MonoBehaviour
         {
             var building = obj.GetComponent<Building>();
             BuildingEntry e = new BuildingEntry();
-            e.Id = int.Parse(building.Id);
+            e.Id = building.Id;
             e.Name = building.Name;
             e.MaxCardNum = building.Capacity; // Assuming MaxCardNum is equivalent to Capacity
             e.MaxVolt = building.MaxVolt; // Assuming this assignment logic remains the same

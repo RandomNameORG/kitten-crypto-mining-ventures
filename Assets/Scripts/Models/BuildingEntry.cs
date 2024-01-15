@@ -22,7 +22,7 @@ public class BuildingReference
 [Serializable]
 public class BuildingEntry
 {
-    public int Id;
+    public string Id;
     public string Name;
     public int GridSize;
     public Resorces BuildingMaterial;
