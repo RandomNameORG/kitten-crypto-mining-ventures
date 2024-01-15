@@ -7,6 +7,6 @@ using System;
 [Serializable]
 public class GridPosition
 {
-    int X;
-    int Y;
+    public int X;
+    public int Y;
 }
