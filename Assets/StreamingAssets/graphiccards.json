@@ -11,6 +11,18 @@
             "ImageSource": {
                 "Path": "DemoGraphicCard"
             }
+        },
+        {
+            "Name": "GTX1060TI",
+            "Id": "2",
+            "IsLocked": false,
+            "PerSecondEarn": 2,
+            "Price": 321,
+            "PerSecondLoseVolt": 1,
+            "Quantity": 1,
+            "ImageSource": {
+                "Path": "DemoGraphicCard2"
+            }
         }
     ]
 }

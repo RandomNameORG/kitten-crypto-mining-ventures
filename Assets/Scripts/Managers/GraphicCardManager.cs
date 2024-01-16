@@ -30,7 +30,7 @@ public class GraphicCardManager : MonoBehaviour
             card.PerSecondLoseVolt = e.PerSecondLoseVolt;
             card.Quantity = e.Quantity;
             //deal with icon 
-            card.Icon = Resources.Load<Sprite>(Paths.ArtworkFolderPath + e.ImageSource.Path);
+            card.Icon = UnityEngine.Resources.Load<Sprite>(Paths.ArtworkFolderPath + e.ImageSource.Path);
             Logger.Log("[GraphicCardManager]: loading card " + e.Name);
             Logger.Log("[GraphicCardManager]: card icon is " + card.Icon);
             Cards.Add(card);

@@ -25,7 +25,6 @@ public class BuildingEntry
     public string Id;
     public string Name;
     public int GridSize;
-    public Resorces BuildingMaterial;
 
     public long VoltPerSecond;
     public long MoneyPerSecond; //Money earn persecond
@@ -38,12 +37,14 @@ public class BuildingEntry
     public int HeatDissipationLevel;
 
     public int LocationOfTheBuilding;
-    public List<Decoration> Decorations;
+    public List<Decoration> Decorations = new List<Decoration>();
 
-    public List<Cat> Cats;
+    public List<Cat> Cats = new();
+    public Resources BuildingMaterial = new();
+
 
     //this is the card info we need to store
-    public List<GraphicCardReference> CardSlots;
+    public List<GraphicCardReference> CardSlots = new();
 
     //TODO We cannot store entity data for these, each only needs a little bit of data
     //For example, the following three data should not be stored in json
@@ -60,8 +61,8 @@ public class BuildingEntry
 public class Decoration
 {
     public int ID;
-    public GameObject Prefab;
-    public float[] Coordinates;
+    public Resource Resource = new Resource();
+    public GridPosition Coordinates = new();
 }
 
 [Serializable]
@@ -73,7 +74,7 @@ public class Cat
 }
 
 [Serializable]
-public class Resorces
+public class Resources
 {
 
 #nullable enable

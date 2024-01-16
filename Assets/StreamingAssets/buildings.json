@@ -4,31 +4,103 @@
             "Id": "1",
             "Name": "DemoRoom",
             "GridSize": 100,
+            "VoltPerSecond": 1,
+            "MoneyPerSecond": 2,
+            "MaxVolt": 50,
+            "MaxCardNum": 5,
+            "ProbabilityOfBeingAttacked": 10.0,
+            "HeatDissipationLevel": 3,
+            "LocationOfTheBuilding": 1,
+            "Decorations": [
+                {
+                    "ID": 1,
+                    "Resource": {
+                        "Path": ""
+                    },
+                    "Coordinates": {
+                        "X": 0,
+                        "Y": 0
+                    }
+                },
+                {
+                    "ID": 3,
+                    "Resource": {
+                        "Path": ""
+                    },
+                    "Coordinates": {
+                        "X": 0,
+                        "Y": 0
+                    }
+                },
+                {
+                    "ID": 3,
+                    "Resource": {
+                        "Path": ""
+                    },
+                    "Coordinates": {
+                        "X": 0,
+                        "Y": 0
+                    }
+                }
+            ],
+            "Cats": [],
             "BuildingMaterial": {
                 "RightWallMaterial": "rightwall.asd",
                 "LeftWallMaterial": "asdd",
                 "RightFloorMaterial": "01",
                 "LeftFloorMaterial": "201"
             },
-            "VoltPerSecond": 1,
-            "MoneyPerSecond": 2,
-            "MaxVolt": 50,
-            "MaxCardNum": 5,
-            "ProbabilityOfBeingAttacked": 10,
-            "HeatDissipationLevel": 3,
-            "LocationOfTheBuilding": 1,
-            "Decorations": [],
-            "Cats": [],
             "CardSlots": [
                 {
-                    "Name": "GTX1060",
                     "Id": "1",
+                    "Name": "GTX1060",
+                    "Pos": {
+                        "X": 0,
+                        "Y": 0
+                    }
+                },
+                {
+                    "Id": "1",
+                    "Name": "",
+                    "Pos": {
+                        "X": 0,
+                        "Y": 0
+                    }
+                },
+                {
+                    "Id": "1",
+                    "Name": "",
                     "Pos": {
                         "X": 0,
                         "Y": 0
                     }
                 }
-            ]
+            ],
+            "Events": [],
+            "alts": []
+        },
+        {
+            "Id": "",
+            "Name": "213213dddemoroom",
+            "GridSize": 3123,
+            "VoltPerSecond": 312,
+            "MoneyPerSecond": 213,
+            "MaxVolt": 0,
+            "MaxCardNum": 3,
+            "ProbabilityOfBeingAttacked": 31.0,
+            "HeatDissipationLevel": 213,
+            "LocationOfTheBuilding": 0,
+            "Decorations": [],
+            "Cats": [],
+            "BuildingMaterial": {
+                "RightWallMaterial": "",
+                "LeftWallMaterial": "",
+                "RightFloorMaterial": "",
+                "LeftFloorMaterial": ""
+            },
+            "CardSlots": [],
+            "Events": [],
+            "alts": []
         }
     ]
 }

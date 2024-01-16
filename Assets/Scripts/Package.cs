@@ -20,7 +20,7 @@ public class Package : MonoBehaviour
     void Delivery()
     {
         Transform canvasTransform = GameObject.Find("Canvas").transform;
-        GameObject cardPrefab = Resources.Load<GameObject>("package");
+        GameObject cardPrefab = UnityEngine.Resources.Load<GameObject>("package");
         Instantiate(cardPrefab, canvasTransform.position, Quaternion.identity, canvasTransform);
 
         foreach (var item in items)

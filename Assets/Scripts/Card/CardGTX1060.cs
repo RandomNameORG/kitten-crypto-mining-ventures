@@ -9,12 +9,13 @@ public class CardGTX1060 : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
-    public void updateCard(){
+    public void updateCard()
+    {
         Transform canvasTransform = GameObject.Find("Canvas").transform;
-        GameObject cardPrefab = Resources.Load<GameObject>("GTX1060");
-        Instantiate(cardPrefab,canvasTransform);
+        GameObject cardPrefab = UnityEngine.Resources.Load<GameObject>("GTX1060");
+        Instantiate(cardPrefab, canvasTransform);
     }
 }
