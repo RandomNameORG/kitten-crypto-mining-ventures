@@ -205,7 +205,7 @@ public class BuildingEditor : EditorWindow
     {
         EditorGUI.indentLevel++;
         var slot = building.CardSlots[slotIndex];
-        Debug.Log("building carslots length: " + cardSelectedIndexLists[buildingIndex].Count);
+        Logger.Log("building carslots length: " + cardSelectedIndexLists[buildingIndex].Count);
         cardSelectedIndexLists[buildingIndex][slotIndex] = EditorGUILayout.Popup("Card:", cardSelectedIndexLists[buildingIndex][slotIndex], cardTypes.Select(c => c.Name).ToArray());
 
         if (GUILayout.Button("Remove Card"))
@@ -232,7 +232,7 @@ public class BuildingEditor : EditorWindow
         if (GUILayout.Button("Save"))
         {
             SaveData();
-            Debug.Log("Building saved: " + building.Name);
+            Logger.Log("Building saved: " + building.Name);
         }
 
         if (GUILayout.Button("Remove Building"))
