@@ -73,4 +73,65 @@ public static class DataMapper
             e.VoltPerSecond = building.VoltPerSecond;
         }
     }
+
+    public static List<GraphicCard> CardJsonToData(GraphicCardList jsonData)
+    {
+        List<GraphicCard> res = new();
+        jsonData.ForEach(e =>
+        {
+
+            var card = new GraphicCard();
+            card.Name = e.Name;
+            card.Id = e.Id;
+            card.IsLocked = e.IsLocked;
+            card.PerSecondEarn = e.PerSecondEarn;
+            card.Price = e.Price;
+            card.PerSecondLoseVolt = e.PerSecondLoseVolt;
+            card.Quantity = e.Quantity;
+            //deal with icon 
+            card.Icon = UnityEngine.Resources.Load<Sprite>(Paths.ArtworkFolderPath + e.ImageSource.Path);
+            Logger.Log("[GraphicCardManager]: loading card " + e.Name);
+            Logger.Log("[GraphicCardManager]: card icon is " + card.Icon);
+            res.Add(card);
+        });
+        return res;
+    }
+
+    public static void CardDataToJson(GraphicCardList jsonData, List<GraphicCard> buildings)
+    {
+        for (int i = 0; i < jsonData.Count; i++)
+        {
+            GraphicCardEntry e = jsonData[i];
+            e.IsLocked = card.IsLocked;
+            e.PerSecondEarn = card.PerSecondEarn;
+            e.Price = card.Price;
+            e.PerSecondLoseVolt = card.PerSecondLoseVolt;
+            e.Quantity = card.Quantity;
+            //deal with icon 
+            e.Icon = card.icon;
+        }
+    }
+
+    private static Dictionary<DataType, object> Map = new();
+    public static void InitAllData()
+    {
+        
+        //Init data
+         Map[DataType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
+        Map[DataType.GraphicCardData] = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
+        Map[DataType.PlayerData] = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
+        Map[DataType.PopLogData] = DataLoader.LoadData<PopLogList>(DataType.PopLogData);
+        Logger.Log(LogType.INIT_DONE);
+    }
+
+    public static void OnApplicationQuit()
+    {
+        //save data
+        DataLoader.SaveData<BuildingEntryList>(DataType.BuildingData, (BuildingEntryList)Map[DataType.BuildingData]);
+        DataLoader.SaveData<GraphicCardList>(DataType.GraphicCardData, (GraphicCardList)Map[DataType.GraphicCardData]);
+        DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, (PlayerEntry)Map[DataType.PlayerData]);
+        DataLoader.SaveData<PopLogList>(DataType.PopLogData, (PopLogList)Map[DataType.PopLogData]);
+        Logger.Log(LogType.QUIT_DONE);
+
+    }
 }
