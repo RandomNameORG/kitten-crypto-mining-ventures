@@ -10,6 +10,9 @@ public class GraphicCardManager : MonoBehaviour
     // public List<GameObject> Cards;
     public List<GraphicCard> Cards = new List<GraphicCard>();
 
+    private GraphicCardList _card_entries;
+
+
     private void Start()
     {
 
@@ -18,24 +21,14 @@ public class GraphicCardManager : MonoBehaviour
         // when we init cards;
 
         // decode json to List
-        var dataList = DataLoader.LoadData<GraphicCardList>(PathType.GraphicCardData);
+        _card_entries = DataManager._instance.GetData<GraphicCardList>(DataType.GraphicCardData);
+        Cards = DataMapper.CardJsonToData(_card_entries);
+        
+    }
 
-        dataList.GraphicCards.ForEach(e =>
-        {
-            var card = new GraphicCard();
-            card.Name = e.Name;
-            card.Id = e.Id;
-            card.IsLocked = e.IsLocked;
-            card.PerSecondEarn = e.PerSecondEarn;
-            card.Price = e.Price;
-            card.PerSecondLoseVolt = e.PerSecondLoseVolt;
-            card.Quantity = e.Quantity;
-            //deal with icon 
-            card.Icon = UnityEngine.Resources.Load<Sprite>(Paths.ArtworkFolderPath + e.ImageSource.Path);
-            Logger.Log("[GraphicCardManager]: loading card " + e.Name);
-            Logger.Log("[GraphicCardManager]: card icon is " + card.Icon);
-            Cards.Add(card);
-        });
+    private void OnApplicationQuit()
+    {
+        DataMapper.CardDataToJson(_card_entries, Cards);
     }
 
     public GraphicCard FindCardById(string id)

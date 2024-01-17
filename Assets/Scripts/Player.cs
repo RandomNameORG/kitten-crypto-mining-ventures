@@ -30,13 +30,10 @@ public class Player : MonoBehaviour
 
     //all building we own right now
     public List<Building> Buildings = new();
-    public List<Skill> Skills = new List<Skill>(); //havent craete ref for this yet, WIP later with skill
-    public Text MoneyText;
-    public Text voltText;
-    //the current building player at;
+    //public List<Skill> Skills = new List<Skill>(); //havent craete ref for this yet, WIP later with skill
 
-    private readonly double SECOND = 1.0f;
-    private double Timer = 0;
+    
+
 
     /// <summary>
     /// TODO: Store player data later.
@@ -90,41 +87,7 @@ public class Player : MonoBehaviour
         DataLoader.SaveData<PlayerEntry>(PathType.PlayerData, data);
     }
 
-    // Update is called once per frame
-    void Update()
-    {//update money pane
-        Timer += Time.deltaTime;
-        if (Timer >= SECOND)
-        {
-            PerSecondEarnMoney();
-            DisplayVoltage();
-
-            Timer -= SECOND;
-
-            //TextMoney.text = StringUtils.ConvertMoneyNumToString(Money);
-        }
-
-    }
-
-    private void PerSecondEarnMoney()
-    {
-        long totalMoney = 0;
-        foreach (Building building in Buildings)
-        {
-            totalMoney += building.MoneyPerSecond;
-        }
-        long preMoney = Money;
-        Money += totalMoney;
-        DOTween.To(value => { MoneyText.text = Mathf.Floor(value).ToString(); }, startValue: preMoney, endValue: Money, duration: 0.1f);
-        //animation.DelayFunc(Money, totalMoney);
-    }
-
-    private void DisplayVoltage()
-    {
-        DOTween.To(value => { voltText.text = Mathf.Floor(value).ToString() + "/" + currBuildingAt.MaxVolt; },
-        startValue: currBuildingAt.VoltPerSecond, endValue: currBuildingAt.VoltPerSecond, duration: 0.1f);
-    }
-
+    
 
 
 }

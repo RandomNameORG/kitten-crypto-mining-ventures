@@ -24,12 +24,9 @@ public class DataManager : MonoBehaviour
         //single
         _instance = this;
         //load all data
-        //TODO if there is chance to load gernetic
-        Map[PathType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(PathType.BuildingData);
-        Map[PathType.GraphicCardData] = DataLoader.LoadData<GraphicCardList>(PathType.GraphicCardData);
-        Map[PathType.PlayerData] = DataLoader.LoadData<PlayerEntry>(PathType.PlayerData);
-        Map[PathType.PopLogData] = DataLoader.LoadData<PopLogList>(PathType.PopLogData);
-        Logger.Log(LogType.INIT_DONE);
+        //TODO if there is chance to load generic
+        DataMapper.InitAllData();
+
 
     }
     /// <summary>
@@ -46,12 +43,8 @@ public class DataManager : MonoBehaviour
     private void OnApplicationQuit()
     {
 
-        //save data
-        DataLoader.SaveData<BuildingEntryList>(PathType.BuildingData, (BuildingEntryList)Map[PathType.BuildingData]);
-        DataLoader.SaveData<GraphicCardList>(PathType.GraphicCardData, (GraphicCardList)Map[PathType.GraphicCardData]);
-        DataLoader.SaveData<PlayerEntry>(PathType.PlayerData, (PlayerEntry)Map[PathType.PlayerData]);
-        DataLoader.SaveData<PopLogList>(PathType.PopLogData, (PopLogList)Map[PathType.PopLogData]);
-        Logger.Log(LogType.QUIT_DONE);
+        DataMapper.OnApplicationQuit();
+
 
     }
 }

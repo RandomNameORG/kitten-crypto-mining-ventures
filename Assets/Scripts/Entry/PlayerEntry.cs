@@ -11,4 +11,5 @@ public class PlayerEntry : GameJsonData
     //the current building player at;
     public BuildingReference CurrBuildingAt;
     public List<BuildingReference> BuildingsRef = new();
+    
 }
