@@ -27,7 +27,7 @@ public class PopLogEntry
 }
 
 [Serializable]
-public class PopLogList
+public class PopLogList : GameJsonData
 {
     public List<PopLogEntry> Logs = new();
 }
@@ -89,7 +89,7 @@ public class PopLogManager : MonoBehaviour
     private void Start()
     {
         _instance = this;
-        Logger.Log(LogType.INIT);
+
         LoadLogs();
         InitLogPane();
         Logger.Log(LogType.INIT_DONE);
