@@ -46,5 +46,4 @@ State if you are open to contributions and what your requirements are for accept
 ![Kitten](README/Kitten.png)
 
 ## License
-
-Include a license for your project. For example: "This project is licensed under the MIT License - see the LICENSE.md file for details"
+This project is licensed under the MIT License - see the LICENSE file for details
