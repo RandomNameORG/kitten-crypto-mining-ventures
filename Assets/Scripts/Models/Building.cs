@@ -2,7 +2,6 @@
 using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
-using AlternatorProject;
 using DG.Tweening;
 using TMPro;
 
