@@ -51,7 +51,7 @@ public class Player : MonoBehaviour
     {
         Logger.Log("start init...");
         //load data
-        var playerData = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
+        var playerData = DataLoader.LoadData<PlayerEntry>(PathType.PlayerData);
 
         Logger.Log(playerData.ToString());
         Name = playerData.Name;
@@ -87,7 +87,7 @@ public class Player : MonoBehaviour
             },
             BuildingsRef = buildingRefs
         };
-        DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, data);
+        DataLoader.SaveData<PlayerEntry>(PathType.PlayerData, data);
     }
 
     // Update is called once per frame

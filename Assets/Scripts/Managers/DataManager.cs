@@ -17,7 +17,7 @@ public class DataManager : MonoBehaviour
 {
 
     public static DataManager _instance;
-    private Dictionary<DataType, object> Map = new();
+    private Dictionary<PathType, object> Map = new();
 
     private void Start()
     {
@@ -25,10 +25,10 @@ public class DataManager : MonoBehaviour
         _instance = this;
         //load all data
         //TODO if there is chance to load gernetic
-        Map[DataType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
-        Map[DataType.GraphicCardData] = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
-        Map[DataType.PlayerData] = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
-        Map[DataType.PopLogData] = DataLoader.LoadData<PopLogList>(DataType.PopLogData);
+        Map[PathType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(PathType.BuildingData);
+        Map[PathType.GraphicCardData] = DataLoader.LoadData<GraphicCardList>(PathType.GraphicCardData);
+        Map[PathType.PlayerData] = DataLoader.LoadData<PlayerEntry>(PathType.PlayerData);
+        Map[PathType.PopLogData] = DataLoader.LoadData<PopLogList>(PathType.PopLogData);
         Logger.Log(LogType.INIT_DONE);
 
     }
@@ -38,7 +38,7 @@ public class DataManager : MonoBehaviour
     /// <typeparam name="T"></typeparam>
     /// <param name="type"></param>
     /// <returns></returns>
-    public T GetData<T>(DataType type) where T : GameJsonData
+    public T GetData<T>(PathType type) where T : GameJsonData
     {
         return (T)Map[type];
     }
@@ -47,10 +47,10 @@ public class DataManager : MonoBehaviour
     {
 
         //save data
-        DataLoader.SaveData<BuildingEntryList>(DataType.BuildingData, (BuildingEntryList)Map[DataType.BuildingData]);
-        DataLoader.SaveData<GraphicCardList>(DataType.GraphicCardData, (GraphicCardList)Map[DataType.GraphicCardData]);
-        DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, (PlayerEntry)Map[DataType.PlayerData]);
-        DataLoader.SaveData<PopLogList>(DataType.PopLogData, (PopLogList)Map[DataType.PopLogData]);
+        DataLoader.SaveData<BuildingEntryList>(PathType.BuildingData, (BuildingEntryList)Map[PathType.BuildingData]);
+        DataLoader.SaveData<GraphicCardList>(PathType.GraphicCardData, (GraphicCardList)Map[PathType.GraphicCardData]);
+        DataLoader.SaveData<PlayerEntry>(PathType.PlayerData, (PlayerEntry)Map[PathType.PlayerData]);
+        DataLoader.SaveData<PopLogList>(PathType.PopLogData, (PopLogList)Map[PathType.PopLogData]);
         Logger.Log(LogType.QUIT_DONE);
 
     }

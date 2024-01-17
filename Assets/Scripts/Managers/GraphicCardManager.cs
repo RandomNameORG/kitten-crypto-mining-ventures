@@ -12,15 +12,16 @@ public class GraphicCardManager : MonoBehaviour
 
     private void Start()
     {
+
         _instance = this;
         // since graphic card it's not gameobject need to init in the room, so we dont have to setup gameobject
         // when we init cards;
 
         // decode json to List
-        var dataList = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
+        var dataList = DataLoader.LoadData<GraphicCardList>(PathType.GraphicCardData);
+
         dataList.GraphicCards.ForEach(e =>
         {
-
             var card = new GraphicCard();
             card.Name = e.Name;
             card.Id = e.Id;
