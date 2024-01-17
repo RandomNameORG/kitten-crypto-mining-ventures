@@ -1,8 +1,8 @@
 using UnityEngine;
-using System.Diagnostics; // 用于StackTrace
+using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
-using System; // 用于Linq
+using System;
 
 
 public enum LogType

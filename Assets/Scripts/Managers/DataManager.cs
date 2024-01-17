@@ -17,7 +17,7 @@ public class DataManager : MonoBehaviour
 {
 
     public static DataManager _instance;
-    private Dictionary<DataType, object> Map = new();
+    private Dictionary<PathType, object> Map = new();
 
     private void Start()
     {
@@ -27,6 +27,7 @@ public class DataManager : MonoBehaviour
         //TODO if there is chance to load generic
         DataMapper.InitAllData();
 
+
     }
     /// <summary>
     /// get data
@@ -34,7 +35,7 @@ public class DataManager : MonoBehaviour
     /// <typeparam name="T"></typeparam>
     /// <param name="type"></param>
     /// <returns></returns>
-    public T GetData<T>(DataType type) where T : GameJsonData
+    public T GetData<T>(PathType type) where T : GameJsonData
     {
         return (T)Map[type];
     }
@@ -43,6 +44,7 @@ public class DataManager : MonoBehaviour
     {
 
         DataMapper.OnApplicationQuit();
+
 
     }
 }

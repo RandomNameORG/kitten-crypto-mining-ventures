@@ -15,6 +15,7 @@ public class GraphicCardManager : MonoBehaviour
 
     private void Start()
     {
+
         _instance = this;
         // since graphic card it's not gameobject need to init in the room, so we dont have to setup gameobject
         // when we init cards;

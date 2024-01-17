@@ -52,7 +52,7 @@ public class PopLogManager : MonoBehaviour
     //load log data
     void LoadLogs()
     {
-        var loadLists = DataLoader.LoadData<PopLogList>(DataType.PopLogData);
+        var loadLists = DataLoader.LoadData<PopLogList>(PathType.PopLogData);
         loadLists.Logs.ForEach(e => PopLogMap.Add(e.LogType, e));
     }
     private void Awake()
