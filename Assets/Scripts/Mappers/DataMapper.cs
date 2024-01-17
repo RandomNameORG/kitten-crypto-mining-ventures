@@ -111,26 +111,4 @@ public static class DataMapper
         }
     }
 
-    private static Dictionary<DataType, object> Map = new();
-    public static void InitAllData()
-    {
-        
-        //Init data
-         Map[DataType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
-        Map[DataType.GraphicCardData] = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
-        Map[DataType.PlayerData] = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
-        Map[DataType.PopLogData] = DataLoader.LoadData<PopLogList>(DataType.PopLogData);
-        Logger.Log(LogType.INIT_DONE);
-    }
-
-    public static void OnApplicationQuit()
-    {
-        //save data
-        DataLoader.SaveData<BuildingEntryList>(DataType.BuildingData, (BuildingEntryList)Map[DataType.BuildingData]);
-        DataLoader.SaveData<GraphicCardList>(DataType.GraphicCardData, (GraphicCardList)Map[DataType.GraphicCardData]);
-        DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, (PlayerEntry)Map[DataType.PlayerData]);
-        DataLoader.SaveData<PopLogList>(DataType.PopLogData, (PopLogList)Map[DataType.PopLogData]);
-        Logger.Log(LogType.QUIT_DONE);
-
-    }
 }

@@ -23,7 +23,7 @@ public class GraphicCardManager : MonoBehaviour
         // decode json to List
         _card_entries = DataManager._instance.GetData<GraphicCardList>(DataType.GraphicCardData);
         Cards = DataMapper.CardJsonToData(_card_entries);
-        
+
     }
 
     private void OnApplicationQuit()

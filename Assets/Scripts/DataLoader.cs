@@ -8,7 +8,7 @@ using System.IO;
 /// The position where data store at
 /// </summary>
 [Serializable]
-public enum PathType : int
+public enum DataType : int
 {
     DataLoaderData = 1,
     PopLogData = 2,
@@ -29,11 +29,11 @@ public class DataLoader
     //data for position, money that data delete game wont be exist
     private static string PFilePath = Application.persistentDataPath + "/";
 
-    private static Dictionary<PathType, string> DataTypes = new() {
-        {PathType.PlayerData, "player.json"},
-        {PathType.BuildingData, "buildings.json"},
-        {PathType.GraphicCardData, "graphiccards.json"},
-        {PathType.PopLogData, "poplogs.json"},
+    private static Dictionary<DataType, string> DataTypes = new() {
+        {DataType.PlayerData, "player.json"},
+        {DataType.BuildingData, "buildings.json"},
+        {DataType.GraphicCardData, "graphiccards.json"},
+        {DataType.PopLogData, "poplogs.json"},
     };
 
     private static string GetPath(string path, bool isSA = true)
@@ -50,7 +50,7 @@ public class DataLoader
 
     //below is public static method
 
-    public static T LoadData<T>(PathType dataType)
+    public static T LoadData<T>(DataType dataType)
     {
         //TODO temp deal with large json file
         var path = DataTypes[dataType];
@@ -61,7 +61,7 @@ public class DataLoader
         return res;
     }
 
-    public static void SaveData<T>(PathType dataType, T data)
+    public static void SaveData<T>(DataType dataType, T data)
     {
         var entry = DataTypes[dataType];
         var filepath = GetPath(entry);

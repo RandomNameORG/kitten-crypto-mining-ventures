@@ -32,7 +32,7 @@ public class Player : MonoBehaviour
     public List<Building> Buildings = new();
     //public List<Skill> Skills = new List<Skill>(); //havent craete ref for this yet, WIP later with skill
 
-    
+
 
 
     /// <summary>
@@ -48,7 +48,7 @@ public class Player : MonoBehaviour
     {
         Logger.Log("start init...");
         //load data
-        var playerData = DataLoader.LoadData<PlayerEntry>(PathType.PlayerData);
+        var playerData = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
 
         Logger.Log(playerData.ToString());
         Name = playerData.Name;
@@ -84,10 +84,10 @@ public class Player : MonoBehaviour
             },
             BuildingsRef = buildingRefs
         };
-        DataLoader.SaveData<PlayerEntry>(PathType.PlayerData, data);
+        DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, data);
     }
 
-    
+
 
 
 }

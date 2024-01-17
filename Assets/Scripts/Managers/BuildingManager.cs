@@ -30,7 +30,7 @@ public class BuildingManager : MonoBehaviour
     void Start()
     {
         //get json data
-        _building_entries = DataManager._instance.GetData<BuildingEntryList>(PathType.BuildingData);
+        _building_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
         var data = DataMapper.BuildingJsonToData(_building_entries);
         buildings = data.buildings; //Building class
         Buildings = data.Buildings; //the actual GameObject holding building comp
