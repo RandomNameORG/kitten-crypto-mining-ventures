@@ -77,7 +77,7 @@ public static class DataMapper
     public static List<GraphicCard> CardJsonToData(GraphicCardList jsonData)
     {
         List<GraphicCard> res = new();
-        jsonData.ForEach(e =>
+        jsonData.GraphicCards.ForEach(e =>
         {
 
             var card = new GraphicCard();
@@ -97,18 +97,17 @@ public static class DataMapper
         return res;
     }
 
-    public static void CardDataToJson(GraphicCardList jsonData, List<GraphicCard> buildings)
+    public static void CardDataToJson(GraphicCardList jsonData, List<GraphicCard> cards)
     {
-        for (int i = 0; i < jsonData.Count; i++)
+        for (int i = 0; i < jsonData.GraphicCards.Count; i++)
         {
-            GraphicCardEntry e = jsonData[i];
+            var card = cards[i];
+            GraphicCardEntry e = jsonData.GraphicCards[i];
             e.IsLocked = card.IsLocked;
             e.PerSecondEarn = card.PerSecondEarn;
             e.Price = card.Price;
             e.PerSecondLoseVolt = card.PerSecondLoseVolt;
             e.Quantity = card.Quantity;
-            //deal with icon 
-            e.Icon = card.icon;
         }
     }
 

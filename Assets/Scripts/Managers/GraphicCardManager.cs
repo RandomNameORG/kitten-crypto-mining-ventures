@@ -20,14 +20,14 @@ public class GraphicCardManager : MonoBehaviour
         // when we init cards;
 
         // decode json to List
-        _card_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
-        Cards = DataMapper.BuildingJsonToData(_card_entries);
+        _card_entries = DataManager._instance.GetData<GraphicCardList>(DataType.GraphicCardData);
+        Cards = DataMapper.CardJsonToData(_card_entries);
         
     }
 
     private void OnApplicationQuit()
     {
-        //DataMapper.BuildingDataToJson(_building_entries, Buildings);
+        DataMapper.CardDataToJson(_card_entries, Cards);
     }
 
     public GraphicCard FindCardById(string id)
