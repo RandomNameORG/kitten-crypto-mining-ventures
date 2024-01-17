@@ -59,6 +59,7 @@ public class Player : MonoBehaviour
         Money = playerData.Money;
         TotalCardNum = playerData.TotalCardNum;
         var tempBuild = BuildingManager._instance.FindBuildingById(playerData.CurrBuildingAt.Id);
+        Logger.LogWarning("tempbuild init here: " + playerData.CurrBuildingAt.Id);
         currBuildingAt = tempBuild;
         Buildings = BuildingManager._instance.buildings;
     }

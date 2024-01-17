@@ -23,7 +23,7 @@ public class DataTypeEntry
     public string Filename;
 }
 [Serializable]
-public class DataTypeList
+public class DataTypeList : GameJsonData
 {
     public List<DataTypeEntry> DataTypes = new();
 }

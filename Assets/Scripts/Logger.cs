@@ -9,6 +9,8 @@ public enum LogType
 {
     INIT,
     INIT_DONE,
+    QUIT,
+    QUIT_DONE
 }
 /// <summary>
 /// The logger system class help us prompt more infomation we need in unity monitor
@@ -21,6 +23,9 @@ public static class Logger
     {
         { LogType.INIT, "start init..." },
         { LogType.INIT_DONE, "finish init..." },
+        { LogType.QUIT, "close stage init..." },
+        { LogType.QUIT_DONE, "close stage done..." },
+
     };
     public static void Log(object obj)
     {
