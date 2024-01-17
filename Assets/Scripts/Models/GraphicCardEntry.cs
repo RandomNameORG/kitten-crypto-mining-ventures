@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 [Serializable]
-public class GraphicCardList
+public class GraphicCardList : GameJsonData
 {
     public List<GraphicCardEntry> GraphicCards = new();
 }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 [Serializable]
-public class PlayerEntry
+public class PlayerEntry : GameJsonData
 {
     public string Name = "Woshishabiyouxi";
     public int TechPoint = 0;

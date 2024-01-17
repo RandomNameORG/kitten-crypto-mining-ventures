@@ -1,11 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using AlternatorProject;
 using UnityEngine;
 
 [Serializable]
-public class BuildingEntryList
+public class BuildingEntryList : GameJsonData
 {
     public List<BuildingEntry> Buildings = new List<BuildingEntry>();
 }
