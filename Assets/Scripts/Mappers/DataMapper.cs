@@ -21,8 +21,10 @@ public static class DataMapper
     /// <returns></returns>
     public static BuildingDTO BuildingJsonToData(BuildingEntryList jsonData)
     {
-
+        Debug.LogError("JSON!!!!");
         BuildingDTO res = new();
+        Debug.Log(jsonData.ToString() + "dsagui");
+        Debug.Log(jsonData.Buildings.ToString() + "dsagui");
         jsonData.Buildings.ForEach(e =>
         {
             var obj = new GameObject(e.Name);
@@ -42,6 +44,7 @@ public static class DataMapper
             building.MoneyPerSecond = e.MoneyPerSecond;
             building.Alts = new List<Alternator>(e.alts);
             building.VoltPerSecond = e.VoltPerSecond;
+            
             res.buildings.Add(building);
             res.Buildings.Add(obj);
 
@@ -116,7 +119,7 @@ public static class DataMapper
     {
         
         //Init data
-         Map[DataType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
+        Map[DataType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
         Map[DataType.GraphicCardData] = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
         Map[DataType.PlayerData] = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
         Map[DataType.PopLogData] = DataLoader.LoadData<PopLogList>(DataType.PopLogData);
