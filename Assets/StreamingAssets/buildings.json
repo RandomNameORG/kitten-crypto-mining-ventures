@@ -61,7 +61,7 @@
                 },
                 {
                     "Id": "1",
-                    "Name": "",
+                    "Name": "GTX1060",
                     "Pos": {
                         "X": 0,
                         "Y": 0
@@ -69,7 +69,7 @@
                 },
                 {
                     "Id": "1",
-                    "Name": "",
+                    "Name": "GTX1060",
                     "Pos": {
                         "X": 0,
                         "Y": 0
@@ -80,7 +80,7 @@
             "alts": []
         },
         {
-            "Id": "",
+            "Id": "1",
             "Name": "213213dddemoroom",
             "GridSize": 3123,
             "VoltPerSecond": 312,

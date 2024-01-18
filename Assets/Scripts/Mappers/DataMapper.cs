@@ -23,11 +23,11 @@ public static class DataMapper
     public static BuildingDTO BuildingJsonToData(BuildingEntryList jsonData)
     {
 
+
         //TODO might causing problem decoupling
         //make this function could works without holding data
         var cardsData = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
         List<GraphicCard> cards = CardJsonToData(cardsData).cards;
-
 
         BuildingDTO res = new();
         jsonData.Buildings.ForEach(e =>
@@ -49,6 +49,7 @@ public static class DataMapper
             building.MoneyPerSecond = e.MoneyPerSecond;
             building.Alts = new List<Alternator>(e.alts);
             building.VoltPerSecond = e.VoltPerSecond;
+
             res.buildings.Add(building);
             res.Buildings.Add(obj);
 
@@ -126,6 +127,55 @@ public static class DataMapper
             e.PerSecondLoseVolt = card.PerSecondLoseVolt;
             e.Quantity = card.Quantity;
         }
+    }
+
+    public static Player PlayerJsonToData(PlayerEntry jsonData)
+    {
+
+        GameObject obj = new GameObject("player");
+        obj.AddComponent<Player>();
+        Player res = obj.GetComponent<Player>();
+
+        Logger.Log(jsonData.ToString());
+        res.Name = jsonData.Name;
+        res.TechPoint = jsonData.TechPoint;
+        res.Money = jsonData.Money;
+        res.TotalCardNum = jsonData.TotalCardNum;
+        var tempBuild = BuildingManager._instance.FindBuildingById(jsonData.CurrBuildingAt.Id);
+        Debug.Log(jsonData.CurrBuildingAt.Id);
+
+        Logger.LogWarning("tempbuild init here: " + jsonData.CurrBuildingAt.Id);
+        res.CurrBuildingAt = tempBuild;
+        res.Buildings = BuildingManager._instance.buildings;
+        return res;
+    }
+
+    public static void PlayerDataToJson(PlayerEntry jsonData)
+    {
+
+        List<BuildingReference> buildingRefs = new();
+        jsonData.BuildingsRef.ForEach(item =>
+        {
+            buildingRefs.Add(new BuildingReference
+            {
+                Id = item.Id,
+                Name = item.Name
+            });
+        });
+        PlayerEntry data = new PlayerEntry
+        {
+            Name = jsonData.Name,
+            TechPoint = jsonData.TechPoint,
+            Money = jsonData.Money,
+            TotalCardNum = jsonData.TotalCardNum,
+            CurrBuildingAt = new BuildingReference
+            {
+                Id = jsonData.CurrBuildingAt.Id,
+                Name = jsonData.CurrBuildingAt.Name
+            },
+            BuildingsRef = buildingRefs
+        };
+
     }
 
 }

@@ -80,12 +80,12 @@ public class StoreItemSlot : MonoBehaviour
 			Logger.Log("no money");
 			return;
 		}
-		Building building = _player.currBuildingAt;
+		Building building = _player.CurrBuildingAt;
 
 
 
 
-		_player.currBuildingAt.AddingGraphicCard(this.Item);
+		_player.CurrBuildingAt.AddingGraphicCard(this.Item);
 		_player.Money -= this.Item.Price;
 		if (Items.ContainsKey(Item))
 		{

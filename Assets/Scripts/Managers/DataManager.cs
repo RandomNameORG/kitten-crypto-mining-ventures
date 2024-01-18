@@ -23,8 +23,6 @@ public class DataManager : MonoBehaviour
     {
         //single
         _instance = this;
-        //load all data
-        //TODO if there is chance to load generic
         //Init data
         Map[DataType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
         Map[DataType.GraphicCardData] = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
@@ -54,7 +52,6 @@ public class DataManager : MonoBehaviour
         DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, (PlayerEntry)Map[DataType.PlayerData]);
         DataLoader.SaveData<PopLogList>(DataType.PopLogData, (PopLogList)Map[DataType.PopLogData]);
         Logger.Log(LogType.QUIT_DONE);
-
 
     }
 }
