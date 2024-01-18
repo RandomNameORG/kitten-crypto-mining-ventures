@@ -113,7 +113,7 @@ public static class DataMapper
 
     public static Player PlayerJsonToData(PlayerEntry jsonData){
 
-        Player res = new();
+        Player res = new Player();
         Logger.Log(jsonData.ToString());
         res.Name = jsonData.Name;
         res.TechPoint = jsonData.TechPoint;
@@ -152,7 +152,7 @@ public static class DataMapper
             },
             BuildingsRef = buildingRefs
         };
-        DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, data);
+        
     }
 
     private static Dictionary<DataType, object> Map = new();

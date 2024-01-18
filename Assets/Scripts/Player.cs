@@ -32,9 +32,6 @@ public class Player : MonoBehaviour
     public List<Building> Buildings = new();
     //public List<Skill> Skills = new List<Skill>(); //havent craete ref for this yet, WIP later with skill
 
-    
-
-
     /// <summary>
     /// TODO: Store player data later.
     /// </summary>
@@ -46,14 +43,6 @@ public class Player : MonoBehaviour
     }
     void Start()
     {
-        Logger.Log("start init...");
-        //load data
-        PlayerEntry PayerData = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
         
     }
-    
-
-    
-
-
 }
