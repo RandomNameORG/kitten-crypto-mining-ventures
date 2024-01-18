@@ -1,4 +1,4 @@
-    using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,7 +28,7 @@ public class PlayerManager : MonoBehaviour
     //Mention: before you starting code your loading data, you have to create init a file first
     void Start()
     {
-        _player_entry = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
+        _player_entry = DataManager._instance.GetData<PlayerEntry>(DataType.PlayerData);
         CurPlayer = DataMapper.PlayerJsonToData(_player_entry);
     }
     // Update is called once per frame
@@ -51,7 +51,7 @@ public class PlayerManager : MonoBehaviour
     {
         long totalMoney = 0;
         Building b = new();
-         foreach (Building building in CurPlayer.Buildings)
+        foreach (Building building in CurPlayer.Buildings)
         {
             totalMoney += building.MoneyPerSecond;
         }

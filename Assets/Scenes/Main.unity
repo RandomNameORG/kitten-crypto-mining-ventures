@@ -3442,7 +3442,7 @@ MonoBehaviour:
   TechPoint: 0
   Money: 0
   TotalCardNum: 0
-  currBuildingAt: {fileID: 0}
+  CurrBuildingAt: {fileID: 0}
   Buildings: []
 --- !u!4 &958135298
 Transform:
@@ -8218,6 +8218,7 @@ GameObject:
   - component: {fileID: 2144216451}
   - component: {fileID: 2144216453}
   - component: {fileID: 2144216454}
+  - component: {fileID: 2144216455}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -8357,6 +8358,22 @@ MonoBehaviour:
   Room: {fileID: 781231094}
   Restriction: {fileID: 1083578973}
   Player: {fileID: 958135297}
+--- !u!114 &2144216455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2144216444}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dc74ef2a65678c54a98cac3d8ab34865, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MoneyText: {fileID: 0}
+  voltText: {fileID: 0}
+  CurPlayer: {fileID: 0}
+  Building: {fileID: 0}
 --- !u!1 &2145943407
 GameObject:
   m_ObjectHideFlags: 0

@@ -21,7 +21,7 @@ public enum Skill : short
 public class Player : MonoBehaviour
 {
 
-    public static Player _instance;
+    public static Player _instance; //delete this, using player manager access player
     public string Name;
     public int TechPoint;
     public long Money = 0;
@@ -36,13 +36,4 @@ public class Player : MonoBehaviour
     /// TODO: Store player data later.
     /// </summary>
     // Start is called before the first frame update
-    private void Awake()
-    {
-        _instance = this;
-
-    }
-    void Start()
-    {
-        
-    }
 }
