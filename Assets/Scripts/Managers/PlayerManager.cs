@@ -50,7 +50,6 @@ public class PlayerManager : MonoBehaviour
     private void PerSecondEarnMoney()
     {
         long totalMoney = 0;
-        Building b = new();
         foreach (Building building in CurPlayer.Buildings)
         {
             totalMoney += building.MoneyPerSecond;

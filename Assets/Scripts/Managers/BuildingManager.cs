@@ -23,22 +23,17 @@ public class BuildingManager : MonoBehaviour
     private void Awake()
     {
         _instance = this;
-        Debug.Log("fuck sha bi youi xi");
     }
     // Use this for initialization
     //loading data at @Start stage
     //Mention: before you starting code your loading data, you have to create init a file first
     void Start()
     {
-        //get json data
-        Debug.Log("zaici fuck sha bi youi xi");
+        //get json data        
         _building_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
         var data = DataMapper.BuildingJsonToData(_building_entries);
-        buildings = data.buildings; //Building class
-        foreach (var building in buildings){
-            Debug.Log("vuiabslbd" + building.Id);
-        }
         Buildings = data.Buildings; //the actual GameObject holding building comp
+        buildings = data.buildings;
         Logger.Log(LogType.INIT_DONE);
     }
     private void OnApplicationQuit()
@@ -54,14 +49,12 @@ public class BuildingManager : MonoBehaviour
     {
 
         Building res = buildings.FirstOrDefault(item => item.Id == id);
-        
-        
+
+
         return res;
     }
     public BuildingEntry FindBuildingEntryById(string id)
     {
-        Debug.Log("AAAAAAAAAAAA" + _building_entries.ToString());
-        Debug.Log("bbbbbbbbbbbb" + _building_entries.Buildings.ToString());
         return _building_entries.Buildings.FirstOrDefault(item => item.Id == id);
     }
     public GameObject FindBuildingObjectById(string id)

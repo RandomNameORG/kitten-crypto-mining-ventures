@@ -17,7 +17,6 @@ public class ItemManager : MonoBehaviour
     /// </summary>
     private void Awake()
     {
-        Logger.Log("Item Manager init...");
         Instance = this;
         GraphicCardItems = Utils.GetAllInstance<GraphicCardItem>();
         GraphicCardItems = GraphicCardItems.OrderBy(item => item.Id).ToArray();
@@ -26,7 +25,7 @@ public class ItemManager : MonoBehaviour
             Logger.Log(item);
         }
 
-        Logger.Log("Item Manager Done!s");
+        Logger.Log("Item Manager Done!");
     }
 
     public GraphicCardItem FindGraphicCardItem(string id)

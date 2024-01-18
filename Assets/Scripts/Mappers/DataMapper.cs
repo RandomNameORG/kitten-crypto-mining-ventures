@@ -89,6 +89,7 @@ public static class DataMapper
     }
     public static CardDTO CardJsonToData(GraphicCardList jsonData)
     {
+
         CardDTO res = new();
         jsonData.GraphicCards.ForEach(e =>
         {
@@ -132,6 +133,11 @@ public static class DataMapper
     public static Player PlayerJsonToData(PlayerEntry jsonData)
     {
 
+        //TODO might causing problem decoupling
+        //make this function could works without holding data
+        // var buildingData = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
+        // List<Building> buildings = BuildingJsonToData(buildingData).buildings;
+
         GameObject obj = new GameObject("player");
         obj.AddComponent<Player>();
         Player res = obj.GetComponent<Player>();
@@ -141,10 +147,8 @@ public static class DataMapper
         res.TechPoint = jsonData.TechPoint;
         res.Money = jsonData.Money;
         res.TotalCardNum = jsonData.TotalCardNum;
-        var tempBuild = BuildingManager._instance.FindBuildingById(jsonData.CurrBuildingAt.Id);
-        Debug.Log(jsonData.CurrBuildingAt.Id);
-
-        Logger.LogWarning("tempbuild init here: " + jsonData.CurrBuildingAt.Id);
+        var manager = BuildingManager._instance;
+        var tempBuild = manager.FindBuildingById(jsonData.CurrBuildingAt.Id);
         res.CurrBuildingAt = tempBuild;
         res.Buildings = BuildingManager._instance.buildings;
         return res;
