@@ -31,9 +31,4 @@ public class Player : MonoBehaviour
     //all building we own right now
     public List<Building> Buildings = new();
     //public List<Skill> Skills = new List<Skill>(); //havent craete ref for this yet, WIP later with skill
-
-    /// <summary>
-    /// TODO: Store player data later.
-    /// </summary>
-    // Start is called before the first frame update
 }

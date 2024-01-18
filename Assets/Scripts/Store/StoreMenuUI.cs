@@ -22,7 +22,7 @@ public class StoreMenuUI : MonoBehaviour
     }
     void UpdateUI()
     {
-        List<GraphicCard> items = _graphicCardManager.Cards;
+        List<GraphicCard> items = _graphicCardManager.cards;
 
 
         for (int i = 0; i < items.Count; i++)

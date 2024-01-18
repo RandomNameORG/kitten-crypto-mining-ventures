@@ -8214,7 +8214,6 @@ GameObject:
   - component: {fileID: 2144216447}
   - component: {fileID: 2144216448}
   - component: {fileID: 2144216449}
-  - component: {fileID: 2144216450}
   - component: {fileID: 2144216451}
   - component: {fileID: 2144216453}
   - component: {fileID: 2144216454}
@@ -8294,18 +8293,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   LogPane: {fileID: 50417362}
---- !u!114 &2144216450
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2144216444}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d48a610958aae4bb9aa6b54a58586bf8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &2144216451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8330,6 +8317,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 781aab88d684d420b90d96c3112cc89d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Cards: []
 --- !u!114 &2144216453
 MonoBehaviour:
   m_ObjectHideFlags: 0

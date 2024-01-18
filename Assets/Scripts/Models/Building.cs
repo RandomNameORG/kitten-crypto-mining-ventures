@@ -1,9 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
 using System.Collections.Generic;
-using DG.Tweening;
-using TMPro;
 
 /// <summary>
 /// The object class to attch with gameobject   
@@ -76,9 +73,6 @@ public class Building : MonoBehaviour
 
 
     }
-
-
-
 
 }
 

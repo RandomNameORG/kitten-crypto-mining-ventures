@@ -14,6 +14,7 @@ public static class DataMapper
     Here is Building class mapper methods
     */
 
+
     /// <summary>
     /// Mapper BuildingEntry json data class to GameObject class Building
     /// </summary>
@@ -21,6 +22,13 @@ public static class DataMapper
     /// <returns></returns>
     public static BuildingDTO BuildingJsonToData(BuildingEntryList jsonData)
     {
+
+
+        //TODO might causing problem decoupling
+        //make this function could works without holding data
+        var cardsData = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
+        List<GraphicCard> cards = CardJsonToData(cardsData).cards;
+
         BuildingDTO res = new();
         jsonData.Buildings.ForEach(e =>
         {
@@ -35,7 +43,7 @@ public static class DataMapper
             building.Events = new List<GeneralEvent>(e.Events);
             building.Cards = e.CardSlots.Select(cs =>
             {
-                return GraphicCardManager._instance.FindCardById(cs.Id);
+                return cards.Find(card => cs.Id == card.Id);
             }).ToList();
             building.EventHappenProbs = e.ProbabilityOfBeingAttacked;
             building.MoneyPerSecond = e.MoneyPerSecond;
@@ -74,13 +82,22 @@ public static class DataMapper
         }
     }
 
-    public static List<GraphicCard> CardJsonToData(GraphicCardList jsonData)
+    public class CardDTO
     {
-        List<GraphicCard> res = new();
+        public List<GameObject> Cards = new();
+        public List<GraphicCard> cards = new();
+    }
+    public static CardDTO CardJsonToData(GraphicCardList jsonData)
+    {
+        CardDTO res = new();
         jsonData.GraphicCards.ForEach(e =>
         {
 
-            var card = new GraphicCard();
+
+            var obj = new GameObject(e.Name);
+            //create building comp
+            obj.AddComponent<GraphicCard>();
+            var card = obj.GetComponent<GraphicCard>();
             card.Name = e.Name;
             card.Id = e.Id;
             card.IsLocked = e.IsLocked;
@@ -92,7 +109,8 @@ public static class DataMapper
             card.Icon = UnityEngine.Resources.Load<Sprite>(Paths.ArtworkFolderPath + e.ImageSource.Path);
             Logger.Log("[GraphicCardManager]: loading card " + e.Name);
             Logger.Log("[GraphicCardManager]: card icon is " + card.Icon);
-            res.Add(card);
+            res.cards.Add(card);
+            res.Cards.Add(obj);
         });
         return res;
     }
@@ -160,16 +178,4 @@ public static class DataMapper
 
     }
 
-    private static Dictionary<DataType, object> Map = new();
-    public static void InitAllData()
-    {
-
-
-    }
-
-    public static void OnApplicationQuit()
-    {
-
-
-    }
 }
