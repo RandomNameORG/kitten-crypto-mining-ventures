@@ -41,7 +41,7 @@ public static class DataMapper
             building.MoneyPerSecond = e.MoneyPerSecond;
             building.Alts = new List<Alternator>(e.alts);
             building.VoltPerSecond = e.VoltPerSecond;
-            
+
             res.buildings.Add(building);
             res.Buildings.Add(obj);
 
@@ -111,9 +111,13 @@ public static class DataMapper
         }
     }
 
-    public static Player PlayerJsonToData(PlayerEntry jsonData){
+    public static Player PlayerJsonToData(PlayerEntry jsonData)
+    {
 
-        Player res = new Player();
+        GameObject obj = new GameObject("player");
+        obj.AddComponent<Player>();
+        Player res = obj.GetComponent<Player>();
+
         Logger.Log(jsonData.ToString());
         res.Name = jsonData.Name;
         res.TechPoint = jsonData.TechPoint;
@@ -128,7 +132,8 @@ public static class DataMapper
         return res;
     }
 
-    public static void PlayerDataToJson(PlayerEntry jsonData){
+    public static void PlayerDataToJson(PlayerEntry jsonData)
+    {
 
         List<BuildingReference> buildingRefs = new();
         jsonData.BuildingsRef.ForEach(item =>
@@ -152,29 +157,19 @@ public static class DataMapper
             },
             BuildingsRef = buildingRefs
         };
-        
+
     }
 
     private static Dictionary<DataType, object> Map = new();
     public static void InitAllData()
     {
-        
-        //Init data
-        Map[DataType.BuildingData] = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
-        Map[DataType.GraphicCardData] = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
-        Map[DataType.PlayerData] = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
-        Map[DataType.PopLogData] = DataLoader.LoadData<PopLogList>(DataType.PopLogData);
-        Logger.Log(LogType.INIT_DONE);
+
+
     }
 
     public static void OnApplicationQuit()
     {
-        //save data
-        DataLoader.SaveData<BuildingEntryList>(DataType.BuildingData, (BuildingEntryList)Map[DataType.BuildingData]);
-        DataLoader.SaveData<GraphicCardList>(DataType.GraphicCardData, (GraphicCardList)Map[DataType.GraphicCardData]);
-        DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, (PlayerEntry)Map[DataType.PlayerData]);
-        DataLoader.SaveData<PopLogList>(DataType.PopLogData, (PopLogList)Map[DataType.PopLogData]);
-        Logger.Log(LogType.QUIT_DONE);
+
 
     }
 }
