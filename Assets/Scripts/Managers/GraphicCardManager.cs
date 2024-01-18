@@ -8,7 +8,10 @@ public class GraphicCardManager : MonoBehaviour
     public static GraphicCardManager _instance;
 
     // public List<GameObject> Cards;
-    public List<GraphicCard> Cards = new List<GraphicCard>();
+    public List<GraphicCard> cards = new List<GraphicCard>();
+
+    //havent use yet
+    public List<GameObject> Cards = new();
 
     private GraphicCardList _card_entries;
 
@@ -22,22 +25,24 @@ public class GraphicCardManager : MonoBehaviour
 
         // decode json to List
         _card_entries = DataManager._instance.GetData<GraphicCardList>(DataType.GraphicCardData);
-        Cards = DataMapper.CardJsonToData(_card_entries);
+        var cardDTO = DataMapper.CardJsonToData(_card_entries);
+        cards = cardDTO.cards;
+        Cards = cardDTO.Cards;
 
     }
 
     private void OnApplicationQuit()
     {
-        DataMapper.CardDataToJson(_card_entries, Cards);
+        DataMapper.CardDataToJson(_card_entries, cards);
     }
 
     public GraphicCard FindCardById(string id)
     {
-        return Cards.FirstOrDefault(card => card.Id == id);
+        return cards.FirstOrDefault(card => card.Id == id);
     }
 
     public GraphicCard FindCardByName(string name)
     {
-        return Cards.FirstOrDefault(card => card.Name == name);
+        return cards.FirstOrDefault(card => card.Name == name);
     }
 }

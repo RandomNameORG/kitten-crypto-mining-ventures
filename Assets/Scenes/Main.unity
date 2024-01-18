@@ -3400,9 +3400,6 @@ MonoBehaviour:
   TotalCardNum: 0
   currBuildingAt: {fileID: 0}
   Buildings: []
-  Skills: 
-  MoneyText: {fileID: 813298202}
-  voltText: {fileID: 838624299}
 --- !u!4 &958135298
 Transform:
   m_ObjectHideFlags: 0
@@ -8178,6 +8175,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 781aab88d684d420b90d96c3112cc89d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Cards: []
 --- !u!114 &2144216453
 MonoBehaviour:
   m_ObjectHideFlags: 0
