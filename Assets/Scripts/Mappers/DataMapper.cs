@@ -21,10 +21,7 @@ public static class DataMapper
     /// <returns></returns>
     public static BuildingDTO BuildingJsonToData(BuildingEntryList jsonData)
     {
-        Debug.LogError("JSON!!!!");
         BuildingDTO res = new();
-        Debug.Log(jsonData.ToString() + "dsagui");
-        Debug.Log(jsonData.Buildings.ToString() + "dsagui");
         jsonData.Buildings.ForEach(e =>
         {
             var obj = new GameObject(e.Name);
@@ -112,6 +109,50 @@ public static class DataMapper
             e.PerSecondLoseVolt = card.PerSecondLoseVolt;
             e.Quantity = card.Quantity;
         }
+    }
+
+    public static Player PlayerJsonToData(PlayerEntry jsonData){
+
+        Player res = new();
+        Logger.Log(jsonData.ToString());
+        res.Name = jsonData.Name;
+        res.TechPoint = jsonData.TechPoint;
+        res.Money = jsonData.Money;
+        res.TotalCardNum = jsonData.TotalCardNum;
+        var tempBuild = BuildingManager._instance.FindBuildingById(jsonData.CurrBuildingAt.Id);
+        Debug.Log(jsonData.CurrBuildingAt.Id);
+
+        Logger.LogWarning("tempbuild init here: " + jsonData.CurrBuildingAt.Id);
+        res.CurrBuildingAt = tempBuild;
+        res.Buildings = BuildingManager._instance.buildings;
+        return res;
+    }
+
+    public static void PlayerDataToJson(PlayerEntry jsonData){
+
+        List<BuildingReference> buildingRefs = new();
+        jsonData.BuildingsRef.ForEach(item =>
+        {
+            buildingRefs.Add(new BuildingReference
+            {
+                Id = item.Id,
+                Name = item.Name
+            });
+        });
+        PlayerEntry data = new PlayerEntry
+        {
+            Name = jsonData.Name,
+            TechPoint = jsonData.TechPoint,
+            Money = jsonData.Money,
+            TotalCardNum = jsonData.TotalCardNum,
+            CurrBuildingAt = new BuildingReference
+            {
+                Id = jsonData.CurrBuildingAt.Id,
+                Name = jsonData.CurrBuildingAt.Name
+            },
+            BuildingsRef = buildingRefs
+        };
+        DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, data);
     }
 
     private static Dictionary<DataType, object> Map = new();

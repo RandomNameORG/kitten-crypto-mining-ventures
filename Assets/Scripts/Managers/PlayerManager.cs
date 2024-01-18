@@ -28,7 +28,8 @@ public class PlayerManager : MonoBehaviour
     //Mention: before you starting code your loading data, you have to create init a file first
     void Start()
     {
-        
+        _player_entry = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
+        CurPlayer = DataMapper.PlayerJsonToData(_player_entry);
     }
     // Update is called once per frame
     void Update()
@@ -62,8 +63,13 @@ public class PlayerManager : MonoBehaviour
 
     private void DisplayVoltage()
     {
-        DOTween.To(value => { voltText.text = Mathf.Floor(value).ToString() + "/" + CurPlayer.currBuildingAt.MaxVolt; },
-        startValue: CurPlayer.currBuildingAt.VoltPerSecond, endValue: CurPlayer.currBuildingAt.VoltPerSecond, duration: 0.1f);
+        DOTween.To(value => { voltText.text = Mathf.Floor(value).ToString() + "/" + CurPlayer.CurrBuildingAt.MaxVolt; },
+        startValue: CurPlayer.CurrBuildingAt.VoltPerSecond, endValue: CurPlayer.CurrBuildingAt.VoltPerSecond, duration: 0.1f);
+    }
+
+    private void OnApplicationQuit()
+    {
+        DataMapper.PlayerDataToJson(_player_entry);
     }
 
 }

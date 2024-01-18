@@ -13,9 +13,7 @@ public class SizeManager : MonoBehaviour
     private string ID;
 
     public void Start(){
-        Debug.Log("dsaasddassdaads" + Player.Name);
-        Debug.Log("basfadfdvsfwerfesdb" + Player.currBuildingAt.Id);
-        ID = Player.currBuildingAt.Id;
+        ID = Player.CurrBuildingAt.Id;
     }
     public void Update(){
         RoomSize(ID);
