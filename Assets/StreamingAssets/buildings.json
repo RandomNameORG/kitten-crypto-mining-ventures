@@ -3,7 +3,7 @@
         {
             "Id": "1",
             "Name": "DemoRoom",
-            "GridSize": 100,
+            "GridSize": 1000,
             "VoltPerSecond": 1,
             "MoneyPerSecond": 2,
             "MaxVolt": 50,
@@ -77,6 +77,7 @@
                 }
             ],
             "Events": [],
+            "Cards": [],
             "alts": []
         },
         {
@@ -100,6 +101,7 @@
             },
             "CardSlots": [],
             "Events": [],
+            "Cards": [],
             "alts": []
         }
     ]
