@@ -18,6 +18,7 @@ public enum DataType : int
 }
 
 /// <summary>
+
 /// This class is data loader put on manager layer
 /// it will do some init when game start
 /// it help project manage whole store part

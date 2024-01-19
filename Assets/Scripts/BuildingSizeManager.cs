@@ -28,8 +28,10 @@ public class SizeManager : MonoBehaviour
         Room.transform.localScale = new Vector3(BuildingIfo.GridSize, BuildingIfo.GridSize, BuildingIfo.GridSize);
 
         // generate resctriciton at original point with scale
-        Restriction.transform.localPosition = new Vector3(0, 0, -30);
-        int size = BuildingIfo.GridSize - 200;
+        Restriction.transform.localPosition = new Vector3(0, 0, -5);
+        
+        float size = (float)(0.002 * BuildingIfo.GridSize * BuildingIfo.GridSize - 2.2 * BuildingIfo.GridSize + 875);
+
         Restriction.transform.localScale = new Vector3(size, size, size);
     }
 }

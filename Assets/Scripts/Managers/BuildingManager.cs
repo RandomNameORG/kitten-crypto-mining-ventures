@@ -31,13 +31,9 @@ public class BuildingManager : MonoBehaviour
     void Start()
     {
         //get json data
-        Debug.Log("zaici fuck sha bi youi xi");
         _building_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
         var data = DataMapper.BuildingJsonToData(_building_entries);
         buildings = data.buildings; //Building class
-        foreach (var building in buildings){
-            Debug.Log("vuiabslbd" + building.Id);
-        }
         Buildings = data.Buildings; //the actual GameObject holding building comp
         Logger.Log(LogType.INIT_DONE);
     }
@@ -60,8 +56,6 @@ public class BuildingManager : MonoBehaviour
     }
     public BuildingEntry FindBuildingEntryById(string id)
     {
-        Debug.Log("AAAAAAAAAAAA" + _building_entries.ToString());
-        Debug.Log("bbbbbbbbbbbb" + _building_entries.Buildings.ToString());
         return _building_entries.Buildings.FirstOrDefault(item => item.Id == id);
     }
     public GameObject FindBuildingObjectById(string id)
