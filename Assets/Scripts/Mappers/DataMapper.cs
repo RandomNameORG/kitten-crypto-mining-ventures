@@ -150,35 +150,27 @@ public static class DataMapper
         var manager = BuildingManager._instance;
         var tempBuild = manager.FindBuildingById(jsonData.CurrBuildingAt.Id);
         res.CurrBuildingAt = tempBuild;
-        res.Buildings = BuildingManager._instance.buildings;
+        res.Buildings = jsonData.BuildingsRef.Select(e => manager.FindBuildingById(e.Id)).ToList();
         return res;
     }
 
-    public static void PlayerDataToJson(PlayerEntry jsonData)
+    public static void PlayerDataToJson(PlayerEntry jsonData, Player player)
     {
 
-        List<BuildingReference> buildingRefs = new();
-        jsonData.BuildingsRef.ForEach(item =>
+        jsonData.Name = player.Name;
+        jsonData.TechPoint = player.TechPoint;
+        jsonData.Money = player.Money;
+        jsonData.TotalCardNum = player.TotalCardNum;
+        jsonData.CurrBuildingAt = new BuildingReference
         {
-            buildingRefs.Add(new BuildingReference
-            {
-                Id = item.Id,
-                Name = item.Name
-            });
-        });
-        PlayerEntry data = new PlayerEntry
-        {
-            Name = jsonData.Name,
-            TechPoint = jsonData.TechPoint,
-            Money = jsonData.Money,
-            TotalCardNum = jsonData.TotalCardNum,
-            CurrBuildingAt = new BuildingReference
-            {
-                Id = jsonData.CurrBuildingAt.Id,
-                Name = jsonData.CurrBuildingAt.Name
-            },
-            BuildingsRef = buildingRefs
+            Id = player.CurrBuildingAt.Id,
+            Name = player.CurrBuildingAt.Name
         };
+        jsonData.BuildingsRef = player.Buildings.Select(building => new BuildingReference()
+        {
+            Id = building.Id,
+            Name = building.Name
+        }).ToList();
 
     }
 

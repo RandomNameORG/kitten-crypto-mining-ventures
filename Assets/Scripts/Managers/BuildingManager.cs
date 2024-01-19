@@ -36,11 +36,6 @@ public class BuildingManager : MonoBehaviour
         buildings = data.buildings;
         Logger.Log(LogType.INIT_DONE);
     }
-    private void OnApplicationQuit()
-    {
-        DataMapper.BuildingDataToJson(_building_entries, Buildings);
-    }
-
 
     //TODO think about it, how we relate our json data to our actual gameobject?
     // Read: Find a Building by its ID
@@ -73,6 +68,10 @@ public class BuildingManager : MonoBehaviour
             var building = item.GetComponent<Building>();
             return building.Id.Equals(name);
         });
+    }
+    public List<GameObject> GetBuildingObjects()
+    {
+        return this.Buildings;
     }
 }
 

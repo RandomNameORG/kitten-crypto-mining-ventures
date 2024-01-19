@@ -65,10 +65,9 @@ public class PlayerManager : MonoBehaviour
         DOTween.To(value => { voltText.text = Mathf.Floor(value).ToString() + "/" + CurPlayer.CurrBuildingAt.MaxVolt; },
         startValue: CurPlayer.CurrBuildingAt.VoltPerSecond, endValue: CurPlayer.CurrBuildingAt.VoltPerSecond, duration: 0.1f);
     }
-
-    private void OnApplicationQuit()
+    public Player GetPlayer()
     {
-        DataMapper.PlayerDataToJson(_player_entry);
+        return this.CurPlayer;
     }
 
 }
