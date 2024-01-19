@@ -29,8 +29,8 @@ public class BuildingManager : MonoBehaviour
     //Mention: before you starting code your loading data, you have to create init a file first
     void Start()
     {
-        var jsonData = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
-        var data = DataMapper.BuildingJsonToData(jsonData);
+        _building_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
+        var data = DataMapper.BuildingJsonToData(_building_entries);
         Buildings = data.Buildings; //the actual GameObject holding building comp
         buildings = data.buildings;
         Logger.Log(LogType.INIT_DONE);
