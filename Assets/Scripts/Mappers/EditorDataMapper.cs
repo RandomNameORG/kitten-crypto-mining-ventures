@@ -1,7 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-public static class DataMapper
+
+/// <summary>
+/// this data mapper class don't care relationship between data.
+/// </summary>
+public static class EditorDataMapper
 {
 
     public class BuildingDTO
@@ -23,9 +27,7 @@ public static class DataMapper
     public static BuildingDTO BuildingJsonToData(BuildingEntryList jsonData)
     {
 
-
-        //TODO might causing problem decoupling
-        //make this function could works without holding data
+        //its okay in this calss
         var cardsData = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
         List<GraphicCard> cards = CardJsonToData(cardsData).cards;
 
@@ -133,10 +135,8 @@ public static class DataMapper
     public static Player PlayerJsonToData(PlayerEntry jsonData)
     {
 
-        //TODO might causing problem decoupling
-        //make this function could works without holding data
-        // var buildingData = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
-        // List<Building> buildings = BuildingJsonToData(buildingData).buildings;
+        var buildingData = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
+        List<Building> buildings = BuildingJsonToData(buildingData).buildings;
 
         GameObject obj = new GameObject("player");
         obj.AddComponent<Player>();
@@ -147,11 +147,38 @@ public static class DataMapper
         res.TechPoint = jsonData.TechPoint;
         res.Money = jsonData.Money;
         res.TotalCardNum = jsonData.TotalCardNum;
-        var manager = BuildingManager._instance;
-        var tempBuild = manager.FindBuildingById(jsonData.CurrBuildingAt.Id);
+        var tempBuild = buildings.Find(i => i.Id == jsonData.CurrBuildingAt.Id);
         res.CurrBuildingAt = tempBuild;
-        res.Buildings = jsonData.BuildingsRef.Select(e => manager.FindBuildingById(e.Id)).ToList();
+        res.Buildings = buildings;
         return res;
+    }
+
+    public static void PlayerDataToJson(PlayerEntry jsonData)
+    {
+
+        List<BuildingReference> buildingRefs = new();
+        jsonData.BuildingsRef.ForEach(item =>
+        {
+            buildingRefs.Add(new BuildingReference
+            {
+                Id = item.Id,
+                Name = item.Name
+            });
+        });
+        PlayerEntry data = new PlayerEntry
+        {
+            Name = jsonData.Name,
+            TechPoint = jsonData.TechPoint,
+            Money = jsonData.Money,
+            TotalCardNum = jsonData.TotalCardNum,
+            CurrBuildingAt = new BuildingReference
+            {
+                Id = jsonData.CurrBuildingAt.Id,
+                Name = jsonData.CurrBuildingAt.Name
+            },
+            BuildingsRef = buildingRefs
+        };
+
     }
 
     public static void PlayerDataToJson(PlayerEntry jsonData, Player player)

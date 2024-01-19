@@ -32,6 +32,7 @@ public class DataEditor : EditorWindow
                 DrawCardsTab();
                 break;
             case Tab.Player:
+                DrawPlayerTab();
                 break;
         }
     }
@@ -55,7 +56,7 @@ public class DataEditor : EditorWindow
                 {
                     if (JsonDataMap.ContainsKey(DataType.BuildingData)) { return; }
                     var jsonData = LoadData<BuildingEntryList>(DataType.BuildingData);
-                    var temp = DataMapper.BuildingJsonToData(jsonData);
+                    var temp = EditorDataMapper.BuildingJsonToData(jsonData);
                     gameDataMap.Add(DataType.BuildingData, temp.buildings);
                     break;
                 }
@@ -63,7 +64,7 @@ public class DataEditor : EditorWindow
                 {
                     if (JsonDataMap.ContainsKey(DataType.GraphicCardData)) { return; }
                     var jsonData = LoadData<GraphicCardList>(DataType.GraphicCardData);
-                    var temp = DataMapper.CardJsonToData(jsonData);
+                    var temp = EditorDataMapper.CardJsonToData(jsonData);
                     gameDataMap.Add(DataType.GraphicCardData, temp.cards);
                     break;
                 }
@@ -71,8 +72,8 @@ public class DataEditor : EditorWindow
                 {
                     if (JsonDataMap.ContainsKey(DataType.PlayerData)) { return; }
                     var jsonData = LoadData<PlayerEntry>(DataType.PlayerData);
-                    // var temp = DataMapper.CardJsonToData(jsonData);
-                    // gameDataMap.Add(DataType.GraphicCardData, temp);
+                    var temp = EditorDataMapper.PlayerJsonToData(jsonData);
+                    gameDataMap.Add(DataType.PlayerData, temp);
                 }
                 break;
         }
@@ -97,9 +98,13 @@ public class DataEditor : EditorWindow
 
             if (GUILayout.Button("Save Changes"))
             {
-                DataMapper.CardDataToJson((GraphicCardList)JsonDataMap[DataType.GraphicCardData], (List<GraphicCard>)gameDataMap[DataType.GraphicCardData]);
+                EditorDataMapper.CardDataToJson((GraphicCardList)JsonDataMap[DataType.GraphicCardData], (List<GraphicCard>)gameDataMap[DataType.GraphicCardData]);
                 DataLoader.SaveData<GraphicCardList>(DataType.GraphicCardData, (GraphicCardList)JsonDataMap[DataType.GraphicCardData]);
                 Logger.Log("save card data!");
+
+                var jsonData = DataLoader.LoadData<BuildingEntryList>(DataType.BuildingData);
+                var temp = EditorDataMapper.BuildingJsonToData(jsonData);
+                gameDataMap[DataType.BuildingData] = (List<Building>)temp.buildings;
             }
         }
     }
@@ -116,9 +121,36 @@ public class DataEditor : EditorWindow
 
             if (GUILayout.Button("Save Changes"))
             {
-                DataMapper.CardDataToJson((GraphicCardList)JsonDataMap[DataType.GraphicCardData], (List<GraphicCard>)gameDataMap[DataType.GraphicCardData]);
+                EditorDataMapper.CardDataToJson((GraphicCardList)JsonDataMap[DataType.GraphicCardData], (List<GraphicCard>)gameDataMap[DataType.GraphicCardData]);
                 DataLoader.SaveData<GraphicCardList>(DataType.GraphicCardData, (GraphicCardList)JsonDataMap[DataType.GraphicCardData]);
                 Logger.Log("save card data!");
+                //update list
+                var jsonData = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
+                var temp = EditorDataMapper.CardJsonToData(jsonData);
+                gameDataMap[DataType.GraphicCardData] = (List<GraphicCard>)temp.cards;
+            }
+        }
+    }
+
+    void DrawPlayerTab()
+    {
+
+        var player = (Player)gameDataMap[DataType.PlayerData];
+
+        if (player != null)
+        {
+            Editor editor = Editor.CreateEditor(player);
+            editor.DrawDefaultInspector();
+
+            if (GUILayout.Button("Save Changes"))
+            {
+                EditorDataMapper.PlayerDataToJson((PlayerEntry)JsonDataMap[DataType.PlayerData], (Player)gameDataMap[DataType.PlayerData]);
+                DataLoader.SaveData<PlayerEntry>(DataType.PlayerData, (PlayerEntry)JsonDataMap[DataType.PlayerData]);
+                Logger.Log("save card data!");
+                //update list
+                var jsonData = DataLoader.LoadData<PlayerEntry>(DataType.PlayerData);
+                var temp = EditorDataMapper.PlayerJsonToData(jsonData);
+                gameDataMap[DataType.PlayerData] = (Player)temp;
             }
         }
     }

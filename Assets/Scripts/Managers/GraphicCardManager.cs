@@ -31,11 +31,6 @@ public class GraphicCardManager : MonoBehaviour
 
     }
 
-    private void OnApplicationQuit()
-    {
-        DataMapper.CardDataToJson(_card_entries, cards);
-    }
-
     public GraphicCard FindCardById(string id)
     {
         return cards.FirstOrDefault(card => card.Id == id);
@@ -44,5 +39,9 @@ public class GraphicCardManager : MonoBehaviour
     public GraphicCard FindCardByName(string name)
     {
         return cards.FirstOrDefault(card => card.Name == name);
+    }
+    public List<GraphicCard> GetCard()
+    {
+        return this.cards;
     }
 }

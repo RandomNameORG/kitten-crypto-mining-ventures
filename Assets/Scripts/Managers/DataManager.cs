@@ -46,6 +46,9 @@ public class DataManager : MonoBehaviour
     private void OnApplicationQuit()
     {
 
+        DataMapper.PlayerDataToJson((PlayerEntry)Map[DataType.PlayerData], PlayerManager._instance.GetPlayer());
+        DataMapper.BuildingDataToJson((BuildingEntryList)Map[DataType.BuildingData], BuildingManager._instance.GetBuildingObjects());
+        DataMapper.CardDataToJson((GraphicCardList)Map[DataType.GraphicCardData], GraphicCardManager._instance.GetCard());
         //save data
         DataLoader.SaveData<BuildingEntryList>(DataType.BuildingData, (BuildingEntryList)Map[DataType.BuildingData]);
         DataLoader.SaveData<GraphicCardList>(DataType.GraphicCardData, (GraphicCardList)Map[DataType.GraphicCardData]);

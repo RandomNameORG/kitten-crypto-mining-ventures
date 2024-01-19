@@ -23,25 +23,16 @@ public class BuildingManager : MonoBehaviour
     private void Awake()
     {
         _instance = this;
-        Debug.Log("fuck sha bi youi xi");
     }
     // Use this for initialization
     //loading data at @Start stage
     //Mention: before you starting code your loading data, you have to create init a file first
     void Start()
     {
-        //get json data
-        _building_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
-        var data = DataMapper.BuildingJsonToData(_building_entries);
-        buildings = data.buildings; //Building class
         Buildings = data.Buildings; //the actual GameObject holding building comp
+        buildings = data.buildings;
         Logger.Log(LogType.INIT_DONE);
     }
-    private void OnApplicationQuit()
-    {
-        DataMapper.BuildingDataToJson(_building_entries, Buildings);
-    }
-
 
     //TODO think about it, how we relate our json data to our actual gameobject?
     // Read: Find a Building by its ID
@@ -50,8 +41,8 @@ public class BuildingManager : MonoBehaviour
     {
 
         Building res = buildings.FirstOrDefault(item => item.Id == id);
-        
-        
+
+
         return res;
     }
     public BuildingEntry FindBuildingEntryById(string id)
@@ -74,6 +65,10 @@ public class BuildingManager : MonoBehaviour
             var building = item.GetComponent<Building>();
             return building.Id.Equals(name);
         });
+    }
+    public List<GameObject> GetBuildingObjects()
+    {
+        return this.Buildings;
     }
 }
 

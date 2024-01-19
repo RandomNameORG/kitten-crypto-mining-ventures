@@ -50,7 +50,6 @@ public class PlayerManager : MonoBehaviour
     private void PerSecondEarnMoney()
     {
         long totalMoney = 0;
-        Building b = new();
         foreach (Building building in CurPlayer.Buildings)
         {
             totalMoney += building.MoneyPerSecond;
@@ -66,10 +65,9 @@ public class PlayerManager : MonoBehaviour
         DOTween.To(value => { voltText.text = Mathf.Floor(value).ToString() + "/" + CurPlayer.CurrBuildingAt.MaxVolt; },
         startValue: CurPlayer.CurrBuildingAt.VoltPerSecond, endValue: CurPlayer.CurrBuildingAt.VoltPerSecond, duration: 0.1f);
     }
-
-    private void OnApplicationQuit()
+    public Player GetPlayer()
     {
-        DataMapper.PlayerDataToJson(_player_entry);
+        return this.CurPlayer;
     }
 
 }
