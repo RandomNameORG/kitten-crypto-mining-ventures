@@ -2,7 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Resctricion : MonoBehaviour
+/// <summary>
+/// Check Grid placement if cursor out of boundary or not
+/// </summary>
+public class GridPlacementEdge : MonoBehaviour
 {
     private Collider2D myCollider;
     public GameObject buildingSystem;

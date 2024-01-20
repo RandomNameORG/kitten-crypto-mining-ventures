@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlacementSystem : MonoBehaviour
+public class GridPlacementSystem : MonoBehaviour
 {
     [SerializeField]
     private GameObject MouseIndicator, cellIndicator;
