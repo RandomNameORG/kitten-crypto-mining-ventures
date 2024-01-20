@@ -31,8 +31,16 @@ public class BuildingManager : MonoBehaviour
     {
         //get json data
         _building_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
-        var data = DataMapper.BuildingJsonToData(_building_entries);
-        buildings = data.buildings; // Building class
+
+        var sceneList = _building_entries.Buildings.Select(entry =>
+        {
+            return BuildingSceneGenerator.GenerateScene(entry);
+        }).ToList();
+        Buildings = sceneList.Select(scene =>
+        {
+            return scene.GetRootGameObjects().ToList().Find(obj => obj.name == "Building");
+        }).ToList();
+        buildings = Buildings.Select(buildingObject => buildingObject.GetComponent<Building>()).ToList(); // Building class
         Logger.Log(LogType.INIT_DONE);
     }
 

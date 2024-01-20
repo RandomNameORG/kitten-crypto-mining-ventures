@@ -20,14 +20,12 @@ public static class DataMapper
     /// </summary>
     /// <param name="jsonData"></param>
     /// <returns></returns>
-    public static BuildingDTO BuildingJsonToData(BuildingEntryList jsonData)
+    public static BuildingDTO BuildingsJsonToData(BuildingEntryList jsonData)
     {
-
-
         //TODO might causing problem decoupling
         //make this function could works without holding data
         var cardsData = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
-        List<GraphicCard> cards = CardJsonToData(cardsData).cards;
+        List<GraphicCard> cards = CardsJsonToData(cardsData).cards;
 
         BuildingDTO res = new();
         jsonData.Buildings.ForEach(e =>
@@ -61,7 +59,55 @@ public static class DataMapper
         return res;
     }
 
-    public static void BuildingDataToJson(BuildingEntryList jsonData, List<GameObject> buildings)
+    public static Building GenerateBuilding(BuildingEntry buildingEntry)
+    {
+
+        //TODO might causing problem decoupling
+        //make this function could works without holding data
+        // var cardsData = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
+        // List<GraphicCard> cards = CardsJsonToData(cardsData).cards;
+
+        var obj = new GameObject("Building");
+        //create building comp
+        obj.AddComponent<Building>();
+        var building = obj.GetComponent<Building>();
+        building.Id = buildingEntry.Id.ToString(); // Assuming  convert the int Id to string
+        building.Name = buildingEntry.Name;
+        building.Capacity = buildingEntry.MaxCardNum;
+        building.MaxVolt = buildingEntry.MaxVolt; // Assuming Capacity is equivalent to MaxVolt
+        building.Events = new List<GeneralEvent>(buildingEntry.Events);
+        building.Cards = buildingEntry.CardSlots.Select(cs =>
+        {
+            return GenerateCards(cs);
+        }).ToList();
+        building.EventHappenProbs = buildingEntry.ProbabilityOfBeingAttacked;
+        building.MoneyPerSecond = buildingEntry.MoneyPerSecond;
+        building.Alts = new List<Alternator>(buildingEntry.alts);
+        building.VoltPerSecond = buildingEntry.VoltPerSecond;
+        //here we have to do something to building house 
+        //TODO here
+        obj.transform.SetPositionAndRotation(new Vector3(0, 0, 0), Quaternion.identity);
+        obj.transform.localScale = new Vector3(1, 1, 1);
+        return building;
+    }
+
+    private static GraphicCard GenerateCards(GraphicCardReference cardEntry)
+    {
+        var e = GraphicCardManager._instance.FindCardById(cardEntry.Id);
+        var obj = new GameObject(cardEntry.Name);
+        //create building comp
+        obj.AddComponent<GraphicCard>();
+        var card = obj.GetComponent<GraphicCard>();
+        card.Name = e.Name;
+        card.Id = e.Id;
+        card.IsLocked = e.IsLocked;
+        card.PerSecondEarn = e.PerSecondEarn;
+        card.Price = e.Price;
+        card.PerSecondLoseVolt = e.PerSecondLoseVolt;
+        card.Quantity = e.Quantity;
+        return card;
+    }
+    public static void BuildingsDataToJson(BuildingEntryList jsonData, List<GameObject> buildings)
     {
         for (int i = 0; i < jsonData.Buildings.Count; i++)
         {
@@ -81,13 +127,28 @@ public static class DataMapper
             e.VoltPerSecond = building.VoltPerSecond;
         }
     }
-
+    public static void BuildingDataToJson(BuildingEntry buildingEntry, GameObject buildingObj)
+    {
+        var building = buildingObj.GetComponent<Building>();
+        buildingEntry.Id = "1";
+        buildingEntry.Name = building.Name;
+        buildingEntry.MaxCardNum = building.Capacity; // Assuming MaxCardNum is equivalent to Capacity
+        buildingEntry.MaxVolt = building.MaxVolt; // Assuming this assignment logic remains the same
+                                                  // Assuming e has a CardSlots property that can be assigned from building.Cards
+        buildingEntry.CardSlots = building.Cards.Select(gc =>
+        {
+            return new GraphicCardReference { Id = gc.Id, Name = gc.Name }; // Assuming CardSlot has an Id property and you can create new instances like this
+        }).ToList();
+        buildingEntry.ProbabilityOfBeingAttacked = building.EventHappenProbs;
+        buildingEntry.MoneyPerSecond = building.MoneyPerSecond;
+        buildingEntry.VoltPerSecond = building.VoltPerSecond;
+    }
     public class CardDTO
     {
         public List<GameObject> Cards = new();
         public List<GraphicCard> cards = new();
     }
-    public static CardDTO CardJsonToData(GraphicCardList jsonData)
+    public static CardDTO CardsJsonToData(GraphicCardList jsonData)
     {
 
         CardDTO res = new();
@@ -108,15 +169,13 @@ public static class DataMapper
             card.Quantity = e.Quantity;
             //deal with icon 
             card.Icon = UnityEngine.Resources.Load<Sprite>(Paths.ArtworkFolderPath + e.ImageSource.Path);
-            Logger.Log("[GraphicCardManager]: loading card " + e.Name);
-            Logger.Log("[GraphicCardManager]: card icon is " + card.Icon);
             res.cards.Add(card);
             res.Cards.Add(obj);
         });
         return res;
     }
 
-    public static void CardDataToJson(GraphicCardList jsonData, List<GraphicCard> cards)
+    public static void CardsDataToJson(GraphicCardList jsonData, List<GraphicCard> cards)
     {
         for (int i = 0; i < jsonData.GraphicCards.Count; i++)
         {

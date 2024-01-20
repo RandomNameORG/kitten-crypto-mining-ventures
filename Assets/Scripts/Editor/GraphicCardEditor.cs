@@ -41,11 +41,11 @@ public class GraphicCardEditorWindow : EditorWindow
     void loadData()
     {
         _card_entries = DataLoader.LoadData<GraphicCardList>(DataType.GraphicCardData);
-        Cards = DataMapper.CardJsonToData(_card_entries).cards;
+        Cards = DataMapper.CardsJsonToData(_card_entries).cards;
     }
     void saveData()
     {
-        DataMapper.CardDataToJson(_card_entries, Cards);
+        DataMapper.CardsDataToJson(_card_entries, Cards);
         DataLoader.SaveData<GraphicCardList>(DataType.GraphicCardData, _card_entries);
     }
 }

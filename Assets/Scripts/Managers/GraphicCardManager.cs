@@ -25,7 +25,7 @@ public class GraphicCardManager : MonoBehaviour
 
         // decode json to List
         _card_entries = DataManager._instance.GetData<GraphicCardList>(DataType.GraphicCardData);
-        var cardDTO = DataMapper.CardJsonToData(_card_entries);
+        var cardDTO = DataMapper.CardsJsonToData(_card_entries);
         cards = cardDTO.cards;
         Cards = cardDTO.Cards;
 
