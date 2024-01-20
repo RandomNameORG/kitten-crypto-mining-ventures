@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 73444eaeebc60ba4ebfdae3428513f8a
+guid: 5b231d590e74a0343970a4d0215643a5
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -119,30 +119,10 @@ ScriptedImporter:
     tessellationDetail: 0
     uvTransform: {x: 0, y: 0}
   animatedSpriteImportData:
-  - name: cellIndicator_Frame_1
+  - name: Edge_Frame_0
     originalName: 
-    pivot: {x: 0.5, y: 0.5}
-    alignment: 0
-    border: {x: 0, y: 0, z: 0, w: 0}
-    rect:
-      serializedVersion: 2
-      x: 4
-      y: 4
-      width: 143
-      height: 73
-    spriteID: 7f15db390c539664bba80d4f1673a571
-    spriteBone: []
-    spriteOutline: []
-    vertices: []
-    spritePhysicsOutline: []
-    indices: 
-    edges: []
-    tessellationDetail: 0
-    uvTransform: {x: 4, y: 4}
-  - name: cellIndicator_Frame_0
-    originalName: 
-    pivot: {x: 0.5, y: 0.5}
-    alignment: 0
+    pivot: {x: 36, y: -29.333332}
+    alignment: 9
     border: {x: 0, y: 0, z: 0, w: 0}
     rect:
       serializedVersion: 2
@@ -150,7 +130,7 @@ ScriptedImporter:
       y: 4
       width: 2
       height: 3
-    spriteID: 4410b80163c2c314f8ef2f631d9fbdd8
+    spriteID: 02b49419c8b89b241a02e265ed2b405e
     spriteBone: []
     spriteOutline: []
     vertices: []
@@ -159,31 +139,51 @@ ScriptedImporter:
     edges: []
     tessellationDetail: 0
     uvTransform: {x: 155, y: 4}
+  - name: Edge_Frame_1
+    originalName: 
+    pivot: {x: 0.49894425, y: 0.9777555}
+    alignment: 9
+    border: {x: 0, y: 0, z: 0, w: 0}
+    rect:
+      serializedVersion: 2
+      x: 4
+      y: 4
+      width: 143
+      height: 73
+    spriteID: 39bca7bfcd20c3d4dadc771a51bc21e0
+    spriteBone: []
+    spriteOutline: []
+    vertices: []
+    spritePhysicsOutline: []
+    indices: 
+    edges: []
+    tessellationDetail: 0
+    uvTransform: {x: 4, y: 4}
   spriteSheetImportData: []
   asepriteLayers:
   - layerIndex: 0
-    guid: 742022175
-    name: cellIndicator
+    guid: 160963167
+    name: Edge
     layerFlags: 0
     layerType: 0
     blendMode: 0
     cells:
-    - name: cellIndicator_Frame_0
+    - name: Edge_Frame_0
       frameIndex: 0
       cellRect:
         x: 0
         y: 88
         width: 2
         height: 3
-      spriteId: 4410b80163c2c314f8ef2f631d9fbdd8
-    - name: cellIndicator_Frame_1
+      spriteId: 02b49419c8b89b241a02e265ed2b405e
+    - name: Edge_Frame_1
       frameIndex: 1
       cellRect:
         x: 0
         y: 53
         width: 143
         height: 73
-      spriteId: 7f15db390c539664bba80d4f1673a571
+      spriteId: 39bca7bfcd20c3d4dadc771a51bc21e0
     linkedCells: []
     parentIndex: -1
   platformSettings: []
