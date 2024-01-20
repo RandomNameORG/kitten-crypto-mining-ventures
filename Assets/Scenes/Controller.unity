@@ -4733,11 +4733,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7878350319992209165, guid: 9f3976a713adc2349a476df0bb3daf42, type: 3}
   m_PrefabInstance: {fileID: 1116671857}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1116671859 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: -2253911629886400664, guid: 9f3976a713adc2349a476df0bb3daf42, type: 3}
-  m_PrefabInstance: {fileID: 1116671857}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1139126090
 GameObject:
   m_ObjectHideFlags: 0
@@ -5025,7 +5020,6 @@ GameObject:
   - component: {fileID: 1269955875}
   - component: {fileID: 1269955874}
   - component: {fileID: 1269955873}
-  - component: {fileID: 1269955872}
   - component: {fileID: 1269955871}
   - component: {fileID: 1269955869}
   - component: {fileID: 1269955868}
@@ -5076,22 +5070,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91f2aa2d2d62c41ee8e937a30dafecb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1269955872
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1269955867}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 061a38753dbd2024c95d859ff0f2de30, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Building: {fileID: 1269955876}
-  Room: {fileID: 1116671859}
-  Restriction: {fileID: 1692590431}
-  newMainCamera: {fileID: 1637350238}
 --- !u!114 &1269955873
 MonoBehaviour:
   m_ObjectHideFlags: 0
