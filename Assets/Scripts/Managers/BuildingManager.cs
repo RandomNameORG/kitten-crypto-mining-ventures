@@ -29,10 +29,13 @@ public class BuildingManager : MonoBehaviour
     //Mention: before you starting code your loading data, you have to create init a file first
     void Start()
     {
+        //get json data
         _building_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
         var data = DataMapper.BuildingJsonToData(_building_entries);
-        Buildings = data.Buildings; //the actual GameObject holding building comp
-        buildings = data.buildings;
+        buildings = data.buildings; // Building class
+        _building_entries = DataManager._instance.GetData<BuildingEntryList>(DataType.BuildingData);
+        var data = DataMapper.BuildingJsonToData(_building_entries);
+        Buildings = data.Buildings; // the actual GameObject holding building comp
         Logger.Log(LogType.INIT_DONE);
     }
 
@@ -71,6 +74,11 @@ public class BuildingManager : MonoBehaviour
     public List<GameObject> GetBuildingObjects()
     {
         return this.Buildings;
+    }
+
+    public BuildingEntryList GetBuildingEntryList()
+    {
+        return _building_entries;
     }
 }
 

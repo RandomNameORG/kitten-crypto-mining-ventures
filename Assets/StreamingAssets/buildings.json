@@ -3,7 +3,7 @@
         {
             "Id": "1",
             "Name": "DemoRoom",
-            "GridSize": 1000,
+            "GridSize": 1200,
             "VoltPerSecond": 1,
             "MoneyPerSecond": 2,
             "MaxVolt": 50,
@@ -81,7 +81,7 @@
             "alts": []
         },
         {
-            "Id": "1",
+            "Id": "2",
             "Name": "213213dddemoroom",
             "GridSize": 3123,
             "VoltPerSecond": 312,
