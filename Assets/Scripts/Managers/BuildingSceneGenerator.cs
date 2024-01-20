@@ -21,7 +21,7 @@ public class BuildingSceneGenerator : MonoBehaviour
         FirstGenerator();
 
         // unload controller scene
-        SceneManager.UnloadScene(currentScene);
+        SceneManager.UnloadSceneAsync(currentScene);
     }
     public void FirstGenerator()
     {
