@@ -4685,8 +4685,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc74ef2a65678c54a98cac3d8ab34865, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoneyText: {fileID: 0}
-  voltText: {fileID: 0}
+  MoneyText: {fileID: 1657362211}
+  voltText: {fileID: 1866652553}
   CurPlayer: {fileID: 0}
   Building: {fileID: 0}
 --- !u!114 &1269955871
@@ -4841,7 +4841,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1300838009}
   m_Layer: 5
-  m_Name: Voltage
+  m_Name: VoltagePane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
