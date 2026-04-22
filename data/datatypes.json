@@ -1,0 +1,24 @@
+{
+    "DataTypes": [
+        {
+            "Type": 1,
+            "Filename": "datatypes.json"
+        },
+        {
+            "Type": 2,
+            "Filename": "poplogs.json"
+        },
+        {
+            "Type": 3,
+            "Filename": "buildings.json"
+        },
+        {
+            "Type": 4,
+            "Filename": "graphiccards.json"
+        },
+        {
+            "Type": 5,
+            "Filename": "player.json"
+        }
+    ]
+}

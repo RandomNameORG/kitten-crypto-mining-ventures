@@ -70,3 +70,9 @@ crashlytics-build.properties
 /.vscode
 /.vscode/*
 /.vscode/*/**
+
+# Godot 4
+.godot/
+*.translation
+export.cfg
+export_presets.cfg
