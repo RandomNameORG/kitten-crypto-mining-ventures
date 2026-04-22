@@ -17,6 +17,12 @@ config/features=PackedStringArray("4.3", "GL Compatibility")
 [autoload]
 
 DataManager="*res://scripts/autoload/data_manager.gd"
+BuildingManager="*res://scripts/autoload/building_manager.gd"
+GraphicCardManager="*res://scripts/autoload/graphic_card_manager.gd"
+ItemManager="*res://scripts/autoload/item_manager.gd"
+PopLogManager="*res://scripts/autoload/pop_log_manager.gd"
+AnimationManager="*res://scripts/autoload/animation_manager.gd"
+MenuManager="*res://scripts/autoload/menu_manager.gd"
 PlayerManager="*res://scripts/autoload/player_manager.gd"
 
 [display]

@@ -1,0 +1,21 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8kittenmining002"]
+
+[ext_resource type="Script" path="res://scripts/building.gd" id="1_building"]
+
+[node name="Building" type="Node2D"]
+script = ExtResource("1_building")
+
+[node name="TileMap" type="TileMap" parent="."]
+format = 2
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+
+[node name="CellIndicator" type="Node2D" parent="."]
+visible = false
+
+[node name="Visual" type="Polygon2D" parent="CellIndicator"]
+color = Color(0.2, 1, 0.2, 0.5)
+polygon = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+
+[node name="Buildings" type="Node2D" parent="."]
