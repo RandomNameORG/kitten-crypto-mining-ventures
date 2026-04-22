@@ -23,9 +23,11 @@ func set_card(card: GraphicCard) -> void:
 	_volt_label.text = "Volt: %d/s" % card.per_second_lose_volt
 	_update_quantity(card)
 	if card.image_source_path != "":
-		var res_path := "res://assets/graphic_cards/%s.png" % card.image_source_path
+		var res_path := "res://assets/art/cards/%s.png" % card.image_source_path
 		if ResourceLoader.exists(res_path):
-			_icon.texture = load(res_path)
+			var tex := load(res_path)
+			if tex != null:
+				_icon.texture = tex
 
 func refresh() -> void:
 	var card := GraphicCardManager.find_by_id(_card_id)
