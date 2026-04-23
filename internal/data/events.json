@@ -1,0 +1,182 @@
+[
+  {
+    "id": "petty_thief",
+    "name": "Petty Thief",
+    "category": "threat",
+    "emoji": "🐀",
+    "text": "A figure slips through the window. They eye your GPUs...",
+    "weight": 10,
+    "cooldown_sec": 180,
+    "effects": [
+      {"kind": "steal_gpu", "chance_if_no_defense": 0.45}
+    ]
+  },
+  {
+    "id": "power_outage",
+    "name": "Power Outage",
+    "category": "threat",
+    "emoji": "⚡",
+    "text": "The lights flicker and die. Your mining rigs go silent.",
+    "weight": 6,
+    "cooldown_sec": 600,
+    "effects": [
+      {"kind": "pause_mining", "seconds": 120}
+    ]
+  },
+  {
+    "id": "nosy_neighbor",
+    "name": "Nosy Neighbor",
+    "category": "social",
+    "emoji": "🐶",
+    "text": "Mrs. Chen from 2B says the humming is keeping her awake. She's threatening to call the cops.",
+    "weight": 5,
+    "cooldown_sec": 600,
+    "effects": [
+      {"kind": "rep_change", "delta": -3}
+    ]
+  },
+  {
+    "id": "tech_share",
+    "name": "Tech Share",
+    "category": "opportunity",
+    "emoji": "📡",
+    "text": "A friendly group-chat kitten just posted a new undervolting trick. You take notes.",
+    "weight": 8,
+    "cooldown_sec": 300,
+    "effects": [
+      {"kind": "tech_point", "delta": 1}
+    ]
+  },
+  {
+    "id": "extra_delivery",
+    "name": "Mysterious Delivery",
+    "category": "opportunity",
+    "emoji": "📦",
+    "text": "A package with no return address. Inside: a GPU that clearly fell off a truck. Finders keepers?",
+    "weight": 4,
+    "cooldown_sec": 900,
+    "effects": [
+      {"kind": "gift_gpu", "tier": "common"}
+    ]
+  },
+  {
+    "id": "btc_pump",
+    "name": "BTC Pump",
+    "category": "opportunity",
+    "emoji": "🎉",
+    "text": "Somewhere, a tweet fires. BTC rockets for the next few minutes.",
+    "weight": 4,
+    "cooldown_sec": 1200,
+    "effects": [
+      {"kind": "btc_multiplier", "factor": 1.5, "seconds": 300}
+    ]
+  },
+  {
+    "id": "lucky_fish",
+    "name": "Lucky Fish Can",
+    "category": "opportunity",
+    "emoji": "🐟",
+    "text": "You find a forgotten tuna can in the drawer. Small morale boost. Big mining boost.",
+    "weight": 5,
+    "cooldown_sec": 900,
+    "effects": [
+      {"kind": "earn_multiplier", "factor": 1.20, "seconds": 600}
+    ]
+  },
+  {
+    "id": "admin_discovery",
+    "name": "The Admin Wakes Up",
+    "category": "threat",
+    "emoji": "🕵",
+    "text": "Footsteps in the corridor. Someone noticed the fans.",
+    "weight": 3,
+    "cooldown_sec": 1500,
+    "effects": [
+      {"kind": "eviction_warning"}
+    ]
+  },
+  {
+    "id": "tunnel_heist",
+    "name": "Underground Tunnel Heist",
+    "category": "threat",
+    "emoji": "🕳",
+    "text": "A hole appears in the concrete floor. Well-funded enemies emerge.",
+    "weight": 2,
+    "cooldown_sec": 2400,
+    "effects": [
+      {"kind": "steal_gpu", "chance_if_no_defense": 0.80, "count": 2}
+    ]
+  },
+  {
+    "id": "pirates",
+    "name": "Caribbean Pirates",
+    "category": "crisis",
+    "emoji": "🏴‍☠️",
+    "text": "A dinghy pulls up to the container. Someone yells 'YARR' in a suspiciously practiced voice.",
+    "weight": 2,
+    "cooldown_sec": 3000,
+    "effects": [
+      {"kind": "burn_room_chance", "chance": 0.5}
+    ]
+  },
+  {
+    "id": "street_dog",
+    "name": "Stray Dog Visit",
+    "category": "social",
+    "emoji": "🐕",
+    "text": "A dog wanders in, sniffs a GPU fan, and curls up nearby. Morale +1.",
+    "weight": 4,
+    "cooldown_sec": 900,
+    "effects": [
+      {"kind": "rep_change", "delta": 1}
+    ]
+  },
+  {
+    "id": "rain_leak",
+    "name": "Roof Leak",
+    "category": "threat",
+    "emoji": "💧",
+    "text": "Water drips through the ceiling. One GPU is looking damp.",
+    "weight": 3,
+    "cooldown_sec": 1200,
+    "effects": [
+      {"kind": "damage_gpu", "amount": 0.15}
+    ]
+  },
+  {
+    "id": "gas_leak",
+    "name": "Something Smells Off",
+    "category": "threat",
+    "emoji": "☠️",
+    "text": "A faint sweet smell. You should probably open a window.",
+    "weight": 2,
+    "cooldown_sec": 1800,
+    "effects": [
+      {"kind": "pause_mining", "seconds": 60}
+    ]
+  },
+  {
+    "id": "typhoon",
+    "name": "Typhoon",
+    "category": "crisis",
+    "emoji": "🌊",
+    "text": "The ship pitches hard. A GPU slides off its rack.",
+    "weight": 2,
+    "cooldown_sec": 2400,
+    "effects": [
+      {"kind": "damage_gpu", "amount": 0.4}
+    ]
+  },
+  {
+    "id": "seagull",
+    "name": "Seagull Theft",
+    "category": "threat",
+    "emoji": "🐦",
+    "text": "A seagull makes off with a GPU fan blade. Repair will take a bit.",
+    "weight": 4,
+    "cooldown_sec": 900,
+    "effects": [
+      {"kind": "damage_gpu", "amount": 0.1}
+    ]
+  }
+]
