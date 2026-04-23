@@ -23,7 +23,7 @@ var current_building: RefCounted:
 			if DataManager.buildings.size() > 0:
 				return DataManager.buildings[0]
 			return null
-		var cid := DataManager.player.curr_building_id
+		var cid: String = DataManager.player.curr_building_id
 		var found := find_by_id(cid)
 		if found != null:
 			return found
