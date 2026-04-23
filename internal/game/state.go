@@ -161,8 +161,8 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 			s.unlockRoomInternal(r)
 		}
 	}
-	// Starter GPU.
-	s.addGPU("gtx1060", "alley", true)
+	// Starter GPU — already on the desk, no shipping wait.
+	s.addGPU("gtx1060", "alley", false)
 	welcomeName := kittenName
 	if welcomeName == "" {
 		welcomeName = "friend"

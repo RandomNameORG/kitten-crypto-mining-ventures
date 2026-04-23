@@ -98,12 +98,11 @@ func TestBlackoutWhenBroke(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		s.addGPU("rtx4090", "alley", false)
 	}
-	// Force a bill cycle: LastBillUnix 70s ago so the 60s threshold trips.
+	// Bypass Tick so BTC auto-cash-out doesn't secretly cover the bill —
+	// we're testing the billing path specifically.
 	now := time.Now().Unix()
 	s.LastBillUnix = now - 70
-	s.LastTickUnix = now - 1
-	s.Tick(now)
-	// Should be broke and have a pause_mining modifier.
+	s.advanceBilling(now)
 	paused := false
 	for _, m := range s.Modifiers {
 		if m.Kind == "pause_mining" {

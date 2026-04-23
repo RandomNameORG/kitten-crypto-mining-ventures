@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
 )
 
 func TestMaybeFireEventRespectsSeed(t *testing.T) {
@@ -92,7 +94,7 @@ func TestApplyEventDefenseReducesStealRate(t *testing.T) {
 
 // --- fixtures ---
 
-func tpEvent() eventShim {
+func tpEvent() data.EventDef {
 	return eventShim{
 		Category: "opportunity",
 		Emoji:    "🧠",
@@ -101,7 +103,7 @@ func tpEvent() eventShim {
 	}.toDef()
 }
 
-func outageEvent(seconds int) eventShim {
+func outageEvent(seconds int) data.EventDef {
 	return eventShim{
 		Category: "threat",
 		Emoji:    "⚡",
@@ -110,7 +112,7 @@ func outageEvent(seconds int) eventShim {
 	}.toDef()
 }
 
-func stealEvent() eventShim {
+func stealEvent() data.EventDef {
 	return eventShim{
 		Category: "threat",
 		Emoji:    "🐀",
