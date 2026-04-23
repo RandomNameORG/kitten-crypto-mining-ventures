@@ -6,16 +6,29 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  build-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-      - name: Download modules
+
+      - name: Fetch modules
         run: go mod download
+
+      - name: Tidy check
+        run: |
+          cp go.mod /tmp/go.mod.orig
+          [ -f go.sum ] && cp go.sum /tmp/go.sum.orig || true
+          go mod tidy
+          diff /tmp/go.mod.orig go.mod || (echo "go.mod not tidy — run 'go mod tidy' locally and commit" && exit 1)
+
       - name: Vet
         run: go vet ./...
+
       - name: Build
         run: go build ./...
+
+      - name: Test
+        run: go test -race -count=1 ./...

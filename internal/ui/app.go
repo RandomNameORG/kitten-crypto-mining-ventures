@@ -48,11 +48,17 @@ type App struct {
 	mercsOwnedCur  int // cursor in owned list
 	mercsTab       int // 0 = owned, 1 = hireable
 	labCursor      int
-	labBoost1      int // index in ResearchBoosts
-	labBoost2      int
+	labBoost1      int // index in ResearchBoosts (reused as combo index)
+	labBoost2      int // (unused; kept so future slots can split)
 	labTier        int // 1..3
 	prestigeCursor int
-	defenseCursor  int // 0..4 for lock/cctv/wiring/cooling/armor
+
+	// Name-entry overlay — fires at startup if state.KittenName is empty.
+	nameEntryActive bool
+	nameEntryBuf    string
+
+	// Retire confirmation — double-press [R] within a short window.
+	retireArmedUntil time.Time
 
 	status         string
 	statusExpires  time.Time
@@ -60,13 +66,20 @@ type App struct {
 }
 
 func NewApp(s *game.State) App {
-	return App{
-		state:    s,
-		view:     viewDashboard,
-		labTier:  1,
+	a := App{
+		state:     s,
+		view:      viewDashboard,
+		labTier:   1,
 		labBoost1: 0,
 		labBoost2: 1,
 	}
+	// Anonymous save / freshly-created state with no name — open the naming
+	// overlay on first frame. Everything else pauses until they commit.
+	if s.KittenName == "" {
+		a.nameEntryActive = true
+		a.nameEntryBuf = ""
+	}
+	return a
 }
 
 func (a App) Init() tea.Cmd {
@@ -84,18 +97,60 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 
 	case tickMsg:
-		a.state.Tick(time.Now().Unix())
-		if def := a.state.MaybeFireEvent(); def != nil {
-			a.showEventPopup = def
+		// Freeze sim while the name-entry overlay is up so the starter's
+		// shipping-timer doesn't tick past.
+		if !a.nameEntryActive {
+			a.state.Tick(time.Now().Unix())
+			if def := a.state.MaybeFireEvent(); def != nil {
+				a.showEventPopup = def
+			}
 		}
 		return a, tickCmd()
 
 	case tea.KeyMsg:
+		if a.nameEntryActive {
+			return a.handleNameEntry(m)
+		}
 		if a.showEventPopup != nil {
 			a.showEventPopup = nil
 			return a, nil
 		}
 		return a.handleKey(m)
+	}
+	return a, nil
+}
+
+func (a App) handleNameEntry(k tea.KeyMsg) (tea.Model, tea.Cmd) {
+	key := k.String()
+	switch key {
+	case "ctrl+c":
+		return a, tea.Quit
+	case "enter":
+		name := strings.TrimSpace(a.nameEntryBuf)
+		if name == "" {
+			name = "Whiskers"
+		}
+		a.state.KittenName = name
+		a.state.AppendLog("info", fmt.Sprintf("Named kitten: %s.", name))
+		a.nameEntryActive = false
+		// Reset the tick anchors so the shipping-timer countdown starts fresh.
+		now := time.Now().Unix()
+		a.state.LastTickUnix = now
+		a.state.LastBillUnix = now
+		a.state.LastWagesUnix = now
+		_ = a.saveNow()
+		return a, nil
+	case "backspace":
+		if n := len(a.nameEntryBuf); n > 0 {
+			a.nameEntryBuf = a.nameEntryBuf[:n-1]
+		}
+		return a, nil
+	default:
+		// Accept visible characters only, cap at 20.
+		r := k.Runes
+		if len(r) == 1 && r[0] >= 0x20 && r[0] < 0x7f && len(a.nameEntryBuf) < 20 {
+			a.nameEntryBuf += string(r[0])
+		}
 	}
 	return a, nil
 }
@@ -201,6 +256,10 @@ func (a App) View() string {
 		return "Please widen your terminal to at least 80x22."
 	}
 
+	if a.nameEntryActive {
+		return a.renderNameEntry()
+	}
+
 	header := a.renderHeader()
 	nav := a.renderNav()
 
@@ -288,6 +347,22 @@ func (a App) renderNav() string {
 		}
 	}
 	return lipgloss.NewStyle().Padding(0, 1).Render(strings.Join(parts, " "))
+}
+
+func (a App) renderNameEntry() string {
+	logo := "   /\\_/\\\n  ( o.o )\n   > ^ <"
+	prompt := "  Name your kitten engineer: " + a.nameEntryBuf + "█"
+	body := strings.Join([]string{
+		TitleStyle.Render("🐾 Kitten Crypto Mining Ventures"),
+		DimStyle.Render("an incremental game that respects your attention"),
+		"",
+		lipgloss.NewStyle().Foreground(KittenPink).Render(logo),
+		"",
+		prompt,
+		"",
+		DimStyle.Render("  [enter] start   [ctrl+c] quit"),
+	}, "\n")
+	return lipgloss.NewStyle().Padding(2, 4).Render(body)
 }
 
 func (a App) renderFooter() string {

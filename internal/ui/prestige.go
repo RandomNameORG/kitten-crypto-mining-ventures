@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -19,7 +20,7 @@ func (a App) renderPrestigeView() string {
 			DimStyle.Render("Prestige is locked. Unlock 'Venture Capital' in the Mogul skill lane."),
 		}, "\n")
 	}
-	help := DimStyle.Render("[↑/↓] select perk   [p] buy perk   [R] RETIRE (only when eligible)   [esc]/[1] back")
+	help := DimStyle.Render("[↑/↓] select perk   [p] buy perk   [R] RETIRE (press twice to confirm)   [esc]/[1] back")
 
 	// Status.
 	lines := []string{HeaderStyle.Render("Status")}
@@ -86,11 +87,21 @@ func (a App) handlePrestigeKey(key string) (tea.Model, tea.Cmd) {
 			}
 		}
 	case "R":
+		if !a.state.CanRetire() {
+			a = a.withStatus("❌ not eligible to retire yet")
+			return a, nil
+		}
+		// Double-press confirmation: first R arms for 5 seconds, second R commits.
+		if a.retireArmedUntil.IsZero() || time.Now().After(a.retireArmedUntil) {
+			a.retireArmedUntil = time.Now().Add(5 * time.Second)
+			a = a.withStatus("⚠ press [R] again within 5s to confirm retirement")
+			return a, nil
+		}
+		a.retireArmedUntil = time.Time{}
 		fresh, lp, err := a.state.Retire()
 		if err != nil {
 			a = a.withStatus("❌ " + err.Error())
 		} else {
-			// Swap in fresh state. Save both legacy + new run immediately.
 			a.state = fresh
 			_ = a.saveNow()
 			a = a.withStatus(fmt.Sprintf("🐾 retired. +%d LP banked. New run begins.", lp))

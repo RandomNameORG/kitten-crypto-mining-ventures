@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -30,8 +28,8 @@ func main() {
 	}
 
 	if state == nil {
-		name := promptKittenName()
-		state = game.NewState(name)
+		// Empty name makes the UI open a splash/name-entry overlay on start.
+		state = game.NewState("")
 	} else {
 		// Offline progress: catch up the simulation from the last tick to now,
 		// capped at 8 hours. Use a fake large-step Tick call; state.Tick already
@@ -58,16 +56,4 @@ func main() {
 	}
 	// Final save on clean exit.
 	_ = state.Save()
-}
-
-func promptKittenName() string {
-	fmt.Print("Name your kitten (press enter for Whiskers): ")
-	scanner := bufio.NewScanner(os.Stdin)
-	if scanner.Scan() {
-		name := strings.TrimSpace(scanner.Text())
-		if name != "" {
-			return name
-		}
-	}
-	return "Whiskers"
 }

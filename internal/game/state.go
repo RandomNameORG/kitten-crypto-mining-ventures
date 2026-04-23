@@ -116,7 +116,9 @@ type State struct {
 	LegacyAvailable int `json:"legacy_available"`
 }
 
-// NewState returns a fresh game.
+// NewState returns a fresh game. An empty kittenName signals that the UI
+// should prompt — it's stored as "" on the returned state and the UI's
+// name-entry view takes over until the player commits.
 func NewState(kittenName string) *State {
 	return newStateWithLegacy(kittenName, LoadLegacy())
 }
@@ -124,9 +126,6 @@ func NewState(kittenName string) *State {
 // newStateWithLegacy is the internal constructor that also applies cross-run
 // legacy bonuses at new-game time.
 func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
-	if kittenName == "" {
-		kittenName = "Whiskers"
-	}
 	now := time.Now().Unix()
 	s := &State{
 		Version:        1,
@@ -164,7 +163,11 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 	}
 	// Starter GPU.
 	s.addGPU("gtx1060", "alley", true)
-	s.appendLog("info", fmt.Sprintf("Welcome, %s. Your first GPU hums to life.", kittenName))
+	welcomeName := kittenName
+	if welcomeName == "" {
+		welcomeName = "friend"
+	}
+	s.appendLog("info", fmt.Sprintf("Welcome, %s. Your first GPU hums to life.", welcomeName))
 
 	// Apply legacy bonuses at start.
 	if legacy != nil {
@@ -428,11 +431,58 @@ func Load() (*State, error) {
 	return LoadFrom(b)
 }
 
-// LoadFrom parses raw save bytes.
+// LoadFrom parses raw save bytes and backfills any missing fields so saves
+// written by earlier versions load cleanly into the current schema.
 func LoadFrom(b []byte) (*State, error) {
 	var s State
 	if err := json.Unmarshal(b, &s); err != nil {
 		return nil, err
 	}
+	s.ensureInit()
 	return &s, nil
+}
+
+// ensureInit normalises a State so every map/slice is non-nil. Called after
+// Unmarshal so older saves work without panics.
+func (s *State) ensureInit() {
+	if s.Rooms == nil {
+		s.Rooms = map[string]*RoomState{}
+	}
+	if s.GPUs == nil {
+		s.GPUs = []*GPU{}
+	}
+	if s.Modifiers == nil {
+		s.Modifiers = []Modifier{}
+	}
+	if s.EventCooldown == nil {
+		s.EventCooldown = EventCooldowns{}
+	}
+	if s.UnlockedSkills == nil {
+		s.UnlockedSkills = map[string]bool{}
+	}
+	if s.Mercs == nil {
+		s.Mercs = []*Merc{}
+	}
+	if s.Blueprints == nil {
+		s.Blueprints = []*Blueprint{}
+	}
+	if s.Log == nil {
+		s.Log = []LogEntry{}
+	}
+	if s.NextGPUID < 1 {
+		s.NextGPUID = 1
+	}
+	if s.NextMercID < 1 {
+		s.NextMercID = 1
+	}
+	if s.NextBlueprintN < 1 {
+		s.NextBlueprintN = 1
+	}
+	// Ensure every room-state object references a known room. Unknown ids
+	// (from removed biomes) silently drop so the game keeps loading.
+	for id := range s.Rooms {
+		if _, ok := data.RoomByID(id); !ok {
+			delete(s.Rooms, id)
+		}
+	}
 }
