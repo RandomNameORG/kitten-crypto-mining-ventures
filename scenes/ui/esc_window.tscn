@@ -1,0 +1,59 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8kittenmining103"]
+
+[ext_resource type="Script" path="res://scripts/ui/esc_window.gd" id="1_esc"]
+
+[node name="EscWindow" type="CanvasLayer"]
+layer = 10
+script = ExtResource("1_esc")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
+
+[node name="Center" type="CenterContainer" parent="Root"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
+layout_mode = 2
+
+[node name="Buttons" type="VBoxContainer" parent="Root/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Root/Center/Panel/Buttons"]
+layout_mode = 2
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="Root/Center/Panel/Buttons"]
+custom_minimum_size = Vector2(200, 48)
+layout_mode = 2
+text = "Resume"
+
+[node name="SettingsButton" type="Button" parent="Root/Center/Panel/Buttons"]
+custom_minimum_size = Vector2(200, 48)
+layout_mode = 2
+text = "Settings"
+
+[node name="QuitButton" type="Button" parent="Root/Center/Panel/Buttons"]
+custom_minimum_size = Vector2(200, 48)
+layout_mode = 2
+text = "Quit to Menu"

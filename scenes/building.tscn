@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8kittenmining002"]
+
+[ext_resource type="Script" path="res://scripts/building.gd" id="1_building"]
+[ext_resource type="PackedScene" uid="uid://b8kittenmining010" path="res://scenes/ui/cell_indicator.tscn" id="2_indicator"]
+
+[node name="Building" type="Node2D"]
+script = ExtResource("1_building")
+
+[node name="TileMap" type="TileMap" parent="."]
+format = 2
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position_smoothing_enabled = true
+
+[node name="CellIndicator" parent="." instance=ExtResource("2_indicator")]
+visible = false
+
+[node name="Buildings" type="Node2D" parent="."]
