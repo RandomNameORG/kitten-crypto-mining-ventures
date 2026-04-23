@@ -20,16 +20,45 @@ type GPU struct {
 	HoursLeft    float64 `json:"hours_left"`
 	ShipsAt      int64   `json:"ships_at,omitempty"` // unix time when shipping completes
 	Room         string  `json:"room"`
+	// BlueprintID is set for MEOWCore instances; maps to a Blueprint for stats.
+	BlueprintID string `json:"blueprint_id,omitempty"`
 }
 
 // RoomState is the runtime instance of a Room owned by the player.
 type RoomState struct {
-	DefID    string  `json:"def_id"`
-	Heat     float64 `json:"heat"`
-	MaxHeat  float64 `json:"max_heat"`
-	LockLvl  int     `json:"lock_lvl"`
-	CCTVLvl  int     `json:"cctv_lvl"`
-	WiringLv int     `json:"wiring_lvl"`
+	DefID      string  `json:"def_id"`
+	Heat       float64 `json:"heat"`
+	MaxHeat    float64 `json:"max_heat"`
+	LockLvl    int     `json:"lock_lvl"`     // 0-5, base defense vs theft
+	CCTVLvl    int     `json:"cctv_lvl"`     // 0-5, catches thieves + deters merc betrayal
+	WiringLvl  int     `json:"wiring_lvl"`   // 0-5, reduces outage + fire chance
+	CoolingLvl int     `json:"cooling_lvl"`  // 0-5, extra cooling
+	ArmorLvl   int     `json:"armor_lvl"`    // 0-5, defense vs tunnels / pirates
+}
+
+// Merc is a runtime mercenary instance.
+type Merc struct {
+	InstanceID int   `json:"instance_id"`
+	DefID      string `json:"def_id"`
+	Loyalty    int    `json:"loyalty"` // 0-100
+	HiredAt    int64  `json:"hired_at"`
+	RoomID     string `json:"room_id"` // which room they guard
+}
+
+// Blueprint is a persistent recipe for a custom MEOWCore GPU.
+type Blueprint struct {
+	ID         string   `json:"id"`
+	Tier       int      `json:"tier"`   // 1..3
+	Boosts     []string `json:"boosts"` // subset of: efficiency, undervolt, durability, micro, stealth
+	CreatedAt  int64    `json:"created_at"`
+}
+
+// Research is the player's current active research project.
+type Research struct {
+	BlueprintTier int      `json:"blueprint_tier"`
+	Boosts        []string `json:"boosts"`
+	StartedAt     int64    `json:"started_at"`
+	DurationSec   int      `json:"duration_sec"`
 }
 
 // Modifier is a time-limited multiplier or flag.
@@ -51,52 +80,81 @@ type EventCooldowns map[string]int64
 
 // State is the entire save-able game state.
 type State struct {
-	Version       int                 `json:"version"`
-	KittenName    string              `json:"kitten_name"`
-	Money         float64             `json:"money"`
-	BTC           float64             `json:"btc"`
-	BTCPriceSeed  int64               `json:"btc_price_seed"`
-	TechPoint     int                 `json:"tech_point"`
-	Reputation    int                 `json:"reputation"`
-	Karma         int                 `json:"karma"`
-	CurrentRoom   string              `json:"current_room"`
+	Version       int                   `json:"version"`
+	KittenName    string                `json:"kitten_name"`
+	Money         float64               `json:"money"`
+	BTC           float64               `json:"btc"`
+	BTCPriceSeed  int64                 `json:"btc_price_seed"`
+	TechPoint     int                   `json:"tech_point"`
+	Reputation    int                   `json:"reputation"`
+	Karma         int                   `json:"karma"`
+	CurrentRoom   string                `json:"current_room"`
 	Rooms         map[string]*RoomState `json:"rooms"`
-	GPUs          []*GPU              `json:"gpus"`
-	NextGPUID     int                 `json:"next_gpu_id"`
-	Modifiers     []Modifier          `json:"modifiers"`
-	EventCooldown EventCooldowns      `json:"event_cooldown"`
-	LastTickUnix  int64               `json:"last_tick_unix"`
-	LastBillUnix  int64               `json:"last_bill_unix"`
-	Log           []LogEntry          `json:"log"`
-	Paused        bool                `json:"paused"`
-	StartedUnix   int64               `json:"started_unix"`
+	GPUs          []*GPU                `json:"gpus"`
+	NextGPUID     int                   `json:"next_gpu_id"`
+	Modifiers     []Modifier            `json:"modifiers"`
+	EventCooldown EventCooldowns        `json:"event_cooldown"`
+	LastTickUnix  int64                 `json:"last_tick_unix"`
+	LastBillUnix  int64                 `json:"last_bill_unix"`
+	LastWagesUnix int64                 `json:"last_wages_unix"`
+	Log           []LogEntry            `json:"log"`
+	Paused        bool                  `json:"paused"`
+	StartedUnix   int64                 `json:"started_unix"`
+
+	// Progression systems.
+	UnlockedSkills map[string]bool `json:"unlocked_skills"`
+	Mercs          []*Merc         `json:"mercs"`
+	NextMercID     int             `json:"next_merc_id"`
+	ResearchFrags  int             `json:"research_frags"`
+	ActiveResearch *Research       `json:"active_research,omitempty"`
+	Blueprints     []*Blueprint    `json:"blueprints"`
+	NextBlueprintN int             `json:"next_blueprint_n"`
+
+	// Lifetime + prestige.
+	LifetimeEarned float64 `json:"lifetime_earned"`
+	// LegacyPoints spent / available this run. True cross-run LP lives in legacy.json.
+	LegacyAvailable int `json:"legacy_available"`
 }
 
 // NewState returns a fresh game.
 func NewState(kittenName string) *State {
+	return newStateWithLegacy(kittenName, LoadLegacy())
+}
+
+// newStateWithLegacy is the internal constructor that also applies cross-run
+// legacy bonuses at new-game time.
+func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 	if kittenName == "" {
 		kittenName = "Whiskers"
 	}
 	now := time.Now().Unix()
 	s := &State{
-		Version:       1,
-		KittenName:    kittenName,
-		Money:         150,
-		BTC:           0,
-		BTCPriceSeed:  rand.Int63(),
-		TechPoint:     0,
-		Reputation:    0,
-		Karma:         0,
-		CurrentRoom:   "alley",
-		Rooms:         map[string]*RoomState{},
-		GPUs:          []*GPU{},
-		NextGPUID:     1,
-		Modifiers:     []Modifier{},
-		EventCooldown: EventCooldowns{},
-		LastTickUnix:  now,
-		LastBillUnix:  now,
-		StartedUnix:   now,
-		Log:           []LogEntry{},
+		Version:        1,
+		KittenName:     kittenName,
+		Money:          150,
+		BTC:            0,
+		BTCPriceSeed:   rand.Int63(),
+		TechPoint:      0,
+		Reputation:     0,
+		Karma:          0,
+		CurrentRoom:    "alley",
+		Rooms:          map[string]*RoomState{},
+		GPUs:           []*GPU{},
+		NextGPUID:      1,
+		Modifiers:      []Modifier{},
+		EventCooldown:  EventCooldowns{},
+		LastTickUnix:   now,
+		LastBillUnix:   now,
+		LastWagesUnix:  now,
+		StartedUnix:    now,
+		Log:            []LogEntry{},
+		UnlockedSkills: map[string]bool{},
+		Mercs:          []*Merc{},
+		NextMercID:     1,
+		ResearchFrags:  0,
+		Blueprints:     []*Blueprint{},
+		NextBlueprintN: 1,
+		LegacyAvailable: 0,
 	}
 	// Unlock every room flagged as default.
 	for _, r := range data.Rooms() {
@@ -107,6 +165,29 @@ func NewState(kittenName string) *State {
 	// Starter GPU.
 	s.addGPU("gtx1060", "alley", true)
 	s.appendLog("info", fmt.Sprintf("Welcome, %s. Your first GPU hums to life.", kittenName))
+
+	// Apply legacy bonuses at start.
+	if legacy != nil {
+		if legacy.StarterCash > 0 {
+			s.Money += legacy.StarterCash
+			s.appendLog("opportunity", fmt.Sprintf("Legacy bonus: +$%.0f starter cash.", legacy.StarterCash))
+		}
+		if legacy.UnlockedUniversity {
+			if def, ok := data.RoomByID("university"); ok {
+				s.unlockRoomInternal(def)
+				s.appendLog("opportunity", "Legacy bonus: University Server Room pre-unlocked.")
+			}
+		}
+		// Carry over researched blueprints (deep-copied so run-state mutations
+		// don't leak back into the legacy bank).
+		for _, bp := range legacy.Blueprints {
+			dup := *bp
+			s.Blueprints = append(s.Blueprints, &dup)
+		}
+		if len(legacy.Blueprints) > 0 {
+			s.appendLog("opportunity", fmt.Sprintf("Legacy bonus: %d blueprints carried over.", len(legacy.Blueprints)))
+		}
+	}
 	return s
 }
 
@@ -147,8 +228,7 @@ func (s *State) SwitchRoom(id string) error {
 	return nil
 }
 
-// addGPU creates a new GPU instance. If shipping is true it enters shipping
-// state with a random 30-180s delivery window.
+// addGPU creates a new GPU instance.
 func (s *State) addGPU(defID, room string, shipping bool) *GPU {
 	def, ok := data.GPUByID(defID)
 	if !ok {
@@ -170,6 +250,21 @@ func (s *State) addGPU(defID, room string, shipping bool) *GPU {
 	return g
 }
 
+// addMEOWCore creates a GPU instance from a player-researched Blueprint.
+func (s *State) addMEOWCore(bp *Blueprint, room string) *GPU {
+	g := &GPU{
+		InstanceID:  s.NextGPUID,
+		DefID:       fmt.Sprintf("meowcore_v%d", bp.Tier),
+		Status:      "running",
+		HoursLeft:   120, // self-made GPUs are durable
+		Room:        room,
+		BlueprintID: bp.ID,
+	}
+	s.NextGPUID++
+	s.GPUs = append(s.GPUs, g)
+	return g
+}
+
 // BuyGPU purchases a GPU by def id, routes it to current room via shipping.
 func (s *State) BuyGPU(defID string) error {
 	def, ok := data.GPUByID(defID)
@@ -179,7 +274,6 @@ func (s *State) BuyGPU(defID string) error {
 	if s.Money < float64(def.Price) {
 		return fmt.Errorf("need $%d, have $%.0f", def.Price, s.Money)
 	}
-	// Check room slot availability (shipping GPUs count toward slots).
 	if !s.RoomHasFreeSlot(s.CurrentRoom) {
 		return fmt.Errorf("no free slots in this room")
 	}
@@ -189,17 +283,27 @@ func (s *State) BuyGPU(defID string) error {
 	return nil
 }
 
-// SellGPU scraps a GPU for its scrap value.
+// SellGPU scraps a GPU for its scrap value (boosted by Tax Optimization skill).
 func (s *State) SellGPU(instanceID int) error {
 	for i, g := range s.GPUs {
 		if g.InstanceID == instanceID {
-			def, ok := data.GPUByID(g.DefID)
-			if !ok {
-				return fmt.Errorf("ghost GPU")
+			base := 0
+			name := "Unknown"
+			if g.BlueprintID != "" {
+				// MEOWCore scrap value: mid-tier.
+				base = 2000 + (s.blueprintTier(g.BlueprintID)-1)*2000
+				name = fmt.Sprintf("MEOWCore v%d", s.blueprintTier(g.BlueprintID))
+			} else if def, ok := data.GPUByID(g.DefID); ok {
+				base = def.ScrapValue
+				name = def.Name
 			}
-			s.Money += float64(def.ScrapValue)
+			value := float64(base) * s.ScrapValueMult()
+			// Also grant 1-3 research fragments.
+			frags := 1 + rand.Intn(3)
+			s.Money += value
+			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
-			s.appendLog("info", fmt.Sprintf("Sold %s for $%d.", def.Name, def.ScrapValue))
+			s.appendLog("info", fmt.Sprintf("Scrapped %s for $%.0f + %d research fragments.", name, value, frags))
 			return nil
 		}
 	}
@@ -232,6 +336,34 @@ func (s *State) GPUsInRoom(roomID string) []*GPU {
 	return out
 }
 
+// MercsInRoom returns mercs currently guarding the given room.
+func (s *State) MercsInRoom(roomID string) []*Merc {
+	out := []*Merc{}
+	for _, m := range s.Mercs {
+		if m.RoomID == roomID {
+			out = append(out, m)
+		}
+	}
+	return out
+}
+
+// BlueprintByID looks up a researched blueprint.
+func (s *State) BlueprintByID(id string) *Blueprint {
+	for _, bp := range s.Blueprints {
+		if bp.ID == id {
+			return bp
+		}
+	}
+	return nil
+}
+
+func (s *State) blueprintTier(id string) int {
+	if bp := s.BlueprintByID(id); bp != nil {
+		return bp.Tier
+	}
+	return 1
+}
+
 func (s *State) appendLog(category, text string) {
 	s.Log = append(s.Log, LogEntry{
 		Time:     time.Now().Unix(),
@@ -244,34 +376,46 @@ func (s *State) appendLog(category, text string) {
 	}
 }
 
-// AppendLog is the external hook for the event system to write entries.
+// AppendLog is the external hook for other systems to write log entries.
 func (s *State) AppendLog(category, text string) {
 	s.appendLog(category, text)
 }
 
 // --- Save / Load ---
 
-func SavePath() string {
+func saveDir() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return ".meowmine.save.json"
+		return ".meowmine"
 	}
-	dir := filepath.Join(home, ".meowmine")
+	return filepath.Join(home, ".meowmine")
+}
+
+func SavePath() string {
+	dir := saveDir()
 	_ = os.MkdirAll(dir, 0o755)
 	return filepath.Join(dir, "save.json")
 }
 
-// Save writes state to disk.
+// Save writes state to the default save path.
 func (s *State) Save() error {
-	path := SavePath()
-	data, err := json.MarshalIndent(s, "", "  ")
+	return s.SaveAs(SavePath())
+}
+
+// SaveAs writes state to an arbitrary path. SSH mode uses this to keep
+// per-session saves keyed by pubkey.
+func (s *State) SaveAs(path string) error {
+	b, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(path, data, 0o644)
+	if dir := filepath.Dir(path); dir != "" {
+		_ = os.MkdirAll(dir, 0o755)
+	}
+	return os.WriteFile(path, b, 0o644)
 }
 
-// Load reads state from disk, or returns nil if no save exists.
+// Load reads state from the default save path. Returns nil if no save exists.
 func Load() (*State, error) {
 	path := SavePath()
 	b, err := os.ReadFile(path)
@@ -281,6 +425,11 @@ func Load() (*State, error) {
 		}
 		return nil, err
 	}
+	return LoadFrom(b)
+}
+
+// LoadFrom parses raw save bytes.
+func LoadFrom(b []byte) (*State, error) {
 	var s State
 	if err := json.Unmarshal(b, &s); err != nil {
 		return nil, err

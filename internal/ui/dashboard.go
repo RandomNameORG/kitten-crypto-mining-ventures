@@ -38,8 +38,8 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 		if g.Status != "running" {
 			continue
 		}
-		gDef, _ := data.GPUByID(g.DefID)
-		volt += gDef.PowerDraw * (1 + 0.10*float64(g.UpgradeLevel))
+		_, pow, _, _ := a.state.GPUStats(g)
+		volt += pow
 	}
 	meters := fmt.Sprintf("%s   %s   %s",
 		VoltStyle.Render(fmt.Sprintf("⚡ %.0f V/s draw", volt)),
@@ -56,7 +56,6 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 	for i := 0; i < def.Slots; i++ {
 		if i < len(gpus) {
 			g := gpus[i]
-			gDef, _ := data.GPUByID(g.DefID)
 			statusIcon := "●"
 			statusColor := OppGreen
 			statusText := g.Status
@@ -79,7 +78,7 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 			if g.UpgradeLevel > 0 {
 				upMark = lipgloss.NewStyle().Foreground(AccentPurple).Render(fmt.Sprintf(" +%d", g.UpgradeLevel))
 			}
-			line := fmt.Sprintf("  %d. %s %s%s  %s", i+1, indicator, gDef.Name, upMark, DimStyle.Render(statusText))
+			line := fmt.Sprintf("  %d. %s %s%s  %s", i+1, indicator, gpuDisplayName(a.state, g), upMark, DimStyle.Render(statusText))
 			lines = append(lines, line)
 		} else {
 			lines = append(lines, DimStyle.Render(fmt.Sprintf("  %d. (empty)", i+1)))

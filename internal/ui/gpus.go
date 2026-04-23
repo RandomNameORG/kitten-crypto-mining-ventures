@@ -7,7 +7,22 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/game"
 )
+
+// gpuDisplayName returns a human name for any GPU (catalog or MEOWCore).
+func gpuDisplayName(s *game.State, g *game.GPU) string {
+	if g.BlueprintID != "" {
+		if bp := s.BlueprintByID(g.BlueprintID); bp != nil {
+			return fmt.Sprintf("MEOWCore v%d [%s]", bp.Tier, strings.Join(bp.Boosts, "+"))
+		}
+		return "MEOWCore"
+	}
+	if def, ok := data.GPUByID(g.DefID); ok {
+		return def.Name
+	}
+	return g.DefID
+}
 
 func (a App) renderGPUsView() string {
 	gpus := a.state.GPUs
@@ -23,8 +38,11 @@ func (a App) renderGPUsView() string {
 		if i == a.gpusCursor {
 			marker = TitleStyle.Render("▶ ")
 		}
-		def, _ := data.GPUByID(g.DefID)
 		roomDef, _ := data.RoomByID(g.Room)
+		roomName := roomDef.Name
+		if roomName == "" {
+			roomName = g.Room
+		}
 		statusDecor := g.Status
 		if g.Status == "shipping" {
 			statusDecor = "shipping…"
@@ -33,18 +51,18 @@ func (a App) renderGPUsView() string {
 		if g.UpgradeLevel > 0 {
 			upMark = fmt.Sprintf(" +%d", g.UpgradeLevel)
 		}
-		line := fmt.Sprintf("%s#%-3d %-30s%s  %-12s  %-18s  durab %.1fh",
+		line := fmt.Sprintf("%s#%-3d %-36s%s  %-12s  %-24s  durab %.1fh",
 			marker,
 			g.InstanceID,
-			def.Name,
+			gpuDisplayName(a.state, g),
 			upMark,
 			statusDecor,
-			roomDef.Name,
+			roomName,
 			g.HoursLeft,
 		)
 		lines = append(lines, line)
 	}
-	return PanelStyle.Width(100).Render(strings.Join(lines, "\n"))
+	return PanelStyle.Width(110).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {

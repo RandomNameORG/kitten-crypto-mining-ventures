@@ -17,10 +17,13 @@ type viewID int
 const (
 	viewDashboard viewID = iota
 	viewStore
+	viewGPUs
 	viewRooms
 	viewSkills
-	viewGPUs
 	viewLog
+	viewMercs
+	viewLab
+	viewPrestige
 	viewHelp
 )
 
@@ -32,17 +35,38 @@ type App struct {
 	view  viewID
 	w, h  int
 
+	// SavePathOverride, when non-empty, makes all save actions write to this
+	// path instead of the default (~/.meowmine/save.json). Used by the SSH
+	// server to keep per-connection saves.
+	SavePathOverride string
+
 	storeCursor    int
 	gpusCursor     int
 	roomsCursor    int
 	skillsCursor   int
+	mercsCursor    int // index into hireable list when hiring; else 0
+	mercsOwnedCur  int // cursor in owned list
+	mercsTab       int // 0 = owned, 1 = hireable
+	labCursor      int
+	labBoost1      int // index in ResearchBoosts
+	labBoost2      int
+	labTier        int // 1..3
+	prestigeCursor int
+	defenseCursor  int // 0..4 for lock/cctv/wiring/cooling/armor
+
 	status         string
 	statusExpires  time.Time
 	showEventPopup *data.EventDef
 }
 
 func NewApp(s *game.State) App {
-	return App{state: s, view: viewDashboard}
+	return App{
+		state:    s,
+		view:     viewDashboard,
+		labTier:  1,
+		labBoost1: 0,
+		labBoost2: 1,
+	}
 }
 
 func (a App) Init() tea.Cmd {
@@ -61,18 +85,14 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tickMsg:
 		a.state.Tick(time.Now().Unix())
-		// Roll for an event every tick; MaybeFireEvent has its own probability gate.
 		if def := a.state.MaybeFireEvent(); def != nil {
 			a.showEventPopup = def
 		}
 		return a, tickCmd()
 
 	case tea.KeyMsg:
-		// Event popup dismissal.
 		if a.showEventPopup != nil {
 			a.showEventPopup = nil
-			// Fallthrough so the same keypress can also do the normal thing
-			// the user intended — but actually for simplicity, eat the key.
 			return a, nil
 		}
 		return a.handleKey(m)
@@ -82,10 +102,10 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	key := k.String()
-	// Universal keys (work in every view).
+	// Universal keys.
 	switch key {
 	case "ctrl+c", "q":
-		_ = a.state.Save()
+		_ = a.saveNow()
 		return a, tea.Quit
 	case "1":
 		a.view = viewDashboard
@@ -105,6 +125,15 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "6":
 		a.view = viewLog
 		return a, nil
+	case "7":
+		a.view = viewMercs
+		return a, nil
+	case "8":
+		a.view = viewLab
+		return a, nil
+	case "9":
+		a.view = viewPrestige
+		return a, nil
 	case "?":
 		a.view = viewHelp
 		return a, nil
@@ -113,9 +142,7 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a, nil
 	}
 
-	// View-specific keys get first crack at keys that might mean different
-	// things per view (e.g. "s" = save on the dashboard but scrap in the GPUs
-	// view).
+	// Per-view delegates (so overlapping keys resolve sensibly).
 	switch a.view {
 	case viewStore:
 		return a.handleStoreKey(key)
@@ -125,32 +152,53 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a.handleRoomsKey(key)
 	case viewSkills:
 		return a.handleSkillsKey(key)
+	case viewMercs:
+		return a.handleMercsKey(key)
+	case viewLab:
+		return a.handleLabKey(key)
+	case viewPrestige:
+		return a.handlePrestigeKey(key)
 	}
 
-	// Dashboard-only fallbacks.
+	// Dashboard fallback: 's' = save.
 	if key == "s" {
-		if err := a.state.Save(); err != nil {
+		if err := a.saveNow(); err != nil {
 			a = a.withStatus(fmt.Sprintf("save failed: %v", err))
 		} else {
 			a = a.withStatus("💾 saved")
+		}
+	}
+	// 'p' on dashboard = Pump & Dump (if unlocked).
+	if key == "p" {
+		if err := a.state.TriggerPumpDump(); err != nil {
+			a = a.withStatus("❌ " + err.Error())
+		} else {
+			a = a.withStatus("📈 Pump & Dump fired")
 		}
 	}
 	return a, nil
 }
 
 // withStatus returns a copy of `a` with a transient status banner set.
-// Value-return pattern keeps Bubbletea's value-receiver Model idiomatic and
-// makes the mutation's propagation explicit.
 func (a App) withStatus(text string) App {
 	a.status = text
 	a.statusExpires = time.Now().Add(3 * time.Second)
 	return a
 }
 
+// saveNow writes the current state to the right destination (local save path
+// or an SSH-keyed override).
+func (a App) saveNow() error {
+	if a.SavePathOverride != "" {
+		return a.state.SaveAs(a.SavePathOverride)
+	}
+	return a.state.Save()
+}
+
 // View renders the full screen.
 func (a App) View() string {
-	if a.w < 70 || a.h < 20 {
-		return "Please widen your terminal to at least 70x20."
+	if a.w < 80 || a.h < 22 {
+		return "Please widen your terminal to at least 80x22."
 	}
 
 	header := a.renderHeader()
@@ -170,6 +218,12 @@ func (a App) View() string {
 		body = a.renderSkillsView()
 	case viewLog:
 		body = a.renderLogView()
+	case viewMercs:
+		body = a.renderMercsView()
+	case viewLab:
+		body = a.renderLabView()
+	case viewPrestige:
+		body = a.renderPrestigeView()
 	case viewHelp:
 		body = a.renderHelpView()
 	}
@@ -192,13 +246,19 @@ func (a App) renderHeader() string {
 	}
 	title := TitleStyle.Render(fmt.Sprintf("🐾 Kitten Crypto Mining — %s", a.state.KittenName))
 
-	stats := fmt.Sprintf("%s  %s  %s  %s  %s",
+	extras := []string{
 		MoneyStyle.Render(fmt.Sprintf("$%.0f", a.state.Money)),
 		BTCStyle.Render(fmt.Sprintf("₿%.4f", a.state.BTC)),
-		DimStyle.Render(fmt.Sprintf("price $%.0f", price)),
+		DimStyle.Render(fmt.Sprintf("$%.0f/BTC", price)),
 		DimStyle.Render(fmt.Sprintf("TP %d", a.state.TechPoint)),
 		DimStyle.Render(fmt.Sprintf("Rep %+d", a.state.Reputation)),
-	)
+		DimStyle.Render(fmt.Sprintf("frags %d", a.state.ResearchFrags)),
+	}
+	if a.state.ActiveResearch != nil {
+		pct := int(a.state.ResearchProgress() * 100)
+		extras = append(extras, lipgloss.NewStyle().Foreground(AccentPurple).Render(fmt.Sprintf("🔬 %d%%", pct)))
+	}
+	stats := strings.Join(extras, "  ")
 	line := title + paused + "  " + stats
 	return HeaderStyle.Render(line)
 }
@@ -214,6 +274,9 @@ func (a App) renderNav() string {
 		{"4", "rooms", viewRooms},
 		{"5", "skills", viewSkills},
 		{"6", "log", viewLog},
+		{"7", "mercs", viewMercs},
+		{"8", "lab", viewLab},
+		{"9", "prestige", viewPrestige},
 	}
 	parts := []string{}
 	for _, it := range items {
@@ -224,7 +287,7 @@ func (a App) renderNav() string {
 			parts = append(parts, DimStyle.Render(label))
 		}
 	}
-	return lipgloss.NewStyle().Padding(0, 1).Render(strings.Join(parts, "  "))
+	return lipgloss.NewStyle().Padding(0, 1).Render(strings.Join(parts, " "))
 }
 
 func (a App) renderFooter() string {
