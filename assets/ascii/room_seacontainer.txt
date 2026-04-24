@@ -1,0 +1,9 @@
++----------------------------------------------+
+|         v  (seagull)       v                  |
+|    ~  ~  ~  ~  ~  ~  ~  ~  ~   (sea spray)    |
+|  [---container---]                            |
+|  | GPU GPU GPU |                              |
+|  | GPU GPU GPU |                              |
+|  |_____________|  ~  ~  ~  ~  ~               |
++----------------------------------------------+
+ [[ PLACEHOLDER — sea container on cargo ship ]]

@@ -1,0 +1,10 @@
++----------------------------------------------+
+|   /\      (pigeon)                  _         |
+|  /  \     .                  broken |_| light |
+| /____\                                        |
+|   [pallet: GPU GPU]          [rain puddle]    |
+|   [pallet: GPU GPU]                           |
+|   ---                                         |
+|  | . | roll-up door                           |
++----------------------------------------------+
+ [[ PLACEHOLDER — abandoned warehouse ]]

@@ -1,0 +1,9 @@
++----------------------------------------------+
+|    []    neon glow                 ___        |
+|  window  ->  . . .                | o |  lamp |
+|   |=|                             |___|       |
+|   |_|   [shelf: GPU GPU GPU ]                 |
+|                              [radiator]       |
+|   [cat bed]       [energy drink can]          |
++----------------------------------------------+
+ [[ PLACEHOLDER — alley apartment; see docs/ASSETS.md ]]

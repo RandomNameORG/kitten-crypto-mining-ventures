@@ -1,0 +1,7 @@
+  ________________________________________
+ |                                          |
+ |   [GPU rack]     [GPU rack]              |
+ |__________     ________________      _____|
+            \___/                \ ___/
+              ^  tunnel          (o_o) helmeted
+ [[ PLACEHOLDER — underground tunnel heist ]]

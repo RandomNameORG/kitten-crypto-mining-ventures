@@ -1,12 +1,22 @@
-# Godot 4
-.godot/
-*.translation
-export.cfg
-export_presets.cfg
+# Go build artifacts
+/meowmine
+/meowmine.exe
+/dist/
+/bin/
+
+# Save file (per-user, not committed)
+*.save.json
+/saves/
 
 # Editor / IDE
-/.vscode
+/.vscode/
+/.idea/
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Workspace
 .worktrees/
 .autonomous/
+.claude/
