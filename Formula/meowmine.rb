@@ -4,7 +4,7 @@ class Meowmine < Formula
   version "0.1.0"
   license "MIT"
 
-  base = "https://github.com/RandomNameORG/kitten-crypto-mining-ventures/releases/download/v0.1.0"
+  base = "https://github.com/RandomNameORG/kitten-crypto-mining-ventures/releases/download/v#{version}"
 
   on_macos do
     on_arm do
