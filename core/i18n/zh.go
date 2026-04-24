@@ -100,10 +100,15 @@ var zhStrings = map[string]string{
 	"store.help":  "↑/↓ 选择   [b] 购买   [esc]/[1] 返回",
 
 	// GPUs view.
-	"gpus.title":   "🖥  我的显卡",
-	"gpus.help":    "↑/↓ 选择   [u] 升级   [o] 超频   [r] 维修   [s] 拆解   [esc]/[1] 返回",
-	"gpus.empty":   "  （还没有显卡，去商店看看）",
-	"gpus.oc_mark": " 超频+%d%%",
+	"gpus.title":        "🖥  我的显卡",
+	"gpus.help":         "↑/↓ 选择   [u] 升级   [o] 超频   [r] 维修   [s] 拆解   [b] 排序   [esc]/[1] 返回",
+	"gpus.empty":        "  （还没有显卡，去商店看看）",
+	"gpus.oc_mark":      " 超频+%d%%",
+	"gpus.sort_label":   "排序：%s",
+	"gpus.sort_default": "默认",
+	"gpus.sort_earn":    "收益 ↓",
+	"gpus.sort_eff":     "能效 ↓",
+	"gpus.sort_dur":     "寿命 ↑",
 
 	// Rooms view.
 	"rooms.title":      "🏠 房间",
