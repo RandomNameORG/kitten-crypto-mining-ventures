@@ -36,6 +36,16 @@ func (s *State) advanceMarket(now int64) {
 		s.LastMarketTickUnix = now
 		return
 	}
+	// A market_pin modifier (from the market_crash event) holds the price at
+	// a fixed floor for its duration. Advance the anchor so no drift backlog
+	// accumulates while pinned — mean-reversion resumes naturally from the
+	// pinned value once the modifier expires.
+	if pinned, factor := s.MarketPinned(now); pinned {
+		s.LastMarketTickUnix = now
+		s.PrevMarketPrice = factor
+		s.MarketPrice = factor
+		return
+	}
 	elapsed := now - s.LastMarketTickUnix
 	if elapsed < MarketTickSec {
 		return
@@ -54,6 +64,18 @@ func (s *State) advanceMarket(now int64) {
 		}
 	}
 	s.MarketPrice = price
+}
+
+// MarketPinned reports whether a market_pin modifier is active and, if so,
+// the factor (pinned price) it's holding at. The first active pin wins if
+// multiple are somehow stacked.
+func (s *State) MarketPinned(now int64) (bool, float64) {
+	for _, m := range s.Modifiers {
+		if m.Kind == "market_pin" && m.ExpiresAt > now {
+			return true, m.Factor
+		}
+	}
+	return false, 0
 }
 
 // MarketTrend returns +1 / 0 / -1 for up/flat/down vs PrevMarketPrice. The
