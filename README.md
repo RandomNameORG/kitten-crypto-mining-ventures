@@ -10,19 +10,22 @@ The idea is you can leave it open in a `tmux` pane and come back to richer cats.
 
 ### Option A — pre-built binary (no Go needed)
 
-Grab the release binary for your platform from the [Releases](https://github.com/RandomNameORG/kitten-crypto-mining-ventures/releases) page (or ask a maintainer) and run it:
+Download from the [**latest release**](https://github.com/RandomNameORG/kitten-crypto-mining-ventures/releases/latest):
 
-| Platform | File |
-|---|---|
-| Windows (x64) | `meowmine-windows-amd64.exe` |
-| Linux (x64) | `meowmine-linux-amd64` |
-| macOS (Intel) | `meowmine-darwin-amd64` |
-| macOS (Apple Silicon) | `meowmine-darwin-arm64` |
+| Platform | Local TUI | SSH server |
+|---|---|---|
+| Windows (x64) | `meowmine-windows-amd64.exe` | `meowmine-ssh-windows-amd64.exe` |
+| Linux (x64) | `meowmine-linux-amd64` | `meowmine-ssh-linux-amd64` |
+| macOS (Intel) | `meowmine-darwin-amd64` | `meowmine-ssh-darwin-amd64` |
+| macOS (Apple Silicon) | `meowmine-darwin-arm64` | `meowmine-ssh-darwin-arm64` |
 
 ```bash
 # Linux / macOS
 chmod +x meowmine-linux-amd64
 ./meowmine-linux-amd64
+
+# macOS — if Gatekeeper complains, strip the quarantine flag:
+xattr -d com.apple.quarantine meowmine-darwin-*
 
 # Windows (PowerShell or cmd)
 .\meowmine-windows-amd64.exe
