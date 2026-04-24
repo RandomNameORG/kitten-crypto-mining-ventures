@@ -92,6 +92,7 @@ func loadOrNew(from, kittenName, difficulty string) (*game.State, error) {
 		s.LastTickUnix = fixedBaseUnix
 		s.LastBillUnix = fixedBaseUnix
 		s.LastWagesUnix = fixedBaseUnix
+		s.LastMarketTickUnix = fixedBaseUnix
 		s.StartedUnix = fixedBaseUnix
 		return s, nil
 	}
@@ -151,6 +152,7 @@ func printSummary(w *os.File, s *game.State, ticks int, seed int64, startBTC, st
 	fmt.Fprintf(w, " virtual time:     %ds -> %ds\n", s.LastTickUnix-int64(ticks), s.LastTickUnix)
 	fmt.Fprintf(w, " BTC:              %.4f  (Δ %+.4f)\n", s.BTC, s.BTC-startBTC)
 	fmt.Fprintf(w, " LifetimeEarned:   %.4f  (Δ %+.4f)\n", s.LifetimeEarned, s.LifetimeEarned-startLifetime)
+	fmt.Fprintf(w, " MarketPrice:      %.4f×\n", s.MarketPrice)
 	fmt.Fprintf(w, " TechPoint:        %d  (Δ %+d)\n", s.TechPoint, s.TechPoint-startTech)
 	fmt.Fprintf(w, " Reputation:       %d\n", s.Reputation)
 	fmt.Fprintf(w, " GPUs:             %d running, %d shipping, %d broken\n", gpuRunning, gpuShipping, gpuBroken)

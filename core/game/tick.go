@@ -57,6 +57,7 @@ func (s *State) Tick(now int64) {
 
 	s.pruneModifiers(now)
 	s.advanceShipping(now)
+	s.advanceMarket(now)
 	s.advanceMining(now, dt)
 	s.advanceBilling(now)
 	s.advanceResearch(now)
@@ -121,7 +122,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 				efficiencyFactor = 0.5
 			}
 			if !miningPaused {
-				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * MiningScale
+				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale
 				s.BTC += earned
 				s.LifetimeEarned += earned
 			}

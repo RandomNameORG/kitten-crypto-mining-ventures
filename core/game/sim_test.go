@@ -20,10 +20,33 @@ func runSim(t *testing.T, seed int64, ticks int) *State {
 	s.LastTickUnix = simTestBaseUnix
 	s.LastBillUnix = simTestBaseUnix
 	s.LastWagesUnix = simTestBaseUnix
+	s.LastMarketTickUnix = simTestBaseUnix
 	s.StartedUnix = simTestBaseUnix
 	for i := 1; i <= ticks; i++ {
 		s.Tick(simTestBaseUnix + int64(i))
 		_ = s.MaybeFireEvent()
+	}
+	return s
+}
+
+// runSimWithProbe is runSim with a per-tick callback. Used when a test needs
+// to assert an invariant holds *every* tick, not just at the end.
+func runSimWithProbe(t *testing.T, seed int64, ticks int, probe func(i int, s *State)) *State {
+	t.Helper()
+	SeedRNG(seed)
+	s := NewState("sim-test")
+	s.SetDifficulty("normal")
+	s.LastTickUnix = simTestBaseUnix
+	s.LastBillUnix = simTestBaseUnix
+	s.LastWagesUnix = simTestBaseUnix
+	s.LastMarketTickUnix = simTestBaseUnix
+	s.StartedUnix = simTestBaseUnix
+	for i := 1; i <= ticks; i++ {
+		s.Tick(simTestBaseUnix + int64(i))
+		_ = s.MaybeFireEvent()
+		if probe != nil {
+			probe(i, s)
+		}
 	}
 	return s
 }
@@ -110,5 +133,37 @@ func TestSimSeedsDiverge(t *testing.T) {
 		len(a.Modifiers) == len(b.Modifiers)
 	if same {
 		t.Fatal("seed=1 and seed=2 produced identical observable state — RNG is probably not being threaded through")
+	}
+}
+
+// TestSimMarketPriceInvariants runs a full virtual day through the sim and
+// asserts the market price stays finite + clamped every tick, and that it
+// actually moves off 1.0 across the run. This catches a drift path that's
+// wired into Tick but misbehaves under full-loop interaction (e.g. offline
+// catch-up gaps, repeated Tick calls with zero dt, etc.).
+func TestSimMarketPriceInvariants(t *testing.T) {
+	withTempHome(t)
+	var minSeen, maxSeen float64 = 1.0, 1.0
+	s := runSimWithProbe(t, 1, 86400, func(_ int, s *State) {
+		if math.IsNaN(s.MarketPrice) || math.IsInf(s.MarketPrice, 0) {
+			t.Fatalf("MarketPrice non-finite: %v", s.MarketPrice)
+		}
+		if s.MarketPrice < marketPriceMin || s.MarketPrice > marketPriceMax {
+			t.Fatalf("MarketPrice out of bounds: %v", s.MarketPrice)
+		}
+		if s.MarketPrice < minSeen {
+			minSeen = s.MarketPrice
+		}
+		if s.MarketPrice > maxSeen {
+			maxSeen = s.MarketPrice
+		}
+	})
+	if s.MarketPrice == 1.0 {
+		t.Errorf("MarketPrice ended at exactly 1.0 after 24h — walk never ran?")
+	}
+	// A 24h random walk should explore noticeably off the starting point —
+	// if min and max are both within ±0.01 of 1.0 something's clamping it.
+	if maxSeen-minSeen < 0.02 {
+		t.Errorf("MarketPrice range %.4f–%.4f is suspiciously tight — drift may be neutered", minSeen, maxSeen)
 	}
 }

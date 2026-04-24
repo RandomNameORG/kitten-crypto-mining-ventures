@@ -114,6 +114,14 @@ type State struct {
 	Blueprints     []*Blueprint    `json:"blueprints"`
 	NextBlueprintN int             `json:"next_blueprint_n"`
 
+	// MarketPrice is the current BTC market multiplier applied to mining earn
+	// rate. Drifts around 1.0 via a mean-reverting random walk (see market.go).
+	// PrevMarketPrice holds the last-observed value so the dashboard can show
+	// a trend arrow. LastMarketTickUnix anchors the drift cadence.
+	MarketPrice         float64 `json:"market_price"`
+	PrevMarketPrice     float64 `json:"prev_market_price"`
+	LastMarketTickUnix  int64   `json:"last_market_tick_unix"`
+
 	// Lifetime + prestige.
 	LifetimeEarned float64 `json:"lifetime_earned"`
 	// LegacyPoints spent / available this run. True cross-run LP lives in legacy.json.
@@ -186,6 +194,9 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 		NextBlueprintN: 1,
 		LegacyAvailable: 0,
 		Lang:            i18n.Lang(),
+		MarketPrice:        1.0,
+		PrevMarketPrice:    1.0,
+		LastMarketTickUnix: now,
 	}
 	// Unlock every room flagged as default.
 	for _, r := range data.Rooms() {
@@ -580,6 +591,13 @@ func (s *State) ensureInit() {
 	// KittenName and Difficulty empty and the UI handles both.
 	if s.Difficulty == "" && s.KittenName != "" {
 		s.Difficulty = "normal"
+	}
+	// Migration: saves from before the BTC market price feature had no
+	// MarketPrice field, so JSON-decodes leave it at 0. Treat that as
+	// "unset" and seed both current and prev price at the neutral 1.0×.
+	if s.MarketPrice == 0 {
+		s.MarketPrice = 1.0
+		s.PrevMarketPrice = 1.0
 	}
 }
 

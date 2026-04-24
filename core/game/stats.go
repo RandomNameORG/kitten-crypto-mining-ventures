@@ -27,7 +27,7 @@ func (s *State) GPUEarnRatePerSec(g *GPU) float64 {
 		effFactor = 0.5
 	}
 	earnMult := s.earnMultiplier(now)
-	return eff * earnMult * effFactor * s.DifficultyEarnMult() * MiningScale
+	return eff * earnMult * effFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale
 }
 
 // RoomEarnRatePerSec is the sum of per-GPU earn rates for every running GPU
