@@ -267,6 +267,11 @@ var enStrings = map[string]string{
 	"log.event.gpu.damaged":    "\uf071 A GPU is damaged.",
 	"log.event.repair.free":    "\uf0ad PCB surgery — free repair.",
 	"log.event.repair.paid":    "\uf0ad Repaired for %s.",
+	"log.event.tax.clean":      "\uf132 Reserves covered the audit. The auditor leaves empty-pawed.",
+	"log.event.tax.hit":        "\uf155 Audit bit down: lost %s (%.0f%% of balance). Reputation −5.",
+	"log.event.surge.damaged":  "\uf071 A power surge cooked an overclocked GPU.",
+	"log.event.surge.fizzle":   "\uf021 The surge hit the rail — nothing was overclocked to fry.",
+	"log.event.crash.fired":    "\uf063 Market crash: price pinned at %.2f× for %ds.",
 
 	"log.gpu.arrived":         "\uf1b2 %s arrived and is online.",
 	"log.gpu.failed":          "\uf1e2 %s failed. It needs repair or scrapping.",

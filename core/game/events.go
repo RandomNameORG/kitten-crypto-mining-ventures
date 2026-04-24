@@ -22,6 +22,7 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 		"tech_share", "extra_delivery", "btc_pump", "lucky_fish",
 		"group_chat_sos", "celeb_interview", "halving", "police_visit",
 		"voltage_dip",
+		"tax_audit", "power_surge", "market_crash",
 	}
 	all := append([]string{}, pool...)
 	all = append(all, globalPool...)
@@ -91,6 +92,20 @@ func (s *State) eventGatePasses(id string) bool {
 		return s.LifetimeEarned > 50_000
 	case "group_chat_sos":
 		return s.Reputation >= 0
+	case "tax_audit":
+		return s.LifetimeEarned > 100_000
+	case "market_crash":
+		return s.LifetimeEarned > 50_000
+	case "power_surge":
+		// Only meaningful when there's an overclocked, running GPU in the
+		// current room — otherwise the effect fizzles on apply and just
+		// burns a roll. Gate it out so it never even enters the pool.
+		for _, g := range s.GPUs {
+			if g.Room == s.CurrentRoom && g.Status == "running" && g.OCLevel > 0 {
+				return true
+			}
+		}
+		return false
 	}
 	return true
 }
@@ -184,6 +199,34 @@ func (s *State) applyEvent(e data.EventDef) {
 				s.BTC = 0
 			}
 			s.appendLog("threat", i18n.T("log.event.fire.money", FmtBTC(loss), frac*100))
+		case "tax_audit":
+			threshold := eff.ReserveFactor * s.LifetimeEarned
+			if s.BTC >= threshold {
+				s.appendLog("info", i18n.T("log.event.tax.clean"))
+			} else {
+				frac := eff.Amount
+				if frac <= 0 {
+					frac = 0.1
+				}
+				loss := s.BTC * frac
+				s.BTC -= loss
+				if s.BTC < 0 {
+					s.BTC = 0
+				}
+				s.Reputation -= 5
+				s.appendLog("threat", i18n.T("log.event.tax.hit", FmtBTC(loss), frac*100))
+			}
+		case "damage_oc_gpu":
+			s.damageRandomOCGPU(eff.Amount)
+		case "market_pin":
+			s.Modifiers = append(s.Modifiers, Modifier{
+				Kind:      "market_pin",
+				Factor:    eff.Factor,
+				ExpiresAt: now + int64(eff.Seconds),
+			})
+			s.MarketPrice = eff.Factor
+			s.PrevMarketPrice = s.MarketPrice
+			s.appendLog("crisis", i18n.T("log.event.crash.fired", eff.Factor, eff.Seconds))
 		}
 	}
 }
@@ -254,6 +297,36 @@ func (s *State) damageRandomGPU(amount float64) {
 		s.appendLog("threat", i18n.T("log.event.gpu.broken"))
 	} else {
 		s.appendLog("threat", i18n.T("log.event.gpu.damaged"))
+	}
+}
+
+// damageRandomOCGPU is damageRandomGPU's overclock-only sibling used by the
+// power_surge event: only running GPUs with OCLevel > 0 are eligible. If no
+// OC'd GPU is present at apply time (the gate may have passed earlier this
+// tick but the set can change), the surge fizzles harmlessly.
+func (s *State) damageRandomOCGPU(amount float64) {
+	if amount <= 0 {
+		amount = 0.1
+	}
+	candidates := []*GPU{}
+	for _, g := range s.GPUs {
+		if g.Room == s.CurrentRoom && g.Status == "running" && g.OCLevel > 0 {
+			candidates = append(candidates, g)
+		}
+	}
+	if len(candidates) == 0 {
+		s.appendLog("info", i18n.T("log.event.surge.fizzle"))
+		return
+	}
+	victim := candidates[rand.Intn(len(candidates))]
+	_, _, _, dur := s.GPUStats(victim)
+	victim.HoursLeft -= dur * amount
+	if victim.HoursLeft <= 0 {
+		victim.HoursLeft = 0
+		victim.Status = "broken"
+		s.appendLog("threat", i18n.T("log.event.gpu.broken"))
+	} else {
+		s.appendLog("threat", i18n.T("log.event.surge.damaged"))
 	}
 }
 

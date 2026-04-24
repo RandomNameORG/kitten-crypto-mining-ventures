@@ -67,6 +67,7 @@ type EventEffect struct {
 	Factor            float64 `json:"factor,omitempty"`
 	Tier              string  `json:"tier,omitempty"`
 	Amount            float64 `json:"amount,omitempty"`
+	ReserveFactor     float64 `json:"reserve_factor,omitempty"`
 }
 
 type EventDef struct {

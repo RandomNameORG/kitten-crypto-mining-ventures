@@ -325,5 +325,41 @@
     "weight": 4,
     "cooldown_sec": 900,
     "effects": [{"kind": "damage_gpu", "amount": 0.1}]
+  },
+  {
+    "id": "tax_audit",
+    "name": "Tax Audit",
+    "name_zh": "税务稽查",
+    "category": "threat",
+    "emoji": "🐱‍💼",
+    "text": "A very serious kitten in a tie is at the door. They want to see the books.",
+    "text_zh": "门口站着一只系领带的猫，神情严肃。它想看你的账。",
+    "weight": 3,
+    "cooldown_sec": 7200,
+    "effects": [{"kind": "tax_audit", "amount": 0.20, "reserve_factor": 0.10}]
+  },
+  {
+    "id": "power_surge",
+    "name": "Power Surge",
+    "name_zh": "电压浪涌",
+    "category": "threat",
+    "emoji": "🔌",
+    "text": "A mains spike rips down the overclocked rail. Something on the boosted bus is about to regret it.",
+    "text_zh": "市电浪涌顺着超频的那一路电源冲进来，那条总线上的卡要遭殃了。",
+    "weight": 4,
+    "cooldown_sec": 1800,
+    "effects": [{"kind": "damage_oc_gpu", "amount": 0.35}]
+  },
+  {
+    "id": "market_crash",
+    "name": "Market Crash",
+    "name_zh": "市场崩盘",
+    "category": "crisis",
+    "emoji": "📉",
+    "text": "Red candles everywhere. The whole board flash-crashes and stays pinned at the floor.",
+    "text_zh": "全线飘红。大盘瞬间闪崩，价格被砸到地板上动不了。",
+    "weight": 3,
+    "cooldown_sec": 7200,
+    "effects": [{"kind": "market_pin", "factor": 0.3, "seconds": 300}]
   }
 ]

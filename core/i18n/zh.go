@@ -266,6 +266,11 @@ var zhStrings = map[string]string{
 	"log.event.gpu.damaged":    "\uf071 一张显卡受损。",
 	"log.event.repair.free":    "\uf0ad PCB 手术 —— 免费修复。",
 	"log.event.repair.paid":    "\uf0ad 修复完成，花费 %s。",
+	"log.event.tax.clean":      "\uf132 储备金顶住了稽查，稽查员空手而归。",
+	"log.event.tax.hit":        "\uf155 稽查中招：损失 %s（余额的 %.0f%%）。声望 −5。",
+	"log.event.surge.damaged":  "\uf071 电压浪涌把一张超频显卡电糊了。",
+	"log.event.surge.fizzle":   "\uf021 浪涌冲进来了，但没有超频卡可烧，虚惊一场。",
+	"log.event.crash.fired":    "\uf063 市场崩盘：价格被按在 %.2f×，持续 %d 秒。",
 
 	"log.gpu.arrived":         "\uf1b2 %s 已抵达并上线。",
 	"log.gpu.failed":          "\uf1e2 %s 出故障了，需要维修或拆解。",

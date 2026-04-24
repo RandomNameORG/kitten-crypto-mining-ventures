@@ -14,6 +14,7 @@ type effectShim struct {
 	Chance            float64
 	ChanceIfNoDefense float64
 	Count             int
+	ReserveFactor     float64
 }
 
 type eventShim struct {
@@ -43,6 +44,7 @@ func (e eventShim) toDef() data.EventDef {
 			Chance:            eff.Chance,
 			ChanceIfNoDefense: eff.ChanceIfNoDefense,
 			Count:             eff.Count,
+			ReserveFactor:     eff.ReserveFactor,
 		})
 	}
 	return out
