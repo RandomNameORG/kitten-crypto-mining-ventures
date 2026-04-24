@@ -39,6 +39,11 @@ const (
 	splashNone splashPhase = iota
 	splashName
 	splashDifficulty
+	// splashUpdate is gated by a successful UpdateAvailableMsg — without
+	// one we never enter this phase. It runs BEFORE name / difficulty so
+	// returning players see the prompt on every launch until they pick
+	// "yes" or "skip".
+	splashUpdate
 )
 
 type App struct {
@@ -69,6 +74,14 @@ type App struct {
 	splashPhase    splashPhase
 	nameEntryBuf   string
 	diffPickerCur  int
+
+	// Update-available splash state. updateActive is set when a
+	// ui.UpdateAvailableMsg arrives; see ui/update_splash.go. The
+	// main binary is responsible for running the check and injecting
+	// the message — the App itself is transport-agnostic.
+	updateActive bool
+	updateInfo   UpdateAvailableMsg
+	updateCursor int
 
 	// Retire confirmation — double-press [R] within a short window.
 	retireArmedUntil time.Time
@@ -125,8 +138,21 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return a, tickCmd()
 
+	case UpdateAvailableMsg:
+		// Inject the update prompt as the first splash phase. If the
+		// player is mid-name-entry or mid-difficulty when this lands
+		// (unlikely given the 3s HTTP timeout, but possible) we still
+		// take over — the prompt is about meta-lifecycle, not the run.
+		a.updateInfo = m
+		a.updateActive = true
+		a.splashPhase = splashUpdate
+		a.updateCursor = updateOptYes
+		return a, nil
+
 	case tea.KeyMsg:
 		switch a.splashPhase {
+		case splashUpdate:
+			return a.handleUpdateSplash(m)
 		case splashName:
 			return a.handleNameEntry(m)
 		case splashDifficulty:
@@ -309,6 +335,8 @@ func (a App) View() string {
 		return i18n.T("warn.terminal_too_small")
 	}
 	switch a.splashPhase {
+	case splashUpdate:
+		return a.renderUpdateSplash()
 	case splashName:
 		return a.renderNameEntry()
 	case splashDifficulty:
