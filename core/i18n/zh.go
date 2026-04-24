@@ -208,7 +208,7 @@ var zhStrings = map[string]string{
 	"prestige.perk_owned":   "已拥有 / 满级",
 
 	// Small labels used across multiple views.
-	"label.eff":     "效率 %.4f ₿/秒",
+	"label.eff":     "₿%.3f/秒",
 	"label.bp_line": "    效率 %.4f ₿/秒 · %.0fV · %.0f°C · %.0fh 耐久",
 
 	// Event popup prompts.

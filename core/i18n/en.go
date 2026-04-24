@@ -208,7 +208,7 @@ var enStrings = map[string]string{
 	"prestige.perk_owned": "owned / maxed",
 
 	// Small labels used across multiple views.
-	"label.eff":       "eff %.4f ₿/s",
+	"label.eff":       "₿%.3f/s",
 	"label.bp_line":   "    eff %.4f ₿/s · %.0fV · %.0f°C · %.0fh durability",
 
 	// Event popup prompts.
