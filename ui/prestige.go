@@ -24,7 +24,7 @@ func (a App) renderPrestigeView() string {
 	help := DimStyle.Render(i18n.T("prestige.help"))
 
 	lines := []string{HeaderStyle.Render(i18n.T("prestige.status"))}
-	lines = append(lines, i18n.T("prestige.lifetime", a.state.LifetimeEarned, game.PrestigeThreshold))
+	lines = append(lines, i18n.T("prestige.lifetime", game.FmtBTC(a.state.LifetimeEarned), game.FmtBTC(game.PrestigeThreshold)))
 	reward := a.state.RetireReward()
 	canRetire := a.state.CanRetire()
 	status := DimStyle.Render(i18n.T("prestige.eligible_no"))

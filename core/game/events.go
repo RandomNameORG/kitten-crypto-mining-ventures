@@ -183,7 +183,7 @@ func (s *State) applyEvent(e data.EventDef) {
 			if s.BTC < 0 {
 				s.BTC = 0
 			}
-			s.appendLog("threat", i18n.T("log.event.fire.money", loss, frac*100))
+			s.appendLog("threat", i18n.T("log.event.fire.money", FmtBTC(loss), frac*100))
 		}
 	}
 }
@@ -293,7 +293,7 @@ func (s *State) RepairGPU(instanceID int) error {
 			cost = 0
 		}
 		if s.BTC < float64(cost) {
-			return fmt.Errorf("need ₿%d to repair", cost)
+			return fmt.Errorf("need %s to repair", FmtBTCInt(cost))
 		}
 		s.BTC -= float64(cost)
 		g.Status = "running"
@@ -302,7 +302,7 @@ func (s *State) RepairGPU(instanceID int) error {
 		if cost == 0 {
 			s.appendLog("info", i18n.T("log.event.repair.free"))
 		} else {
-			s.appendLog("info", i18n.T("log.event.repair.paid", cost))
+			s.appendLog("info", i18n.T("log.event.repair.paid", FmtBTCInt(cost)))
 		}
 		return nil
 	}

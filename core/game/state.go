@@ -205,7 +205,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 	if legacy != nil {
 		if legacy.StarterCash > 0 {
 			s.BTC += legacy.StarterCash
-			s.appendLog("opportunity", i18n.T("log.legacy.cash", legacy.StarterCash))
+			s.appendLog("opportunity", i18n.T("log.legacy.cash", FmtBTC(legacy.StarterCash)))
 		}
 		if legacy.UnlockedUniversity {
 			if def, ok := data.RoomByID("university"); ok {
@@ -251,7 +251,7 @@ func (s *State) UnlockRoom(id string) error {
 		return fmt.Errorf("no such room: %s", id)
 	}
 	if s.BTC < float64(def.UnlockCost) {
-		return fmt.Errorf("need ₿%d, have ₿%.0f", def.UnlockCost, s.BTC)
+		return fmt.Errorf("need %s, have %s", FmtBTCInt(def.UnlockCost), FmtBTC(s.BTC))
 	}
 	s.BTC -= float64(def.UnlockCost)
 	s.unlockRoomInternal(def)
@@ -323,14 +323,14 @@ func (s *State) BuyGPU(defID string) error {
 		return fmt.Errorf("no such GPU: %s", defID)
 	}
 	if s.BTC < float64(def.Price) {
-		return fmt.Errorf("need ₿%d, have ₿%.0f", def.Price, s.BTC)
+		return fmt.Errorf("need %s, have %s", FmtBTCInt(def.Price), FmtBTC(s.BTC))
 	}
 	if !s.RoomHasFreeSlot(s.CurrentRoom) {
 		return fmt.Errorf("no free slots in this room")
 	}
 	s.BTC -= float64(def.Price)
 	s.addGPU(defID, s.CurrentRoom, true)
-	s.appendLog("info", i18n.T("log.gpu.ordered", def.LocalName(), def.Price))
+	s.appendLog("info", i18n.T("log.gpu.ordered", def.LocalName(), FmtBTCInt(def.Price)))
 	return nil
 }
 
@@ -354,7 +354,7 @@ func (s *State) SellGPU(instanceID int) error {
 			s.BTC += value
 			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
-			s.appendLog("info", i18n.T("log.gpu.scrapped", name, value, frags))
+			s.appendLog("info", i18n.T("log.gpu.scrapped", name, FmtBTC(value), frags))
 			return nil
 		}
 	}

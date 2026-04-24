@@ -16,7 +16,7 @@ func (s *State) HireMerc(defID string) error {
 		return fmt.Errorf("unknown merc")
 	}
 	if s.BTC < float64(def.HireCost) {
-		return fmt.Errorf("need ₿%d, have ₿%.0f", def.HireCost, s.BTC)
+		return fmt.Errorf("need %s, have %s", FmtBTCInt(def.HireCost), FmtBTC(s.BTC))
 	}
 	s.BTC -= float64(def.HireCost)
 	loyalty := def.LoyaltyBase + s.MercLoyaltyFloor()
@@ -32,7 +32,7 @@ func (s *State) HireMerc(defID string) error {
 	}
 	s.NextMercID++
 	s.Mercs = append(s.Mercs, m)
-	s.appendLog("info", i18n.T("log.merc.hired", def.LocalName(), def.HireCost))
+	s.appendLog("info", i18n.T("log.merc.hired", def.LocalName(), FmtBTCInt(def.HireCost)))
 	return nil
 }
 
@@ -56,7 +56,7 @@ func (s *State) FireMerc(instanceID int) error {
 func (s *State) BribeMerc(instanceID int) error {
 	const cost = 200
 	if s.BTC < cost {
-		return fmt.Errorf("need ₿%d", cost)
+		return fmt.Errorf("need %s", FmtBTCInt(cost))
 	}
 	for _, m := range s.Mercs {
 		if m.InstanceID == instanceID {
@@ -107,7 +107,7 @@ func (s *State) payWages(now int64) {
 		}
 	}
 	if totalWage > 0 {
-		s.appendLog("info", i18n.T("log.merc.wages", totalWage))
+		s.appendLog("info", i18n.T("log.merc.wages", FmtBTC(totalWage)))
 	}
 
 	// Random betrayal check — once per wage tick, one low-loyalty merc might flip.

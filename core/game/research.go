@@ -59,7 +59,7 @@ func (s *State) StartResearch(tier int, boosts []string) error {
 		return fmt.Errorf("need %d research fragments, have %d", info.Frags, s.ResearchFrags)
 	}
 	if s.BTC < float64(info.Money) {
-		return fmt.Errorf("need ₿%d, have ₿%.0f", info.Money, s.BTC)
+		return fmt.Errorf("need %s, have %s", FmtBTCInt(info.Money), FmtBTC(s.BTC))
 	}
 	s.ResearchFrags -= info.Frags
 	s.BTC -= float64(info.Money)
@@ -142,7 +142,7 @@ func (s *State) PrintMEOWCore(blueprintID string) error {
 	cost := info.Money * 3 / 10
 	frags := info.Frags / 5
 	if s.BTC < float64(cost) {
-		return fmt.Errorf("need ₿%d to print", cost)
+		return fmt.Errorf("need %s to print", FmtBTCInt(cost))
 	}
 	if s.ResearchFrags < frags {
 		return fmt.Errorf("need %d fragments to print", frags)

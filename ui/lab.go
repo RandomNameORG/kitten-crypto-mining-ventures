@@ -51,7 +51,7 @@ func (a App) renderLabView() string {
 	plan := []string{HeaderStyle.Render(i18n.T("lab.plan"))}
 	if curTier != nil {
 		plan = append(plan, i18n.T("lab.plan_tier", curTier.Tier, curTier.Name))
-		plan = append(plan, DimStyle.Render(i18n.T("lab.plan_cost", curTier.Money, curTier.Frags, curTier.Duration/60)))
+		plan = append(plan, DimStyle.Render(i18n.T("lab.plan_cost", game.FmtBTCInt(curTier.Money), curTier.Frags, curTier.Duration/60)))
 		plan = append(plan, i18n.T("lab.plan_boosts", combo[0], combo[1]))
 		plan = append(plan, DimStyle.Render(i18n.T("lab.plan_hint")))
 	}
@@ -68,7 +68,7 @@ func (a App) renderLabView() string {
 		eff, pow, heat, dur := game.BlueprintStats(bp)
 		bpLines = append(bpLines, fmt.Sprintf("%s[%s] tier %d  %s",
 			marker, bp.ID, bp.Tier, strings.Join(bp.Boosts, "+")))
-		bpLines = append(bpLines, DimStyle.Render(i18n.T("label.bp_line", eff, pow, heat, dur)))
+		bpLines = append(bpLines, DimStyle.Render(i18n.T("label.bp_line", game.FmtBTC(eff*game.MiningScale), pow, heat, dur)))
 	}
 
 	lw := fitWidth(90, a.w)
