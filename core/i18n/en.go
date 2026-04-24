@@ -99,9 +99,10 @@ var enStrings = map[string]string{
 	"store.help":  "↑/↓ select   [b] buy   [esc]/[1] back",
 
 	// GPUs view.
-	"gpus.title": "🖥  Your GPUs",
-	"gpus.help":  "↑/↓ select   [u] upgrade   [r] repair   [s] scrap   [esc]/[1] back",
-	"gpus.empty": "  (no GPUs yet — visit the store)",
+	"gpus.title":   "🖥  Your GPUs",
+	"gpus.help":    "↑/↓ select   [u] upgrade   [o] overclock   [r] repair   [s] scrap   [esc]/[1] back",
+	"gpus.empty":   "  (no GPUs yet — visit the store)",
+	"gpus.oc_mark": " OC+%d%%",
 
 	// Rooms view.
 	"rooms.title":      "🏠 Rooms",
@@ -273,6 +274,7 @@ var enStrings = map[string]string{
 	"log.gpu.upgrade.bricked": "\uf06d Upgrade failed — GPU is bricked.",
 	"log.gpu.ordered":         "Ordered %s for %s. Tracking inbound…",
 	"log.gpu.scrapped":        "Scrapped %s for %s + %d research fragments.",
+	"log.gpu.oc_set":          "\uf0e7 Overclocked %s to +%d%% (hotter, thirstier).",
 
 	"log.bills.settled":  "\uf155 Bills settled: %s electricity, %s rent.",
 	"log.bills.blackout": "\uf1e6 Couldn't pay the bill. Blackout for 60s.",

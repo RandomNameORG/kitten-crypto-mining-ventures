@@ -12,6 +12,19 @@ import (
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
+// ocLevelPercent maps a GPU's OC level to the earn-boost percentage shown in
+// UI markers. Zero means the OC is off; the UI then suppresses the marker.
+func ocLevelPercent(level int) int {
+	switch level {
+	case 1:
+		return 25
+	case 2:
+		return 50
+	default:
+		return 0
+	}
+}
+
 // gpuDisplayName returns the localized name for any GPU (catalog or MEOWCore).
 func gpuDisplayName(s *game.State, g *game.GPU) string {
 	if g.BlueprintID != "" {
@@ -53,6 +66,10 @@ func (a App) renderGPUsView() string {
 		if g.UpgradeLevel > 0 {
 			upMark = fmt.Sprintf(" +%d", g.UpgradeLevel)
 		}
+		ocMark := ""
+		if pct := ocLevelPercent(g.OCLevel); pct > 0 {
+			ocMark = lipgloss.NewStyle().Foreground(ThreatOrange).Render(fmt.Sprintf(i18n.T("gpus.oc_mark"), pct))
+		}
 		rate := a.state.GPUEarnRatePerSec(g)
 		rateCell := ""
 		if rate > 0 {
@@ -60,11 +77,12 @@ func (a App) renderGPUsView() string {
 		} else {
 			rateCell = DimStyle.Render("—")
 		}
-		line := fmt.Sprintf("%s#%-3d %-36s%s  %-12s  %-18s  durab %5.1fh  %s",
+		line := fmt.Sprintf("%s#%-3d %-36s%s%s  %-12s  %-18s  durab %5.1fh  %s",
 			marker,
 			g.InstanceID,
 			gpuDisplayName(a.state, g),
 			upMark,
+			ocMark,
 			statusDecor,
 			roomName,
 			g.HoursLeft,
@@ -92,6 +110,12 @@ func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {
 				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
 				a = a.withStatus(i18n.T("status.upgrade"))
+			}
+		}
+	case "o":
+		if a.gpusCursor < len(gpus) {
+			if err := a.state.CycleGPUOC(gpus[a.gpusCursor].InstanceID); err != nil {
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			}
 		}
 	case "r":
