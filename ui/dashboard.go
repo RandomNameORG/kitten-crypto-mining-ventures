@@ -276,10 +276,10 @@ func (a App) renderRoomPanel(def data.RoomDef, width int, compact bool) string {
 	}
 
 	lines = append(lines, fmt.Sprintf("%s   %s",
-		VoltStyle.Render(i18n.T("dash.line.power", volt, game.FmtBTC(bill), nextBill)),
+		VoltStyle.Render(IconBolt+" "+i18n.T("dash.line.power", volt, game.FmtBTC(bill), nextBill)),
 		DimStyle.Render(i18n.T("dash.slots_of", len(gpus), def.Slots))))
 	lines = append(lines, "  "+powerHint)
-	lines = append(lines, HeatStyle.Render(i18n.T("dash.heat.label", heat, maxHeat, heatDelta, heatTickSec)))
+	lines = append(lines, HeatStyle.Render(IconThermo+" "+i18n.T("dash.heat.label", heat, maxHeat, heatDelta, heatTickSec)))
 	lines = append(lines, "  "+renderHeatBar(heatFrac, barW)+"  "+zoneStyle.Render(i18n.T(zoneLabel)))
 	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash2", game.FmtBTC(earn), game.FmtBTCSigned(net))))
 	lines = append(lines, renderMarketLine(a.state))
@@ -324,7 +324,7 @@ func (a App) renderRoomPanel(def data.RoomDef, width int, compact bool) string {
 			}
 			ocMark := ""
 			if pct := ocLevelPercent(g.OCLevel); pct > 0 {
-				ocMark = lipgloss.NewStyle().Foreground(ThreatOrange).Render(fmt.Sprintf(" +%d%%", pct))
+				ocMark = OCLevelStyle(g.OCLevel).Render(fmt.Sprintf(" +%d%%", pct))
 			}
 			line := fmt.Sprintf("  %d. %s %s%s%s  %s", i+1, indicator, gpuDisplayName(a.state, g), upMark, ocMark, DimStyle.Render(statusText))
 			lines = append(lines, line)
@@ -460,7 +460,7 @@ func (a App) renderKeyInfoPanel(def data.RoomDef, width int, compact bool) strin
 			oc := ""
 			if pct := ocLevelPercent(g.OCLevel); pct > 0 {
 				oc = fmt.Sprintf(" +%d%%", pct)
-				ocMark = lipgloss.NewStyle().Foreground(ThreatOrange).Render(oc)
+				ocMark = OCLevelStyle(g.OCLevel).Render(oc)
 			}
 			// "  ● " = 4, up+oc display widths tallied, leave 1 trailing.
 			nameBudget := innerW - 4 - len([]rune(up)) - len([]rune(oc)) - 1

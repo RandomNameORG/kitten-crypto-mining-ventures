@@ -34,7 +34,7 @@ type rankTier int
 const (
 	rankNone rankTier = iota
 	rankTop           // top 25% → OppGreen
-	rankMid           // middle 50% → ThreatOrange
+	rankMid           // middle 50% → MoneyGold
 	rankLow           // bottom 25% → CrisisRed
 )
 
@@ -46,7 +46,7 @@ func rankColour(t rankTier) lipgloss.Color {
 	case rankTop:
 		return OppGreen
 	case rankMid:
-		return ThreatOrange
+		return MoneyGold
 	case rankLow:
 		return CrisisRed
 	}

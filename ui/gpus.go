@@ -82,7 +82,7 @@ func (a App) renderGPUsView() string {
 		}
 		ocMark := ""
 		if pct := ocLevelPercent(g.OCLevel); pct > 0 {
-			ocMark = lipgloss.NewStyle().Foreground(ThreatOrange).Render(fmt.Sprintf(i18n.T("gpus.oc_mark"), pct))
+			ocMark = OCLevelStyle(g.OCLevel).Render(fmt.Sprintf(i18n.T("gpus.oc_mark"), pct))
 		}
 		m := metrics[g.InstanceID]
 		tier := ranks[g.InstanceID]
