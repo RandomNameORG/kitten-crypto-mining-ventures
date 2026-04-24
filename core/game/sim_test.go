@@ -136,6 +136,61 @@ func TestSimSeedsDiverge(t *testing.T) {
 	}
 }
 
+// TestSimOCDrainsDurabilityFaster pins the core promise of overclocking —
+// faster earn, faster wear. Two identical-seed runs diverge only in that
+// the OC run force-sets every GPU to level 2 at the start of each tick (a
+// GPU can arrive from shipping mid-run, so we re-apply to catch it while
+// it's still running). After an hour the OC fleet must either be closer
+// to the grave (less HoursLeft summed across still-running cards) or have
+// actually died more often. Picking an OR lets us stay robust even when
+// RNG choreographs a particularly unlucky break.
+func TestSimOCDrainsDurabilityFaster(t *testing.T) {
+	withTempHome(t)
+	baseline := runSim(t, 1, 3600)
+
+	withTempHome(t)
+	oc := runSimWithProbe(t, 1, 3600, func(_ int, s *State) {
+		for _, g := range s.GPUs {
+			if g.Status == "running" {
+				g.OCLevel = 2
+			}
+		}
+	})
+
+	sumHours := func(s *State) float64 {
+		var h float64
+		for _, g := range s.GPUs {
+			if g.Status == "running" {
+				h += g.HoursLeft
+			}
+		}
+		return h
+	}
+	countBroken := func(s *State) int {
+		n := 0
+		for _, g := range s.GPUs {
+			if g.Status == "broken" {
+				n++
+			}
+		}
+		return n
+	}
+
+	baseHours, ocHours := sumHours(baseline), sumHours(oc)
+	baseBroken, ocBroken := countBroken(baseline), countBroken(oc)
+
+	hoursDrop := baseHours - ocHours
+	moreBroken := ocBroken > baseBroken
+	// Meaningful-drop threshold: at level 2 wear is 3× baseline, so over
+	// a full virtual hour a healthy fleet should lose at least one extra
+	// hour of cumulative durability. If we see neither extra breakage nor
+	// ≥1h of extra drain, the OC wearMult path isn't firing.
+	if !moreBroken && hoursDrop < 1.0 {
+		t.Fatalf("OC did not wear GPUs faster: baseHours=%.2f ocHours=%.2f drop=%.2f baseBroken=%d ocBroken=%d",
+			baseHours, ocHours, hoursDrop, baseBroken, ocBroken)
+	}
+}
+
 // TestSimMarketPriceInvariants runs a full virtual day through the sim and
 // asserts the market price stays finite + clamped every tick, and that it
 // actually moves off 1.0 across the run. This catches a drift path that's

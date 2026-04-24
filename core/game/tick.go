@@ -77,6 +77,26 @@ func (s *State) advanceShipping(now int64) {
 	}
 }
 
+// Overclock tradeoff tables, indexed by GPU.OCLevel (0..2). The non-earn
+// factors are intentionally ≥ the earn factor — OC must feel like a real
+// choice, not a free dial. Applied in GPUStats (eff/pow/heat) and folded
+// into advanceMining's wearMult (durability decay rate).
+var (
+	ocEarnMult  = [3]float64{1.00, 1.25, 1.50}
+	ocPowerMult = [3]float64{1.00, 1.40, 1.90}
+	ocHeatMult  = [3]float64{1.00, 1.40, 1.90}
+	ocWearMult  = [3]float64{1.00, 1.75, 3.00}
+)
+
+// ocIndex returns a valid index into the OC multiplier tables for g, even if
+// the save was hand-edited past the bounds.
+func ocIndex(g *GPU) int {
+	if g.OCLevel < 0 || g.OCLevel >= len(ocEarnMult) {
+		return 0
+	}
+	return g.OCLevel
+}
+
 // GPUStats returns the effective (efficiency, power, heat, durability) for a
 // GPU instance, honoring blueprint overrides and skill multipliers.
 func (s *State) GPUStats(g *GPU) (eff, pow, heat, dur float64) {
@@ -97,6 +117,10 @@ func (s *State) GPUStats(g *GPU) (eff, pow, heat, dur float64) {
 	eff *= upBonus * s.EfficiencyMult()
 	pow *= upPow * s.PowerDrawMult()
 	heat *= upHeat * s.HeatMult()
+	oc := ocIndex(g)
+	eff *= ocEarnMult[oc]
+	pow *= ocPowerMult[oc]
+	heat *= ocHeatMult[oc]
 	return
 }
 
@@ -130,6 +154,8 @@ func (s *State) advanceMining(now int64, dt float64) {
 			// Durability decay — GPUs wear out faster when the room is hot.
 			//   heat > 80% max: 3× normal wear
 			//   heat > 95% max: 8× wear (real danger zone)
+			// Overclock multiplies on top: a +50% OC in a critical room is
+			// 8×3 = 24× baseline wear. That's the intended compounding cost.
 			if dur > 0 {
 				wearMult := 1.0
 				switch {
@@ -138,6 +164,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 				case room.Heat > 0.80*room.MaxHeat:
 					wearMult = 3.0
 				}
+				wearMult *= ocWearMult[ocIndex(g)]
 				g.HoursLeft -= (dt / 3600.0) * wearMult
 				if g.HoursLeft <= 0 {
 					g.Status = "broken"

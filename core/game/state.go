@@ -23,6 +23,10 @@ type GPU struct {
 	Room         string  `json:"room"`
 	// BlueprintID is set for MEOWCore instances; maps to a Blueprint for stats.
 	BlueprintID string `json:"blueprint_id,omitempty"`
+	// OCLevel is the overclock level (0 off, 1 +25%, 2 +50%). Boosts earn but
+	// scales power/heat/wear harder — see ocEarnMult/ocPowerMult/ocHeatMult/
+	// ocWearMult in tick.go for the exact tradeoff table.
+	OCLevel int `json:"oc_level,omitempty"`
 }
 
 // RoomState is the runtime instance of a Room owned by the player.
@@ -577,11 +581,15 @@ func (s *State) ensureInit() {
 	}
 	// Migration: drop any lingering `stolen` GPUs from older saves where
 	// theft marked-but-didn't-remove. Stolen cards leak into the dashboard
-	// slot counter and the GPUs list otherwise.
+	// slot counter and the GPUs list otherwise. Also clamp OCLevel so a
+	// hand-edited or corrupted save can't spill out-of-table indices.
 	alive := s.GPUs[:0]
 	for _, g := range s.GPUs {
 		if g.Status == "stolen" {
 			continue
+		}
+		if g.OCLevel < 0 || g.OCLevel > 2 {
+			g.OCLevel = 0
 		}
 		alive = append(alive, g)
 	}

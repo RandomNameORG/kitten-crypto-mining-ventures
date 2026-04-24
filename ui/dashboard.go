@@ -322,7 +322,11 @@ func (a App) renderRoomPanel(def data.RoomDef, width int, compact bool) string {
 			if g.UpgradeLevel > 0 {
 				upMark = lipgloss.NewStyle().Foreground(AccentPurple).Render(fmt.Sprintf(" +%d", g.UpgradeLevel))
 			}
-			line := fmt.Sprintf("  %d. %s %s%s  %s", i+1, indicator, gpuDisplayName(a.state, g), upMark, DimStyle.Render(statusText))
+			ocMark := ""
+			if pct := ocLevelPercent(g.OCLevel); pct > 0 {
+				ocMark = lipgloss.NewStyle().Foreground(ThreatOrange).Render(fmt.Sprintf(" +%d%%", pct))
+			}
+			line := fmt.Sprintf("  %d. %s %s%s%s  %s", i+1, indicator, gpuDisplayName(a.state, g), upMark, ocMark, DimStyle.Render(statusText))
 			lines = append(lines, line)
 		case i < len(installed)+len(inbound):
 			lines = append(lines, lipgloss.NewStyle().Foreground(SocialCyan).Render(fmt.Sprintf(i18n.T("dash.slot_reserved"), i+1)))
@@ -452,13 +456,19 @@ func (a App) renderKeyInfoPanel(def data.RoomDef, width int, compact bool) strin
 				up = fmt.Sprintf(" +%d", g.UpgradeLevel)
 				upMark = lipgloss.NewStyle().Foreground(AccentPurple).Render(up)
 			}
-			// "  ● " = 4, up display width = len(up), leave 1 trailing.
-			nameBudget := innerW - 4 - len([]rune(up)) - 1
+			ocMark := ""
+			oc := ""
+			if pct := ocLevelPercent(g.OCLevel); pct > 0 {
+				oc = fmt.Sprintf(" +%d%%", pct)
+				ocMark = lipgloss.NewStyle().Foreground(ThreatOrange).Render(oc)
+			}
+			// "  ● " = 4, up+oc display widths tallied, leave 1 trailing.
+			nameBudget := innerW - 4 - len([]rune(up)) - len([]rune(oc)) - 1
 			if nameBudget < 3 {
 				nameBudget = 3
 			}
 			name := truncate(gpuDisplayName(a.state, g), nameBudget)
-			lines = append(lines, fmt.Sprintf("  %s %s%s", indicator, name, upMark))
+			lines = append(lines, fmt.Sprintf("  %s %s%s%s", indicator, name, upMark, ocMark))
 		case i < len(installed)+len(inbound):
 			lines = append(lines, lipgloss.NewStyle().Foreground(SocialCyan).Render("  · inbound"))
 		default:

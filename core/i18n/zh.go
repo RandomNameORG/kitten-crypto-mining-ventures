@@ -99,9 +99,10 @@ var zhStrings = map[string]string{
 	"store.help":  "↑/↓ 选择   [b] 购买   [esc]/[1] 返回",
 
 	// GPUs view.
-	"gpus.title": "🖥  我的显卡",
-	"gpus.help":  "↑/↓ 选择   [u] 升级   [r] 维修   [s] 拆解   [esc]/[1] 返回",
-	"gpus.empty": "  （还没有显卡，去商店看看）",
+	"gpus.title":   "🖥  我的显卡",
+	"gpus.help":    "↑/↓ 选择   [u] 升级   [o] 超频   [r] 维修   [s] 拆解   [esc]/[1] 返回",
+	"gpus.empty":   "  （还没有显卡，去商店看看）",
+	"gpus.oc_mark": " 超频+%d%%",
 
 	// Rooms view.
 	"rooms.title":      "🏠 房间",
@@ -272,6 +273,7 @@ var zhStrings = map[string]string{
 	"log.gpu.upgrade.bricked": "\uf06d 升级失败 —— 显卡砖了。",
 	"log.gpu.ordered":         "下单 %s，%s。正在追踪物流……",
 	"log.gpu.scrapped":        "拆解 %s，获得 %s 和 %d 研究碎片。",
+	"log.gpu.oc_set":          "\uf0e7 %s 超频至 +%d%%（更热、更耗电）。",
 
 	"log.bills.settled":  "\uf155 账单结清：电费 %s，房租 %s。",
 	"log.bills.blackout": "\uf1e6 付不起账单了。停电 60 秒。",
