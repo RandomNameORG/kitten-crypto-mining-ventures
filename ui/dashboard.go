@@ -3,10 +3,12 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/game"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
@@ -78,21 +80,27 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash", earn, net)))
 	lines = append(lines, "")
 
+	var installed, inbound []*game.GPU
+	for _, g := range gpus {
+		if g.Status == "shipping" {
+			inbound = append(inbound, g)
+		} else {
+			installed = append(installed, g)
+		}
+	}
+
 	lines = append(lines, HeaderStyle.Render(i18n.T("dash.rack")))
 	if len(gpus) == 0 {
 		lines = append(lines, DimStyle.Render(i18n.T("dash.empty_hint")))
 	}
 	for i := 0; i < def.Slots; i++ {
-		if i < len(gpus) {
-			g := gpus[i]
+		switch {
+		case i < len(installed):
+			g := installed[i]
 			statusIcon := "●"
 			statusColor := OppGreen
 			statusText := g.Status
 			switch g.Status {
-			case "shipping":
-				statusIcon = "📦"
-				statusColor = SocialCyan
-				statusText = "shipping"
 			case "broken":
 				statusIcon = "✕"
 				statusColor = CrisisRed
@@ -109,11 +117,57 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 			}
 			line := fmt.Sprintf("  %d. %s %s%s  %s", i+1, indicator, gpuDisplayName(a.state, g), upMark, DimStyle.Render(statusText))
 			lines = append(lines, line)
-		} else {
+		case i < len(installed)+len(inbound):
+			lines = append(lines, lipgloss.NewStyle().Foreground(SocialCyan).Render(fmt.Sprintf(i18n.T("dash.slot_reserved"), i+1)))
+		default:
 			lines = append(lines, DimStyle.Render(fmt.Sprintf(i18n.T("dash.slot_empty"), i+1)))
 		}
 	}
+
+	if len(inbound) > 0 {
+		lines = append(lines, "")
+		lines = append(lines, HeaderStyle.Render(i18n.T("dash.delivery_title")))
+		now := time.Now().Unix()
+		for _, g := range inbound {
+			lines = append(lines, renderDeliveryLine(a.state, g, now))
+		}
+	}
 	return PanelStyle.Width(52).Render(strings.Join(lines, "\n"))
+}
+
+// renderDeliveryLine draws a kitten pacing back and forth on a track, with
+// the GPU's display name and ETA. Position is purely decorative (we don't
+// store ship-start, so progress can't be derived) — the ETA text carries
+// the real progress signal.
+func renderDeliveryLine(s *game.State, g *game.GPU, now int64) string {
+	const (
+		trackWidth = 22
+		sprite     = ">^.^<"
+		period     = 12 // seconds for a one-way traversal
+	)
+	span := trackWidth - len(sprite)
+	// Unique phase offset per GPU so deliveries don't pace in lockstep.
+	phase := (now + int64(g.InstanceID)*5) % int64(2*period)
+	var pos int
+	if phase < int64(period) {
+		pos = int(phase) * span / period
+	} else {
+		pos = span - int(phase-int64(period))*span/period
+	}
+	if pos < 0 {
+		pos = 0
+	}
+	if pos > span {
+		pos = span
+	}
+	track := strings.Repeat("·", pos) + sprite + strings.Repeat("·", span-pos)
+	trackStyled := lipgloss.NewStyle().Foreground(SocialCyan).Render(track)
+	name := truncate(gpuDisplayName(s, g), 12)
+	eta := g.ShipsAt - now
+	if eta < 0 {
+		eta = 0
+	}
+	return fmt.Sprintf(i18n.T("dash.delivery_line"), trackStyled, name, eta)
 }
 
 func (a App) renderLogPanel(maxLines int) string {
