@@ -11,8 +11,8 @@ import (
 // heat trend, etc. without inventing numbers that would drift from what
 // the simulation actually does.
 
-// EarnRatePerSec returns the dollar earn rate for a single running GPU at
-// the current BTC price + active modifiers + active difficulty.
+// GPUEarnRatePerSec returns the BTC-per-second rate for a single running GPU
+// under the current active modifiers + difficulty + room heat.
 func (s *State) GPUEarnRatePerSec(g *GPU) float64 {
 	if g.Status != "running" {
 		return 0
@@ -27,8 +27,7 @@ func (s *State) GPUEarnRatePerSec(g *GPU) float64 {
 		effFactor = 0.5
 	}
 	earnMult := s.earnMultiplier(now)
-	btcPerSec := eff * earnMult * effFactor * s.DifficultyEarnMult()
-	return btcPerSec * s.BTCPriceAt(now)
+	return eff * earnMult * effFactor * s.DifficultyEarnMult() * MiningScale
 }
 
 // RoomEarnRatePerSec is the sum of per-GPU earn rates for every running GPU

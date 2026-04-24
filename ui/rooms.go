@@ -43,9 +43,9 @@ func (a App) renderRoomsView() string {
 		case unlocked:
 			state = DimStyle.Render(i18n.T("rooms.unlocked"))
 		default:
-			state = MoneyStyle.Render(i18n.T("rooms.to_unlock", r.UnlockCost))
+			state = BTCStyle.Render(i18n.T("rooms.to_unlock", r.UnlockCost))
 		}
-		lines = append(lines, fmt.Sprintf("%s%-32s  %-10s  slots %-2d  rent $%d/h",
+		lines = append(lines, fmt.Sprintf("%s%-32s  %-10s  slots %-2d  rent ₿%d/h",
 			marker, r.LocalName(), state, r.Slots, r.RentPerHour,
 		))
 	}
@@ -75,7 +75,7 @@ func (a App) renderRoomsView() string {
 			if lvl >= 5 {
 				style = lipgloss.NewStyle().Foreground(OppGreen)
 			}
-			lines = append(lines, style.Render(fmt.Sprintf("  [%s] %-8s  lv %d/5   next $%d",
+			lines = append(lines, style.Render(fmt.Sprintf("  [%s] %-8s  lv %d/5   next ₿%d",
 				d.Key, i18n.T(d.I18n), lvl, next)))
 		}
 	}

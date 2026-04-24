@@ -21,7 +21,6 @@ var enStrings = map[string]string{
 	"hdr.tp":    "TP %d",
 	"hdr.rep":   "Rep %+d",
 	"hdr.frags": "frags %d",
-	"hdr.price": "$%.0f/BTC",
 
 	"footer.keys": "[space] pause  [S] save  [L] lang  [?] help  [q] quit",
 
@@ -39,9 +38,9 @@ var enStrings = map[string]string{
 
 	// Dashboard.
 	"dash.location":   "📍 %s",
-	"dash.line.volt":  "⚡ %.0fV draw  ·  bill −$%.3f/s  ·  next bill %ds",
+	"dash.line.volt":  "⚡ %.0fV draw  ·  bill −₿%.3f/s  ·  next bill %ds",
 	"dash.line.heat":  "🌡 %.0f°C / %.0f max  ·  %+.1f°C every %ds  ·  next in %ds",
-	"dash.line.cash":  "📈 earn +$%.3f/s  ·  net %+.3f/s",
+	"dash.line.cash":  "📈 earn +₿%.3f/s  ·  net %+.3f/s",
 	"dash.slots_of":   "slots %d/%d",
 	"dash.heat.warning":  "⚠ HOT — efficiency ½ · wear 3×",
 	"dash.heat.critical": "🔥 CRITICAL — wear 8× · GPU failure imminent",
@@ -89,7 +88,7 @@ var enStrings = map[string]string{
 	"rooms.help":       "↑/↓ room   [u] unlock   [enter] switch   [l/c/w/o/a] upgrade defense on current room   [esc]/[1] back",
 	"rooms.here":       "● here",
 	"rooms.unlocked":   "unlocked",
-	"rooms.to_unlock":  "$%d to unlock",
+	"rooms.to_unlock":  "₿%d to unlock",
 	"rooms.stats":      "  cooling %.1f · elec ×%.2f · threat base %.2f",
 	"rooms.defense":    "🛡  Defense — current room (%s)",
 	"rooms.dim.lock":    "Lock",
@@ -131,7 +130,7 @@ var enStrings = map[string]string{
 	"help.g.pump":     "[p]       Pump & Dump ability (dashboard, if unlocked)",
 	"help.g.lang":     "[L]       cycle language",
 	"help.g.quit":     "[q]       quit (auto-saves)",
-	"help.g.vent":     "[V]       emergency vent — reset room heat · -$100 · 30s pause · 2m cooldown",
+	"help.g.vent":     "[V]       emergency vent — reset room heat · -₿100 · 30s pause · 2m cooldown",
 	"help.defense":    "Room defense (from rooms view)",
 	"help.defense_row": "[l] lock · [c] CCTV · [w] wiring · [o] cooling · [a] armor",
 	"help.tip.idle":    "Tip: it's an incremental game — feel free to leave it running in tmux.",
@@ -139,12 +138,12 @@ var enStrings = map[string]string{
 
 	// Mercs.
 	"mercs.title":     "🐾 Mercenaries",
-	"mercs.help":      "[tab] switch tab   ↑/↓ select   [h] hire   [f] fire   [b] bribe (+15 loyalty, $200)   [esc]/[1] back",
+	"mercs.help":      "[tab] switch tab   ↑/↓ select   [h] hire   [f] fire   [b] bribe (+15 loyalty, ₿200)   [esc]/[1] back",
 	"mercs.yours":     "Your Mercs",
 	"mercs.empty":     "  (none — switch to Hire tab)",
 	"mercs.hire":      "Hire",
-	"mercs.owned_line": "room %s  wage $%d/wk  loyalty %d",
-	"mercs.hire_line":  "hire $%d",
+	"mercs.owned_line": "room %s  wage ₿%d/wk  loyalty %d",
+	"mercs.hire_line":  "hire ₿%d",
 	"mercs.defbonus":   "def +%.0f%%",
 	"mercs.loyalty":    "loyalty %d",
 
@@ -156,7 +155,7 @@ var enStrings = map[string]string{
 	"lab.active_none": "  (none)",
 	"lab.plan":        "Plan next research",
 	"lab.plan_tier":   "  Tier %d — %s",
-	"lab.plan_cost":   "  costs: $%d + %d frags  ·  duration: %dm",
+	"lab.plan_cost":   "  costs: ₿%d + %d frags  ·  duration: %dm",
 	"lab.plan_boosts": "  boosts: %s + %s",
 	"lab.plan_hint":   "  (press [r] to start)",
 	"lab.bp_title":    "Blueprints (%d) — [p] to print selected",
@@ -167,7 +166,7 @@ var enStrings = map[string]string{
 	"prestige.locked":  "Prestige is locked. Unlock 'Venture Capital' in the Mogul skill lane.",
 	"prestige.help":    "[↑/↓] select perk   [p] buy perk   [R] RETIRE (press twice to confirm)   [esc]/[1] back",
 	"prestige.status":  "Status",
-	"prestige.lifetime": "  lifetime earned: $%.0f / $%.0f",
+	"prestige.lifetime": "  lifetime earned: ₿%.0f / ₿%.0f",
 	"prestige.eligible_yes": "ELIGIBLE",
 	"prestige.eligible_no":  "not eligible",
 	"prestige.eligible_row": "  retirement status: %s",

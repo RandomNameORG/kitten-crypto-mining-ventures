@@ -8,7 +8,7 @@ import (
 func TestStartResearchLockedByDefault(t *testing.T) {
 	withTempHome(t)
 	s := NewState("NoRD")
-	s.Money = 99999
+	s.BTC = 99999
 	s.ResearchFrags = 999
 	if err := s.StartResearch(1, []string{"efficiency", "undervolt"}); err == nil {
 		t.Error("should be gated behind rd unlock")
@@ -63,7 +63,7 @@ func TestPrintMEOWCoreConsumesResources(t *testing.T) {
 		ID: "bp_test", Tier: 1, Boosts: []string{"efficiency", "undervolt"},
 	})
 	// Give resources; ensure alley has room (start has 1 GPU, 4 slots).
-	s.Money = 10000
+	s.BTC = 10000
 	s.ResearchFrags = 100
 	before := len(s.GPUs)
 	if err := s.PrintMEOWCore("bp_test"); err != nil {
@@ -117,7 +117,7 @@ func TestRetireProducesFreshStateAndLP(t *testing.T) {
 	_ = s.UnlockSkill("hedged_wallet")
 	_ = s.UnlockSkill("venture_cap")
 	s.LifetimeEarned = 4_000_000
-	s.Money = 5000
+	s.BTC = 5000
 	fresh, lp, err := s.Retire()
 	if err != nil {
 		t.Fatalf("retire: %v", err)
@@ -147,7 +147,7 @@ func unlockRDFixture(t *testing.T) *State {
 	_ = s.UnlockSkill("undervolt_i")
 	_ = s.UnlockSkill("undervolt_ii")
 	_ = s.UnlockSkill("rd_unlock")
-	s.Money = 99999
+	s.BTC = 99999
 	s.ResearchFrags = 999
 	return s
 }

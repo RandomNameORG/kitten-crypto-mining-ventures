@@ -24,7 +24,7 @@ type LegacyPerk struct {
 var legacyPerks = []LegacyPerk{
 	{
 		ID: "starter_cash_500", Name: "Seed Capital", Cost: 10,
-		Desc: "Start new runs with an extra $500.",
+		Desc: "Start new runs with an extra ₿500.",
 		ApplyOnBuy: func(l *LegacyStore) { l.StarterCash += 500 },
 		Available:  func(l *LegacyStore) bool { return l.StarterCash < 5000 },
 	},
@@ -61,7 +61,7 @@ func (s *State) RetireReward() int {
 // Returns the NEW state (to swap in) and the LP awarded.
 func (s *State) Retire() (*State, int, error) {
 	if !s.CanRetire() {
-		return nil, 0, fmt.Errorf("need $%.0f lifetime earnings; have $%.0f", PrestigeThreshold, s.LifetimeEarned)
+		return nil, 0, fmt.Errorf("need ₿%.0f lifetime earnings; have ₿%.0f", PrestigeThreshold, s.LifetimeEarned)
 	}
 	lp := s.RetireReward()
 	legacy := LoadLegacy()

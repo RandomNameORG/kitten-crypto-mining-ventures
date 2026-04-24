@@ -69,7 +69,7 @@ type Research struct {
 
 // Modifier is a time-limited multiplier or flag.
 type Modifier struct {
-	Kind      string  `json:"kind"`   // "btc_mult" | "earn_mult" | "pause_mining"
+	Kind      string  `json:"kind"`   // "earn_mult" | "pause_mining"
 	Factor    float64 `json:"factor"` // multiplier value; or unused for flags
 	ExpiresAt int64   `json:"expires_at"`
 }
@@ -88,9 +88,7 @@ type EventCooldowns map[string]int64
 type State struct {
 	Version       int                   `json:"version"`
 	KittenName    string                `json:"kitten_name"`
-	Money         float64               `json:"money"`
 	BTC           float64               `json:"btc"`
-	BTCPriceSeed  int64                 `json:"btc_price_seed"`
 	TechPoint     int                   `json:"tech_point"`
 	Reputation    int                   `json:"reputation"`
 	Karma         int                   `json:"karma"`
@@ -150,9 +148,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 	s := &State{
 		Version:        1,
 		KittenName:     kittenName,
-		Money:          150,
-		BTC:            0,
-		BTCPriceSeed:   rand.Int63(),
+		BTC:            150,
 		TechPoint:      0,
 		Reputation:     0,
 		Karma:          0,
@@ -193,8 +189,8 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 	// Apply legacy bonuses at start.
 	if legacy != nil {
 		if legacy.StarterCash > 0 {
-			s.Money += legacy.StarterCash
-			s.appendLog("opportunity", fmt.Sprintf("Legacy bonus: +$%.0f starter cash.", legacy.StarterCash))
+			s.BTC += legacy.StarterCash
+			s.appendLog("opportunity", fmt.Sprintf("Legacy bonus: +₿%.0f starter balance.", legacy.StarterCash))
 		}
 		if legacy.UnlockedUniversity {
 			if def, ok := data.RoomByID("university"); ok {
@@ -239,10 +235,10 @@ func (s *State) UnlockRoom(id string) error {
 	if !ok {
 		return fmt.Errorf("no such room: %s", id)
 	}
-	if s.Money < float64(def.UnlockCost) {
-		return fmt.Errorf("need $%d, have $%.0f", def.UnlockCost, s.Money)
+	if s.BTC < float64(def.UnlockCost) {
+		return fmt.Errorf("need ₿%d, have ₿%.0f", def.UnlockCost, s.BTC)
 	}
-	s.Money -= float64(def.UnlockCost)
+	s.BTC -= float64(def.UnlockCost)
 	s.unlockRoomInternal(def)
 	s.appendLog("info", fmt.Sprintf("Moved into %s.", def.Name))
 	return nil
@@ -311,15 +307,15 @@ func (s *State) BuyGPU(defID string) error {
 	if !ok {
 		return fmt.Errorf("no such GPU: %s", defID)
 	}
-	if s.Money < float64(def.Price) {
-		return fmt.Errorf("need $%d, have $%.0f", def.Price, s.Money)
+	if s.BTC < float64(def.Price) {
+		return fmt.Errorf("need ₿%d, have ₿%.0f", def.Price, s.BTC)
 	}
 	if !s.RoomHasFreeSlot(s.CurrentRoom) {
 		return fmt.Errorf("no free slots in this room")
 	}
-	s.Money -= float64(def.Price)
+	s.BTC -= float64(def.Price)
 	s.addGPU(defID, s.CurrentRoom, true)
-	s.appendLog("info", fmt.Sprintf("Ordered %s for $%d. Tracking inbound...", def.Name, def.Price))
+	s.appendLog("info", fmt.Sprintf("Ordered %s for ₿%d. Tracking inbound...", def.Name, def.Price))
 	return nil
 }
 
@@ -340,10 +336,10 @@ func (s *State) SellGPU(instanceID int) error {
 			value := float64(base) * s.ScrapValueMult()
 			// Also grant 1-3 research fragments.
 			frags := 1 + rand.Intn(3)
-			s.Money += value
+			s.BTC += value
 			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
-			s.appendLog("info", fmt.Sprintf("Scrapped %s for $%.0f + %d research fragments.", name, value, frags))
+			s.appendLog("info", fmt.Sprintf("Scrapped %s for ₿%.0f + %d research fragments.", name, value, frags))
 			return nil
 		}
 	}
@@ -475,6 +471,16 @@ func LoadFrom(b []byte) (*State, error) {
 	if err := json.Unmarshal(b, &s); err != nil {
 		return nil, err
 	}
+	// Pre-unification saves stored "money" (USD) alongside "btc" (mining
+	// intermediate, auto-sold at ~$300). Fold any legacy money into the
+	// single BTC balance. The tiny residual BTC from that era is already
+	// in s.BTC via the json tag and is numerically negligible.
+	var legacy struct {
+		Money float64 `json:"money"`
+	}
+	if err := json.Unmarshal(b, &legacy); err == nil && legacy.Money > 0 {
+		s.BTC += legacy.Money
+	}
 	s.ensureInit()
 	// Apply the player's persisted language choice to the i18n singleton.
 	if s.Lang != "" {
@@ -579,11 +585,11 @@ func (s *State) DifficultyBillMult() float64 { return s.Diff().BillMult }
 // DifficultyThreatMult is the event-fire-probability multiplier.
 func (s *State) DifficultyThreatMult() float64 { return s.Diff().ThreatMult }
 
-// SetDifficulty writes the chosen difficulty to state, applies starter cash,
-// and logs the choice. Called once from the splash picker.
+// SetDifficulty writes the chosen difficulty to state, applies the starter
+// balance, and logs the choice. Called once from the splash picker.
 func (s *State) SetDifficulty(id string) {
 	def := data.DifficultyByID(id)
 	s.Difficulty = def.ID
-	s.Money = def.StarterCash
+	s.BTC = def.StarterCash
 	s.appendLog("info", i18n.T("game.difficulty_set", def.LocalLabel()))
 }

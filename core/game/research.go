@@ -56,11 +56,11 @@ func (s *State) StartResearch(tier int, boosts []string) error {
 	if s.ResearchFrags < info.Frags {
 		return fmt.Errorf("need %d research fragments, have %d", info.Frags, s.ResearchFrags)
 	}
-	if s.Money < float64(info.Money) {
-		return fmt.Errorf("need $%d, have $%.0f", info.Money, s.Money)
+	if s.BTC < float64(info.Money) {
+		return fmt.Errorf("need ₿%d, have ₿%.0f", info.Money, s.BTC)
 	}
 	s.ResearchFrags -= info.Frags
-	s.Money -= float64(info.Money)
+	s.BTC -= float64(info.Money)
 	s.ActiveResearch = &Research{
 		BlueprintTier: tier,
 		Boosts:        append([]string{}, boosts...),
@@ -139,8 +139,8 @@ func (s *State) PrintMEOWCore(blueprintID string) error {
 	}
 	cost := info.Money * 3 / 10
 	frags := info.Frags / 5
-	if s.Money < float64(cost) {
-		return fmt.Errorf("need $%d to print", cost)
+	if s.BTC < float64(cost) {
+		return fmt.Errorf("need ₿%d to print", cost)
 	}
 	if s.ResearchFrags < frags {
 		return fmt.Errorf("need %d fragments to print", frags)
@@ -148,7 +148,7 @@ func (s *State) PrintMEOWCore(blueprintID string) error {
 	if !s.RoomHasFreeSlot(s.CurrentRoom) {
 		return fmt.Errorf("no free slot in this room")
 	}
-	s.Money -= float64(cost)
+	s.BTC -= float64(cost)
 	s.ResearchFrags -= frags
 	s.addMEOWCore(bp, s.CurrentRoom)
 	s.appendLog("opportunity", fmt.Sprintf("🛠 Printed a %s (%s).", bpName(bp.Tier), joinStrs(bp.Boosts)))

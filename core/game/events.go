@@ -20,6 +20,7 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 	globalPool := []string{
 		"tech_share", "extra_delivery", "btc_pump", "lucky_fish",
 		"group_chat_sos", "celeb_interview", "halving", "police_visit",
+		"voltage_dip",
 	}
 	all := append([]string{}, pool...)
 	all = append(all, globalPool...)
@@ -136,25 +137,20 @@ func (s *State) applyEvent(e data.EventDef) {
 				}
 			} else {
 				if def, ok := data.GPUByID(candidate); ok {
-					s.Money += float64(def.ScrapValue) * s.ScrapValueMult()
-					s.appendLog("info", fmt.Sprintf("…but no room. Sold %s for cash.", def.Name))
+					s.BTC += float64(def.ScrapValue) * s.ScrapValueMult()
+					s.appendLog("info", fmt.Sprintf("…but no room. Sold %s for scrap.", def.Name))
 				}
 			}
-		case "btc_multiplier":
-			// Hedged wallet dampens the swing toward 1.0.
+		case "earn_multiplier":
+			// Hedged Wallet softens earn-rate swings (both positive and
+			// negative) back toward 1.0.
 			factor := eff.Factor
-			if damp := s.BTCVolatilityDamp(); damp < 1.0 {
+			if damp := s.EarnVolatilityDamp(); damp < 1.0 {
 				factor = 1.0 + (factor-1.0)*damp
 			}
 			s.Modifiers = append(s.Modifiers, Modifier{
-				Kind:      "btc_mult",
-				Factor:    factor,
-				ExpiresAt: now + int64(eff.Seconds),
-			})
-		case "earn_multiplier":
-			s.Modifiers = append(s.Modifiers, Modifier{
 				Kind:      "earn_mult",
-				Factor:    eff.Factor,
+				Factor:    factor,
 				ExpiresAt: now + int64(eff.Seconds),
 			})
 		case "damage_gpu":
@@ -181,12 +177,12 @@ func (s *State) applyEvent(e data.EventDef) {
 			if frac <= 0 {
 				frac = 0.1
 			}
-			loss := s.Money * frac
-			s.Money -= loss
-			if s.Money < 0 {
-				s.Money = 0
+			loss := s.BTC * frac
+			s.BTC -= loss
+			if s.BTC < 0 {
+				s.BTC = 0
 			}
-			s.appendLog("threat", fmt.Sprintf("💸 Lost $%.0f (%.0f%% of cash).", loss, frac*100))
+			s.appendLog("threat", fmt.Sprintf("💸 Lost ₿%.0f (%.0f%% of balance).", loss, frac*100))
 		}
 	}
 }
@@ -291,17 +287,17 @@ func (s *State) RepairGPU(instanceID int) error {
 		if s.RepairFree() {
 			cost = 0
 		}
-		if s.Money < float64(cost) {
-			return fmt.Errorf("need $%d to repair", cost)
+		if s.BTC < float64(cost) {
+			return fmt.Errorf("need ₿%d to repair", cost)
 		}
-		s.Money -= float64(cost)
+		s.BTC -= float64(cost)
 		g.Status = "running"
 		_, _, _, dur := s.GPUStats(g)
 		g.HoursLeft = dur * 0.6
 		if cost == 0 {
 			s.appendLog("info", "🔧 PCB surgery — free repair.")
 		} else {
-			s.appendLog("info", fmt.Sprintf("🔧 Repaired for $%d.", cost))
+			s.appendLog("info", fmt.Sprintf("🔧 Repaired for ₿%d.", cost))
 		}
 		return nil
 	}

@@ -14,10 +14,10 @@ func (s *State) HireMerc(defID string) error {
 	if !ok {
 		return fmt.Errorf("unknown merc")
 	}
-	if s.Money < float64(def.HireCost) {
-		return fmt.Errorf("need $%d, have $%.0f", def.HireCost, s.Money)
+	if s.BTC < float64(def.HireCost) {
+		return fmt.Errorf("need ₿%d, have ₿%.0f", def.HireCost, s.BTC)
 	}
-	s.Money -= float64(def.HireCost)
+	s.BTC -= float64(def.HireCost)
 	loyalty := def.LoyaltyBase + s.MercLoyaltyFloor()
 	if loyalty > 100 {
 		loyalty = 100
@@ -31,7 +31,7 @@ func (s *State) HireMerc(defID string) error {
 	}
 	s.NextMercID++
 	s.Mercs = append(s.Mercs, m)
-	s.appendLog("info", fmt.Sprintf("🐾 Hired %s for $%d.", def.Name, def.HireCost))
+	s.appendLog("info", fmt.Sprintf("🐾 Hired %s for ₿%d.", def.Name, def.HireCost))
 	return nil
 }
 
@@ -51,15 +51,15 @@ func (s *State) FireMerc(instanceID int) error {
 	return fmt.Errorf("no such merc")
 }
 
-// BribeMerc spends $200 for +15 loyalty.
+// BribeMerc spends ₿200 for +15 loyalty.
 func (s *State) BribeMerc(instanceID int) error {
 	const cost = 200
-	if s.Money < cost {
-		return fmt.Errorf("need $%d", cost)
+	if s.BTC < cost {
+		return fmt.Errorf("need ₿%d", cost)
 	}
 	for _, m := range s.Mercs {
 		if m.InstanceID == instanceID {
-			s.Money -= cost
+			s.BTC -= cost
 			m.Loyalty += 15
 			if m.Loyalty > 100 {
 				m.Loyalty = 100
@@ -90,12 +90,12 @@ func (s *State) payWages(now int64) {
 		wage := float64(def.WeeklyWage) * weeks
 		totalWage += wage
 		// Loyalty drift: +1 per week on time, or −10 if we can't afford.
-		if s.Money >= wage {
-			s.Money -= wage
+		if s.BTC >= wage {
+			s.BTC -= wage
 			m.Loyalty++
 		} else {
 			// Missed wages — loyalty tanks, wage still banked as debt-reduction.
-			s.Money = 0
+			s.BTC = 0
 			m.Loyalty -= 10
 		}
 		if m.Loyalty > 100 {
@@ -106,7 +106,7 @@ func (s *State) payWages(now int64) {
 		}
 	}
 	if totalWage > 0 {
-		s.appendLog("info", fmt.Sprintf("💼 Paid $%.2f in mercenary wages.", totalWage))
+		s.appendLog("info", fmt.Sprintf("💼 Paid ₿%.2f in mercenary wages.", totalWage))
 	}
 
 	// Random betrayal check — once per wage tick, one low-loyalty merc might flip.

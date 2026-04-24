@@ -13,8 +13,8 @@ func (s *State) GreedScore() float64 {
 	if s.LifetimeEarned < 1 {
 		return 0
 	}
-	// Fraction of lifetime money that's sitting liquid.
-	liquid := s.Money / s.LifetimeEarned
+	// Fraction of lifetime earnings that's sitting liquid right now.
+	liquid := s.BTC / s.LifetimeEarned
 	if liquid > 1 {
 		liquid = 1
 	}
