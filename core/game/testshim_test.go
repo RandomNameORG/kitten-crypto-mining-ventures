@@ -1,6 +1,6 @@
 package game
 
-import "github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+import "github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
 
 // eventShim / effectShim are test-only convenience wrappers that let tests
 // construct synthetic events without touching the JSON catalogs.

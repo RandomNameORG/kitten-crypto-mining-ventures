@@ -28,8 +28,8 @@ import (
 	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/game"
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/ui"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/game"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/ui"
 )
 
 func main() {
@@ -93,6 +93,7 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 		if gap := now - state.LastTickUnix; gap > 8*3600 {
 			state.LastTickUnix = now - 8*3600
 			state.LastBillUnix = now - 8*3600
+			state.LastWagesUnix = now - 8*3600
 		}
 		state.Tick(now)
 	}

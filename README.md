@@ -120,10 +120,11 @@ Each client gets their own save keyed by SHA-256 of their SSH public key, stored
 cmd/
   meowmine/              local TUI entry point
   meowmine-ssh/          Wish-based SSH server
-internal/
+core/
   data/                  GPU · room · event · skill · merc catalogs
   game/                  state · economy · tick · events · skills · mercs · research · prestige · save/load
-  ui/                    Bubbletea views — dashboard, store, gpus, rooms, skills, log, mercs, lab, prestige
+  i18n/                  English / 中文 string tables + active-language switch
+ui/                      Bubbletea views — dashboard, store, gpus, rooms, skills, log, mercs, lab, prestige
 assets/ascii/            ASCII art placeholders (see docs/ASSETS.md)
 docs/                    design + asset docs
 ```

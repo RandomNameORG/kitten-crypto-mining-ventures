@@ -1,6 +1,6 @@
 package data
 
-import "github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
+import "github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 
 // SkillEffect describes what a skill changes when unlocked.
 type SkillEffect struct {

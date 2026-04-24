@@ -7,9 +7,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/game"
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/game"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // gpuDisplayName returns the localized name for any GPU (catalog or MEOWCore).

@@ -3,7 +3,7 @@ package game
 import (
 	"time"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
 )
 
 // This file exposes read-only, point-in-time rate computations that mirror

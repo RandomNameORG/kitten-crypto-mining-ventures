@@ -3,7 +3,7 @@ package game
 import (
 	"fmt"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
 )
 
 // UnlockSkill purchases a skill if the player can afford it and the prereq is met.

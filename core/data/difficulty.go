@@ -1,6 +1,6 @@
 package data
 
-import "github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
+import "github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 
 // DifficultyDef describes one of the fixed difficulty tiers. Picked once per
 // save at game start via the splash screen; locks the multipliers for the

@@ -3,8 +3,8 @@ package game
 import (
 	"fmt"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // HasAchievement reports whether the given id has been earned.

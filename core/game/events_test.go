@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
 )
 
 func TestMaybeFireEventRespectsSeed(t *testing.T) {

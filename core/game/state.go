@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // GPU is a runtime instance of a graphics card owned by the player.

@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
 )
 
 // HireMerc hires a merc by def id into the current room.
