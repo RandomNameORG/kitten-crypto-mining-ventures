@@ -31,6 +31,16 @@ const (
 // tickMsg is emitted every second for sim + UI updates.
 type tickMsg time.Time
 
+// splashPhase gates the sim on startup: new saves walk through name → difficulty
+// before the dashboard takes over.
+type splashPhase int
+
+const (
+	splashNone splashPhase = iota
+	splashName
+	splashDifficulty
+)
+
 type App struct {
 	state *game.State
 	view  viewID
@@ -54,9 +64,11 @@ type App struct {
 	labTier        int // 1..3
 	prestigeCursor int
 
-	// Name-entry overlay — fires at startup if state.KittenName is empty.
-	nameEntryActive bool
-	nameEntryBuf    string
+	// Splash overlay phases — name first, then difficulty. Sim is frozen
+	// while a splash phase is active so the starter GPU doesn't tick down.
+	splashPhase    splashPhase
+	nameEntryBuf   string
+	diffPickerCur  int
 
 	// Retire confirmation — double-press [R] within a short window.
 	retireArmedUntil time.Time
@@ -77,9 +89,15 @@ func NewApp(s *game.State) App {
 		labBoost1: 0,
 		labBoost2: 1,
 	}
-	if s.KittenName == "" {
-		a.nameEntryActive = true
-		a.nameEntryBuf = ""
+	// Name overlay fires first on truly new saves. If the save already has
+	// a name but no difficulty (brand-new split flow), jump straight to
+	// the difficulty picker.
+	switch {
+	case s.KittenName == "":
+		a.splashPhase = splashName
+	case s.Difficulty == "":
+		a.splashPhase = splashDifficulty
+		a.diffPickerCur = 1 // default cursor on "normal"
 	}
 	return a
 }
@@ -99,7 +117,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 
 	case tickMsg:
-		if !a.nameEntryActive {
+		if a.splashPhase == splashNone {
 			a.state.Tick(time.Now().Unix())
 			if def := a.state.MaybeFireEvent(); def != nil {
 				a.showEventPopup = def
@@ -108,8 +126,11 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, tickCmd()
 
 	case tea.KeyMsg:
-		if a.nameEntryActive {
+		switch a.splashPhase {
+		case splashName:
 			return a.handleNameEntry(m)
+		case splashDifficulty:
+			return a.handleDifficultyEntry(m)
 		}
 		if a.showEventPopup != nil {
 			a.showEventPopup = nil
@@ -132,12 +153,10 @@ func (a App) handleNameEntry(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		a.state.KittenName = name
 		a.state.AppendLog("info", i18n.T("game.named", name))
-		a.nameEntryActive = false
-		now := time.Now().Unix()
-		a.state.LastTickUnix = now
-		a.state.LastBillUnix = now
-		a.state.LastWagesUnix = now
-		_ = a.saveNow()
+		// Advance the splash to the difficulty picker instead of starting
+		// the sim — sim stays frozen until the player commits a difficulty.
+		a.splashPhase = splashDifficulty
+		a.diffPickerCur = 1 // cursor defaults to "normal"
 		return a, nil
 	case "backspace":
 		if r := []rune(a.nameEntryBuf); len(r) > 0 {
@@ -149,6 +168,33 @@ func (a App) handleNameEntry(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		if len(r) == 1 && r[0] >= 0x20 && r[0] != 0x7F && len([]rune(a.nameEntryBuf)) < 20 {
 			a.nameEntryBuf += string(r[0])
 		}
+	}
+	return a, nil
+}
+
+func (a App) handleDifficultyEntry(k tea.KeyMsg) (tea.Model, tea.Cmd) {
+	diffs := data.Difficulties()
+	key := k.String()
+	switch key {
+	case "ctrl+c":
+		return a, tea.Quit
+	case "up", "k":
+		if a.diffPickerCur > 0 {
+			a.diffPickerCur--
+		}
+	case "down", "j":
+		if a.diffPickerCur < len(diffs)-1 {
+			a.diffPickerCur++
+		}
+	case "enter":
+		picked := diffs[a.diffPickerCur]
+		a.state.SetDifficulty(picked.ID)
+		a.splashPhase = splashNone
+		now := time.Now().Unix()
+		a.state.LastTickUnix = now
+		a.state.LastBillUnix = now
+		a.state.LastWagesUnix = now
+		_ = a.saveNow()
 	}
 	return a, nil
 }
@@ -255,8 +301,11 @@ func (a App) View() string {
 	if a.w < 80 || a.h < 22 {
 		return i18n.T("warn.terminal_too_small")
 	}
-	if a.nameEntryActive {
+	switch a.splashPhase {
+	case splashName:
 		return a.renderNameEntry()
+	case splashDifficulty:
+		return a.renderDifficultyPicker()
 	}
 
 	header := a.renderHeader()
@@ -302,7 +351,11 @@ func (a App) renderHeader() string {
 	if a.state.Paused {
 		paused = DimStyle.Render(i18n.T("app.pill_paused"))
 	}
-	title := TitleStyle.Render(fmt.Sprintf("%s — %s", i18n.T("app.title"), a.state.KittenName))
+	diffBadge := ""
+	if d := a.state.Diff(); d.Emoji != "" {
+		diffBadge = DimStyle.Render(" " + d.Emoji)
+	}
+	title := TitleStyle.Render(fmt.Sprintf("%s — %s", i18n.T("app.title"), a.state.KittenName)) + diffBadge
 
 	extras := []string{
 		MoneyStyle.Render(fmt.Sprintf("$%.0f", a.state.Money)),
@@ -362,6 +415,32 @@ func (a App) renderNameEntry() string {
 		DimStyle.Render(i18n.T("welcome.keys")),
 	}, "\n")
 	return lipgloss.NewStyle().Padding(2, 4).Render(body)
+}
+
+func (a App) renderDifficultyPicker() string {
+	diffs := data.Difficulties()
+	lines := []string{
+		TitleStyle.Render(i18n.T("splash.diff.title")),
+		DimStyle.Render(i18n.T("splash.diff.subtitle", a.state.KittenName)),
+		"",
+	}
+	for i, d := range diffs {
+		cursor := "  "
+		title := d.Emoji + "  " + d.LocalLabel()
+		if i == a.diffPickerCur {
+			cursor = TitleStyle.Render("▶ ")
+			title = TitleStyle.Render(title)
+		} else {
+			title = DimStyle.Render(title)
+		}
+		meta := DimStyle.Render(fmt.Sprintf("(earn ×%.2f · bills ×%.2f · threats ×%.2f · $%.0f start)",
+			d.EarnMult, d.BillMult, d.ThreatMult, d.StarterCash))
+		lines = append(lines, cursor+title+"   "+meta)
+		lines = append(lines, DimStyle.Render("    "+d.LocalDesc()))
+		lines = append(lines, "")
+	}
+	lines = append(lines, DimStyle.Render(i18n.T("splash.diff.help")))
+	return lipgloss.NewStyle().Padding(2, 4).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) renderFooter() string {

@@ -43,6 +43,7 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 	if baseFire > 0.12 {
 		baseFire = 0.12
 	}
+	baseFire *= s.DifficultyThreatMult()
 	if rand.Float64() > baseFire {
 		return nil
 	}

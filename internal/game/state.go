@@ -119,6 +119,12 @@ type State struct {
 	// Lang persists the player's chosen language code ("en" | "zh"). Loaded
 	// by LoadFrom into the i18n package at startup.
 	Lang string `json:"lang,omitempty"`
+
+	// Difficulty is locked at game start (splash picker) and never changes
+	// for the run. Empty string means the splash hasn't been completed yet
+	// — the UI will prompt. Loaded saves that pre-date this field are
+	// migrated to "normal" by ensureInit.
+	Difficulty string `json:"difficulty,omitempty"`
 }
 
 // NewState returns a fresh game. An empty kittenName signals that the UI
@@ -527,4 +533,36 @@ func (s *State) ensureInit() {
 		alive = append(alive, g)
 	}
 	s.GPUs = alive
+	// Migration: saves from before difficulty existed get "normal" so they
+	// don't bounce off the splash picker. Genuinely new saves have both
+	// KittenName and Difficulty empty and the UI handles both.
+	if s.Difficulty == "" && s.KittenName != "" {
+		s.Difficulty = "normal"
+	}
+}
+
+// Diff returns the active difficulty definition.
+func (s *State) Diff() data.DifficultyDef {
+	if s.Difficulty == "" {
+		return data.DifficultyByID(data.DefaultDifficulty)
+	}
+	return data.DifficultyByID(s.Difficulty)
+}
+
+// DifficultyEarnMult is the earn-rate multiplier for the active difficulty.
+func (s *State) DifficultyEarnMult() float64 { return s.Diff().EarnMult }
+
+// DifficultyBillMult is the electricity+rent multiplier for the active difficulty.
+func (s *State) DifficultyBillMult() float64 { return s.Diff().BillMult }
+
+// DifficultyThreatMult is the event-fire-probability multiplier.
+func (s *State) DifficultyThreatMult() float64 { return s.Diff().ThreatMult }
+
+// SetDifficulty writes the chosen difficulty to state, applies starter cash,
+// and logs the choice. Called once from the splash picker.
+func (s *State) SetDifficulty(id string) {
+	def := data.DifficultyByID(id)
+	s.Difficulty = def.ID
+	s.Money = def.StarterCash
+	s.appendLog("info", i18n.T("game.difficulty_set", def.LocalLabel()))
 }

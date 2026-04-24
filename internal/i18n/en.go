@@ -32,6 +32,11 @@ var enStrings = map[string]string{
 	"welcome.keys":     "  [enter] start   [ctrl+c] quit",
 	"welcome.default":  "Whiskers",
 
+	// Difficulty splash.
+	"splash.diff.title":    "Choose your difficulty",
+	"splash.diff.subtitle": "Good luck, %s. This choice is locked for the run.",
+	"splash.diff.help":     "[↑/↓] select   [enter] commit (permanent)   [ctrl+c] quit",
+
 	// Dashboard.
 	"dash.location":   "📍 %s",
 	"dash.meters":     "⚡ %.0f V/s draw   🌡  %.0f°C   slots %d/%d",
@@ -177,6 +182,7 @@ var enStrings = map[string]string{
 	"game.paused":        "⏸  Paused.",
 	"game.resumed":       "▶️  Resumed.",
 	"game.lang_switched": "🌐 Language set to %s.",
+	"game.difficulty_set": "Difficulty locked: %s.",
 
 	// Minimum terminal size warning.
 	"warn.terminal_too_small": "Please widen your terminal to at least 80x22.",

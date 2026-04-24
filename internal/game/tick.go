@@ -92,7 +92,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 				efficiencyFactor = 0.5
 			}
 			if !miningPaused {
-				btcEarned := eff * dt * earnMult * efficiencyFactor
+				btcEarned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult()
 				s.BTC += btcEarned
 			}
 			heatDelta += hOut * dt
@@ -141,7 +141,7 @@ func (s *State) advanceBilling(now int64) {
 	minutes := float64(now-s.LastBillUnix) / 60.0
 	s.LastBillUnix = now
 
-	billMult := s.BillMult()
+	billMult := s.BillMult() * s.DifficultyBillMult()
 	totalBill := 0.0
 	totalRent := 0.0
 	for roomID := range s.Rooms {
@@ -158,7 +158,7 @@ func (s *State) advanceBilling(now int64) {
 			volt += pow
 		}
 		totalBill += volt * ElectricPerVoltMin * roomDef.ElectricCostMult * minutes * billMult
-		totalRent += float64(roomDef.RentPerHour) * (minutes / 60.0)
+		totalRent += float64(roomDef.RentPerHour) * (minutes / 60.0) * s.DifficultyBillMult()
 	}
 	s.Money -= totalBill
 	s.Money -= totalRent

@@ -32,6 +32,11 @@ var zhStrings = map[string]string{
 	"welcome.keys":     "  [Enter]开始   [Ctrl+C]退出",
 	"welcome.default":  "小橘",
 
+	// Difficulty splash.
+	"splash.diff.title":    "选择难度",
+	"splash.diff.subtitle": "祝好运，%s。选定后本局不能更改。",
+	"splash.diff.help":     "[↑/↓] 选择   [enter] 确认（永久）   [ctrl+c] 退出",
+
 	// Dashboard.
 	"dash.location":   "📍 %s",
 	"dash.meters":     "⚡ 耗电 %.0f V/s   🌡  %.0f°C   槽位 %d/%d",
@@ -177,6 +182,7 @@ var zhStrings = map[string]string{
 	"game.paused":        "⏸  已暂停。",
 	"game.resumed":       "▶️  继续运行。",
 	"game.lang_switched": "🌐 语言切换为 %s。",
+	"game.difficulty_set": "难度锁定：%s。",
 
 	"warn.terminal_too_small": "终端太小了，请至少调到 80x22。",
 }
