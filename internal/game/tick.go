@@ -82,12 +82,11 @@ func (s *State) advanceMining(now int64, dt float64) {
 		}
 		coolingBonus := 1.0 + 0.25*float64(room.CoolingLvl)
 
-		var heatDelta float64
 		for _, g := range s.GPUs {
 			if g.Room != roomID || g.Status != "running" {
 				continue
 			}
-			eff, _, hOut, dur := s.GPUStats(g)
+			eff, _, _, dur := s.GPUStats(g)
 			efficiencyFactor := 1.0
 			if room.Heat > 0.8*room.MaxHeat {
 				efficiencyFactor = 0.5
@@ -96,7 +95,6 @@ func (s *State) advanceMining(now int64, dt float64) {
 				btcEarned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult()
 				s.BTC += btcEarned
 			}
-			heatDelta += hOut * dt
 
 			// Durability decay — GPUs wear out faster when the room is hot.
 			//   heat > 80% max: 3× normal wear
@@ -123,7 +121,35 @@ func (s *State) advanceMining(now int64, dt float64) {
 				}
 			}
 		}
-		room.Heat += heatDelta - roomDef.BaseCooling*coolingBonus*dt
+		// Heat updates at a room-specific interval (see HeatTickSec in
+		// rooms.json). Good-cooling rooms update rarely (chunky jumps),
+		// bad rooms update often. Between ticks heat is flat so the
+		// player sees discrete thermal events, not a per-second crawl.
+		tickInterval := int64(roomDef.HeatTickSec)
+		if tickInterval <= 0 {
+			tickInterval = 10
+		}
+		if room.LastHeatTickUnix == 0 {
+			room.LastHeatTickUnix = now
+		}
+		elapsedSinceHeatTick := now - room.LastHeatTickUnix
+		if elapsedSinceHeatTick >= tickInterval {
+			ticks := elapsedSinceHeatTick / tickInterval
+			room.LastHeatTickUnix += ticks * tickInterval
+			// heatDelta accumulator above is in per-second units; convert
+			// to per-tick by multiplying by the GPU-side heat rate directly.
+			// Recompute instead of rescaling heatDelta to keep units clear.
+			var heatPerTick float64
+			for _, g := range s.GPUs {
+				if g.Room != roomID || g.Status != "running" {
+					continue
+				}
+				_, _, hOut, _ := s.GPUStats(g)
+				heatPerTick += hOut
+			}
+			netPerTick := heatPerTick - roomDef.BaseCooling*coolingBonus
+			room.Heat += netPerTick * float64(ticks)
+		}
 		if room.Heat < 20 {
 			room.Heat = 20
 		}
@@ -243,6 +269,7 @@ func (s *State) EmergencyVent() error {
 	}
 	s.Money -= EmergencyVentCost
 	room.Heat = 20
+	room.LastHeatTickUnix = now // give the player a fresh interval after cooling
 	s.EventCooldown["vent:"+s.CurrentRoom] = now
 	s.Modifiers = append(s.Modifiers, Modifier{
 		Kind:      "pause_mining",

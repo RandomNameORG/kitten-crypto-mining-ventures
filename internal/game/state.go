@@ -35,6 +35,11 @@ type RoomState struct {
 	WiringLvl  int     `json:"wiring_lvl"`   // 0-5, reduces outage + fire chance
 	CoolingLvl int     `json:"cooling_lvl"`  // 0-5, extra cooling
 	ArmorLvl   int     `json:"armor_lvl"`    // 0-5, defense vs tunnels / pirates
+
+	// LastHeatTickUnix is the last unix second we evaluated a heat tick for
+	// this room. Each room has its own cadence (RoomDef.HeatTickSec) so
+	// good-cooling biomes update rarely, bad ones update often.
+	LastHeatTickUnix int64 `json:"last_heat_tick_unix,omitempty"`
 }
 
 // Merc is a runtime mercenary instance.

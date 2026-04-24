@@ -67,16 +67,17 @@ func (s *State) RoomBillRatePerSec(roomID string) float64 {
 	return elec + rent
 }
 
-// RoomHeatDeltaPerSec is the net heat change per second: GPU output minus
-// passive cooling (room base × cooling-upgrade bonus).
-func (s *State) RoomHeatDeltaPerSec(roomID string) float64 {
+// RoomHeatDeltaPerTick returns (deltaPerTick, tickSec) — the degrees applied
+// at each heat tick, plus the room's configured tick interval. The
+// dashboard uses this to show "⚡ +2.5 /15s" style hints.
+func (s *State) RoomHeatDeltaPerTick(roomID string) (float64, int) {
 	roomDef, ok := data.RoomByID(roomID)
 	if !ok {
-		return 0
+		return 0, 0
 	}
 	room := s.Rooms[roomID]
 	if room == nil {
-		return 0
+		return 0, 0
 	}
 	coolingBonus := 1.0 + 0.25*float64(room.CoolingLvl)
 	var heatIn float64
@@ -88,11 +89,42 @@ func (s *State) RoomHeatDeltaPerSec(roomID string) float64 {
 		heatIn += hOut
 	}
 	delta := heatIn - roomDef.BaseCooling*coolingBonus
-	// Cap at floor temp (20°C) so trend matches sim (Heat clamps low).
 	if room.Heat <= 20 && delta < 0 {
 		delta = 0
 	}
-	return delta
+	tickSec := roomDef.HeatTickSec
+	if tickSec <= 0 {
+		tickSec = 10
+	}
+	return delta, tickSec
+}
+
+// SecondsUntilNextHeatTick reports how long until the current room's heat
+// updates next — used to render a countdown on the dashboard.
+func (s *State) SecondsUntilNextHeatTick(roomID string) int {
+	roomDef, ok := data.RoomByID(roomID)
+	if !ok {
+		return 0
+	}
+	room := s.Rooms[roomID]
+	if room == nil {
+		return 0
+	}
+	tickSec := roomDef.HeatTickSec
+	if tickSec <= 0 {
+		tickSec = 10
+	}
+	if room.LastHeatTickUnix == 0 {
+		return tickSec
+	}
+	remaining := int64(tickSec) - (time.Now().Unix() - room.LastHeatTickUnix)
+	if remaining < 0 {
+		return 0
+	}
+	if remaining > int64(tickSec) {
+		return tickSec
+	}
+	return int(remaining)
 }
 
 // SecondsUntilNextBill is the countdown (in whole seconds, 0..60) until

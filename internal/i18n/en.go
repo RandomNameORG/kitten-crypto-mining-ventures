@@ -40,7 +40,7 @@ var enStrings = map[string]string{
 	// Dashboard.
 	"dash.location":   "📍 %s",
 	"dash.line.volt":  "⚡ %.0fV draw  ·  bill −$%.3f/s  ·  next bill %ds",
-	"dash.line.heat":  "🌡 %.0f°C / %.0f max  ·  trend %+.1f/s",
+	"dash.line.heat":  "🌡 %.0f°C / %.0f max  ·  %+.1f°C every %ds  ·  next in %ds",
 	"dash.line.cash":  "📈 earn +$%.3f/s  ·  net %+.3f/s",
 	"dash.slots_of":   "slots %d/%d",
 	"dash.heat.warning":  "⚠ HOT — efficiency ½ · wear 3×",
