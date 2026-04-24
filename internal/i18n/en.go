@@ -39,7 +39,10 @@ var enStrings = map[string]string{
 
 	// Dashboard.
 	"dash.location":   "📍 %s",
-	"dash.meters":     "⚡ %.0f V/s draw   🌡  %.0f°C   slots %d/%d",
+	"dash.line.volt":  "⚡ %.0fV draw  ·  bill −$%.3f/s  ·  next bill %ds",
+	"dash.line.heat":  "🌡 %.0f°C / %.0f max  ·  trend %+.1f/s",
+	"dash.line.cash":  "📈 earn +$%.3f/s  ·  net %+.3f/s",
+	"dash.slots_of":   "slots %d/%d",
 	"dash.rack":       "GPU Rack",
 	"dash.empty_hint": "  (empty — press [2] to go to the store)",
 	"dash.slot_empty": "  %d. (empty)",
