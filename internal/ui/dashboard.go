@@ -57,10 +57,23 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 		netStyle = lipgloss.NewStyle().Foreground(CrisisRed)
 	}
 
+	// Colour the heat line by danger band:
+	//   >=95%  RED    — durability wears 8× normal
+	//   >=80%  AMBER  — efficiency halved + 3× wear
+	heatStyle := HeatStyle
+	heatSuffix := ""
+	if heat >= 0.95*maxHeat {
+		heatStyle = lipgloss.NewStyle().Foreground(CrisisRed).Bold(true)
+		heatSuffix = " " + i18n.T("dash.heat.critical")
+	} else if heat >= 0.80*maxHeat {
+		heatStyle = lipgloss.NewStyle().Foreground(ThreatOrange).Bold(true)
+		heatSuffix = " " + i18n.T("dash.heat.warning")
+	}
+
 	lines = append(lines, fmt.Sprintf("%s   %s",
 		VoltStyle.Render(i18n.T("dash.line.volt", volt, bill, nextBill)),
 		DimStyle.Render(i18n.T("dash.slots_of", len(gpus), def.Slots))))
-	lines = append(lines, HeatStyle.Render(i18n.T("dash.line.heat", heat, maxHeat, heatDelta)))
+	lines = append(lines, heatStyle.Render(i18n.T("dash.line.heat", heat, maxHeat, heatDelta)+heatSuffix))
 	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash", earn, net)))
 	lines = append(lines, "")
 

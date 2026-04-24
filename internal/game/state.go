@@ -125,6 +125,10 @@ type State struct {
 	// — the UI will prompt. Loaded saves that pre-date this field are
 	// migrated to "normal" by ensureInit.
 	Difficulty string `json:"difficulty,omitempty"`
+
+	// Achievements holds the IDs of every milestone earned so far. Checked
+	// at end of tick by CheckAchievements().
+	Achievements []string `json:"achievements,omitempty"`
 }
 
 // NewState returns a fresh game. An empty kittenName signals that the UI
@@ -210,10 +214,14 @@ func (s *State) unlockRoomInternal(r data.RoomDef) {
 	if _, ok := s.Rooms[r.ID]; ok {
 		return
 	}
+	maxHeat := r.MaxHeat
+	if maxHeat <= 0 {
+		maxHeat = 90 // legacy fallback for rooms without an explicit ceiling
+	}
 	s.Rooms[r.ID] = &RoomState{
 		DefID:   r.ID,
 		Heat:    20,
-		MaxHeat: 90,
+		MaxHeat: maxHeat,
 	}
 }
 
@@ -476,6 +484,7 @@ func (s *State) CycleLang() string {
 	next := i18n.CycleLang()
 	s.Lang = next
 	s.appendLog("info", i18n.T("game.lang_switched", i18n.Label(next)))
+	s.grantAchievement("polyglot")
 	return next
 }
 
@@ -517,9 +526,16 @@ func (s *State) ensureInit() {
 	}
 	// Ensure every room-state object references a known room. Unknown ids
 	// (from removed biomes) silently drop so the game keeps loading.
-	for id := range s.Rooms {
-		if _, ok := data.RoomByID(id); !ok {
+	// Also resync each room's MaxHeat to its (possibly updated) catalog
+	// value — older saves hard-coded 90 for every biome.
+	for id, rs := range s.Rooms {
+		def, ok := data.RoomByID(id)
+		if !ok {
 			delete(s.Rooms, id)
+			continue
+		}
+		if def.MaxHeat > 0 {
+			rs.MaxHeat = def.MaxHeat
 		}
 	}
 	// Migration: drop any lingering `stolen` GPUs from older saves where

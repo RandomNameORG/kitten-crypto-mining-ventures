@@ -66,7 +66,7 @@ func TestEventsValid(t *testing.T) {
 		"steal_gpu": true, "pause_mining": true, "rep_change": true,
 		"tech_point": true, "gift_gpu": true, "btc_multiplier": true,
 		"earn_multiplier": true, "damage_gpu": true, "burn_room_chance": true,
-		"eviction_warning": true,
+		"eviction_warning": true, "money_loss": true,
 	}
 	for _, e := range Events() {
 		if !validCats[e.Category] {

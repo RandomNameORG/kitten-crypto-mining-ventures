@@ -43,6 +43,8 @@ var zhStrings = map[string]string{
 	"dash.line.heat":  "🌡 %.0f°C / 最高 %.0f  ·  趋势 %+.1f/秒",
 	"dash.line.cash":  "📈 收益 +$%.3f/秒  ·  扣费后净 %+.3f/秒",
 	"dash.slots_of":   "槽位 %d/%d",
+	"dash.heat.warning":  "⚠ 温度过高 —— 效率减半 · 磨损 ×3",
+	"dash.heat.critical": "🔥 临界 —— 磨损 ×8 · 显卡即将烧毁",
 	"dash.rack":       "显卡架",
 	"dash.empty_hint": "  （空的——按 [2] 去商店）",
 	"dash.slot_empty": "  %d. （空）",
@@ -70,6 +72,7 @@ var zhStrings = map[string]string{
 	"status.retire_arm":   "⚠ 5 秒内再按一次 [R] 确认退休",
 	"status.retire_deny":  "❌ 还不够资格退休",
 	"status.pump_fired":   "📈 拉盘已启动",
+	"status.vent":         "🧊 应急排热触发",
 	"status.error_prefix": "❌ ",
 
 	// Store.
@@ -128,6 +131,7 @@ var zhStrings = map[string]string{
 	"help.g.pump":      "[p]      拉盘技能（主面板，需解锁）",
 	"help.g.lang":      "[L]      循环切换语言",
 	"help.g.quit":      "[q]      退出（自动存档）",
+	"help.g.vent":      "[V]      应急排热——重置房间温度 · -$100 · 30 秒停机 · 2 分钟冷却",
 	"help.defense":     "房间防御（在房间视图里）",
 	"help.defense_row": "[l] 锁 · [c] 监控 · [w] 电路 · [o] 散热 · [a] 护甲",
 	"help.tip.idle":    "提示：这是增量器——放心开着 tmux 挂后台。",
@@ -186,6 +190,8 @@ var zhStrings = map[string]string{
 	"game.resumed":       "▶️  继续运行。",
 	"game.lang_switched": "🌐 语言切换为 %s。",
 	"game.difficulty_set": "难度锁定：%s。",
+	"game.achievement":    "🏆 成就解锁 —— %s",
+	"hdr.achievements":    "🏆 %d/%d",
 
 	"warn.terminal_too_small": "终端太小了，请至少调到 80x22。",
 }

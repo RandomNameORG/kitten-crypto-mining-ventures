@@ -31,6 +31,7 @@ func (s *State) Tick(now int64) {
 	s.advanceBilling(now)
 	s.advanceResearch(now)
 	s.payWages(now)
+	s.CheckAchievements()
 }
 
 // advanceShipping transitions shipping GPUs to running when their ETA passes.
@@ -97,15 +98,24 @@ func (s *State) advanceMining(now int64, dt float64) {
 			}
 			heatDelta += hOut * dt
 
-			// Durability decay — GPUs wear out.
+			// Durability decay — GPUs wear out faster when the room is hot.
+			//   heat > 80% max: 3× normal wear
+			//   heat > 95% max: 8× wear (real danger zone)
 			if dur > 0 {
-				g.HoursLeft -= dt / 3600.0
+				wearMult := 1.0
+				switch {
+				case room.Heat > 0.95*room.MaxHeat:
+					wearMult = 8.0
+				case room.Heat > 0.80*room.MaxHeat:
+					wearMult = 3.0
+				}
+				g.HoursLeft -= (dt / 3600.0) * wearMult
 				if g.HoursLeft <= 0 {
 					g.Status = "broken"
 					g.HoursLeft = 0
 					name := g.DefID
 					if def, ok := data.GPUByID(g.DefID); ok {
-						name = def.Name
+						name = def.LocalName()
 					} else if g.BlueprintID != "" {
 						name = "MEOWCore"
 					}
@@ -206,6 +216,40 @@ func (s *State) UpgradeGPU(instanceID int) error {
 		return nil
 	}
 	return fmt.Errorf("no such GPU")
+}
+
+// EmergencyVentCost is the cash price of a single vent action.
+const EmergencyVentCost = 100
+
+// EmergencyVentCooldownSec is the minimum gap between two vents in the same
+// room. Prevents spamming it away; you still pay both in cash and in a
+// 30-second mining pause.
+const EmergencyVentCooldownSec = 120
+
+// EmergencyVent drops the current room's heat to 20°C immediately. Costs
+// cash and pauses mining for 30 seconds while the rack reboots.
+func (s *State) EmergencyVent() error {
+	room := s.Rooms[s.CurrentRoom]
+	if room == nil {
+		return fmt.Errorf("no room")
+	}
+	if s.Money < EmergencyVentCost {
+		return fmt.Errorf("need $%d", EmergencyVentCost)
+	}
+	now := time.Now().Unix()
+	last := s.EventCooldown["vent:"+s.CurrentRoom]
+	if now-last < EmergencyVentCooldownSec {
+		return fmt.Errorf("cooldown: %ds left", EmergencyVentCooldownSec-(now-last))
+	}
+	s.Money -= EmergencyVentCost
+	room.Heat = 20
+	s.EventCooldown["vent:"+s.CurrentRoom] = now
+	s.Modifiers = append(s.Modifiers, Modifier{
+		Kind:      "pause_mining",
+		ExpiresAt: now + 30,
+	})
+	s.appendLog("info", fmt.Sprintf("🧊 Emergency vent — heat reset, 30s power cycle, -$%d.", EmergencyVentCost))
+	return nil
 }
 
 // TogglePause flips the Paused flag.

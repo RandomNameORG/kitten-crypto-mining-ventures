@@ -44,6 +44,7 @@ type RoomDef struct {
 	FlavorZH          string   `json:"flavor_zh,omitempty"`
 	Slots             int      `json:"slots"`
 	BaseCooling       float64  `json:"base_cooling"`
+	MaxHeat           float64  `json:"max_heat"`
 	ElectricCostMult  float64  `json:"electric_cost_mult"`
 	RentPerHour       int      `json:"rent_per_hour"`
 	ThreatBase        float64  `json:"threat_base"`

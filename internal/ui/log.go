@@ -45,6 +45,7 @@ func (a App) renderHelpView() string {
 		KeyHint.Render(i18n.T("help.g.save")),
 		KeyHint.Render(i18n.T("help.g.pump")),
 		KeyHint.Render(i18n.T("help.g.lang")),
+		KeyHint.Render(i18n.T("help.g.vent")),
 		KeyHint.Render(i18n.T("help.g.quit")),
 		"",
 		HeaderStyle.Render(i18n.T("help.defense")),

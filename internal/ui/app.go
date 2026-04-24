@@ -243,6 +243,13 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		next := a.state.CycleLang()
 		a = a.withStatus(i18n.T("status.lang", i18n.Label(next)))
 		return a, nil
+	case "V":
+		if err := a.state.EmergencyVent(); err != nil {
+			a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
+		} else {
+			a = a.withStatus(i18n.T("status.vent"))
+		}
+		return a, nil
 	}
 
 	// View-specific.
@@ -364,6 +371,7 @@ func (a App) renderHeader() string {
 		DimStyle.Render(i18n.T("hdr.tp", a.state.TechPoint)),
 		DimStyle.Render(i18n.T("hdr.rep", a.state.Reputation)),
 		DimStyle.Render(i18n.T("hdr.frags", a.state.ResearchFrags)),
+		DimStyle.Render(i18n.T("hdr.achievements", len(a.state.Achievements), len(data.Achievements()))),
 	}
 	if a.state.ActiveResearch != nil {
 		pct := int(a.state.ResearchProgress() * 100)
