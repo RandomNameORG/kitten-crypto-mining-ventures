@@ -19,4 +19,5 @@ Thumbs.db
 # Workspace
 .worktrees/
 .autonomous/
-.claude/
+.claude/*
+!.claude/skills/
