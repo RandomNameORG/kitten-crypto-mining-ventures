@@ -23,7 +23,7 @@ var enStrings = map[string]string{
 	"hdr.frags": "frags %d",
 	"hdr.price": "$%.0f/BTC",
 
-	"footer.keys": "[space] pause  [s] save  [L] lang  [?] help  [q] quit",
+	"footer.keys": "[space] pause  [S] save  [L] lang  [?] help  [q] quit",
 
 	// Welcome / splash.
 	"welcome.title":    "🐾 Kitten Crypto Mining Ventures",
@@ -127,7 +127,7 @@ var enStrings = map[string]string{
 	"help.view.9":     "[9]  prestige — retire & buy legacy perks",
 	"help.global":     "Global",
 	"help.g.space":    "[space]  pause / resume",
-	"help.g.save":     "[s]       save (dashboard only — other views reuse 's')",
+	"help.g.save":     "[S]       save (any view)",
 	"help.g.pump":     "[p]       Pump & Dump ability (dashboard, if unlocked)",
 	"help.g.lang":     "[L]       cycle language",
 	"help.g.quit":     "[q]       quit (auto-saves)",
