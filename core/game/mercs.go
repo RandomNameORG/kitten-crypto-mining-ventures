@@ -93,6 +93,7 @@ func (s *State) payWages(now int64) {
 		// Loyalty drift: +1 per week on time, or −10 if we can't afford.
 		if s.BTC >= wage {
 			s.BTC -= wage
+			s.TotalWagesPaid += wage
 			m.Loyalty++
 		} else {
 			// Missed wages — loyalty tanks, wage still banked as debt-reduction.

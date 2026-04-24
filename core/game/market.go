@@ -16,6 +16,19 @@ const (
 	marketPriceMax = 3.0
 )
 
+// MarketHistoryCap bounds the rolling window of market prices recorded for
+// the Stats sparkline. Sized for "recent past" eyeballing, not analytics.
+const MarketHistoryCap = 60
+
+// recordMarketPrice appends p to the rolling history slice and trims back to
+// MarketHistoryCap. Lazy-inits on nil so bare struct literals stay safe.
+func (s *State) recordMarketPrice(p float64) {
+	s.MarketPriceHistory = append(s.MarketPriceHistory, p)
+	if len(s.MarketPriceHistory) > MarketHistoryCap {
+		s.MarketPriceHistory = s.MarketPriceHistory[len(s.MarketPriceHistory)-MarketHistoryCap:]
+	}
+}
+
 // advanceMarket ticks the BTC market-price multiplier toward 1.0 with a
 // small Gaussian kick each step. Mean-reversion keeps the series from
 // wandering off; the kick keeps it interesting. Uses the global math/rand
@@ -44,6 +57,7 @@ func (s *State) advanceMarket(now int64) {
 		s.LastMarketTickUnix = now
 		s.PrevMarketPrice = factor
 		s.MarketPrice = factor
+		s.recordMarketPrice(factor)
 		return
 	}
 	elapsed := now - s.LastMarketTickUnix
@@ -64,6 +78,7 @@ func (s *State) advanceMarket(now int64) {
 		}
 	}
 	s.MarketPrice = price
+	s.recordMarketPrice(price)
 }
 
 // MarketPinned reports whether a market_pin modifier is active and, if so,

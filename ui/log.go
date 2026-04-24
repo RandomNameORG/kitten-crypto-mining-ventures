@@ -42,6 +42,7 @@ func (a App) renderHelpView() string {
 		KeyHint.Render(i18n.T("help.view.7")),
 		KeyHint.Render(i18n.T("help.view.8")),
 		KeyHint.Render(i18n.T("help.view.9")),
+		KeyHint.Render(i18n.T("help.view.0")),
 		"",
 		HeaderStyle.Render(i18n.T("help.global")),
 		KeyHint.Render(i18n.T("help.g.space")),

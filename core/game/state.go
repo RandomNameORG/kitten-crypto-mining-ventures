@@ -145,6 +145,19 @@ type State struct {
 	// at end of tick by CheckAchievements().
 	Achievements []string `json:"achievements,omitempty"`
 
+	// Lifetime counters powering the Stats view ([0]). Incremented in their
+	// respective systems (Tick, addGPU, SellGPU, payWages, applyEvent,
+	// advanceMarket). MarketPriceHistory is bounded to MarketHistoryCap
+	// entries via a rolling window.
+	TotalTicks         int64           `json:"total_ticks"`
+	TotalGPUsBought    int             `json:"total_gpus_bought"`
+	TotalGPUsScrapped  int             `json:"total_gpus_scrapped"`
+	OCTimeT1Sec        int64           `json:"oc_time_t1_sec"`
+	OCTimeT2Sec        int64           `json:"oc_time_t2_sec"`
+	EventsByCategory   map[string]int  `json:"events_by_category"`
+	TotalWagesPaid     float64         `json:"total_wages_paid"`
+	MarketPriceHistory []float64       `json:"market_price_history"`
+
 	// OfflineSummary is a one-shot handoff from the offline catch-up pass
 	// (see RunOfflineCatchup) to the UI. The UI reads it on first render,
 	// shows a notification, and clears the field. Never persisted — if
@@ -301,6 +314,7 @@ func (s *State) addGPU(defID, room string, shipping bool) *GPU {
 		g.ShipsAt = time.Now().Unix() + int64(30+rand.Intn(150))
 	}
 	s.GPUs = append(s.GPUs, g)
+	s.TotalGPUsBought++
 	return g
 }
 
@@ -369,6 +383,7 @@ func (s *State) SellGPU(instanceID int) error {
 			s.BTC += value
 			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
+			s.TotalGPUsScrapped++
 			s.appendLog("info", i18n.T("log.gpu.scrapped", name, FmtBTC(value), frags))
 			return nil
 		}
@@ -555,6 +570,12 @@ func (s *State) ensureInit() {
 	}
 	if s.Log == nil {
 		s.Log = []LogEntry{}
+	}
+	if s.EventsByCategory == nil {
+		s.EventsByCategory = map[string]int{}
+	}
+	if s.MarketPriceHistory == nil {
+		s.MarketPriceHistory = []float64{}
 	}
 	if s.NextGPUID < 1 {
 		s.NextGPUID = 1

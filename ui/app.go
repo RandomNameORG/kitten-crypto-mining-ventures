@@ -25,6 +25,7 @@ const (
 	viewMercs
 	viewLab
 	viewPrestige
+	viewStats
 	viewHelp
 )
 
@@ -288,6 +289,9 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "9":
 		a.view = viewPrestige
 		return a, nil
+	case "0":
+		a.view = viewStats
+		return a, nil
 	case "?":
 		a.view = viewHelp
 		return a, nil
@@ -395,6 +399,8 @@ func (a App) View() string {
 		body = a.renderLabView()
 	case viewPrestige:
 		body = a.renderPrestigeView()
+	case viewStats:
+		body = a.renderStatsView()
 	case viewHelp:
 		body = a.renderHelpView()
 	}
@@ -462,6 +468,7 @@ func (a App) renderNav() string {
 		{"7", "nav.mercs", viewMercs},
 		{"8", "nav.lab", viewLab},
 		{"9", "nav.prestige", viewPrestige},
+		{"0", "nav.stats", viewStats},
 	}
 	// Full mode: [1]dashboard [2]store ... — labelled and spacious.
 	// Compact mode: [1][2][3]... — just numbers, current highlighted.
