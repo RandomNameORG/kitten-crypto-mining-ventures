@@ -5,12 +5,23 @@ import (
 	"time"
 )
 
-// BTCBasePrice is the centre of the random walk.
-const BTCBasePrice = 30000.0
+// BTCBasePrice is the centre of the random walk. Intentionally set low
+// (not matching real-world BTC) to stretch the progression curve:
+//
+//	1 GTX 1060 at 0.0012 BTC/s × $300 = $0.36/s, so a second 1060 ($120)
+//	pays for itself in ~5 minutes. An A100 ($60k) in ~80 minutes of
+//	dedicated uptime. This matches typical idle-game pacing (Adventure
+//	Capitalist / Kittens Game / NGU Idle) where mid-tier unlocks land
+//	every 15-30 min and endgame milestones take multi-hour sessions.
+//
+// Lore: the kittens mine an obscure altcoin, not real BTC.
+const BTCBasePrice = 300.0
 
 // ElectricPerVoltMin is the per-V per-minute price of electricity. Rooms
-// multiply this by their electric_cost_mult.
-const ElectricPerVoltMin = 0.10
+// multiply this by their electric_cost_mult. Tuned so bills are ~5-10% of
+// earnings on the base room — meaningful, but not death-spiral-inducing
+// unless you run an oversubscribed rack.
+const ElectricPerVoltMin = 0.25
 
 // BTCPriceAt computes the BTC price at a given unix second using a seeded
 // double-sine oscillator + any active event multipliers. Deterministic per

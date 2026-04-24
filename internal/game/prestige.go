@@ -6,7 +6,10 @@ import (
 )
 
 // PrestigeThreshold is the lifetime-earned cash needed before Retire unlocks.
-const PrestigeThreshold = 1_000_000.0
+// Tuned for the recalibrated economy: a dedicated session with mid-tier gear
+// hits this in roughly 4-8 hours, which is the typical first-prestige window
+// for the genre.
+const PrestigeThreshold = 250_000.0
 
 // LegacyPerk defines a purchasable prestige bonus.
 type LegacyPerk struct {
