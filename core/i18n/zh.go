@@ -226,6 +226,28 @@ var zhStrings = map[string]string{
 	"prestige.perks":        "Legacy 特权",
 	"prestige.perk_owned":   "已拥有 / 满级",
 
+	// Syndicate — 中后期合作矿池，嵌在转生视图下方。
+	"syndicate.title":           "🤝 矿工联盟",
+	"syndicate.joined":          "  状态：已加盟 —— %d%% 收益入池",
+	"syndicate.not_joined":      "  状态：单干（未加盟）",
+	"syndicate.gated_need":      "  门槛：需累计收入 %s（当前 %s）",
+	"syndicate.contrib":         "  待分红贡献：%s",
+	"syndicate.next_payout":     "  下次分红还有 %s（分红倍率 ×%.2f）",
+	"syndicate.dividends_total": "  累计收到分红：%s",
+	"syndicate.cta_join":        "  [Y] 加盟 —— 免费，自留 %d%% 收益",
+	"syndicate.cta_leave":       "  [N] 退盟 —— %s 违约金，待分红贡献作废",
+	"syndicate.leave_fee":       "违约金 %s",
+	"syndicate.key_help":        "   · [Y] 加盟 · [N] 退盟",
+
+	"log.syndicate.joined":      "\uf0c0 你加入了矿工联盟，10%% 的收益开始进入共享池。",
+	"log.syndicate.left":        "\uf235 你退出了联盟，支付 %s 违约金；待分红贡献全部作废。",
+	"log.syndicate.payout":      "\uf0d6 联盟分红到账：+%s。",
+	"log.syndicate.gate_failed": "联盟拒绝了你 —— 需累计收入 %s（当前 %s）。",
+
+	"status.syndicate_joined": "🤝 已加入联盟",
+	"status.syndicate_left":   "🚪 已退出联盟",
+	"status.syndicate_gate":   "❌ 累计收入还不够加盟",
+
 	// Small labels used across multiple views.
 	"label.eff":     "%s/秒",
 	"label.bp_line": "    效率 %s/秒 · %.0fV · %.0f°C · %.0fh 耐久",

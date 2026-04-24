@@ -27,7 +27,14 @@ func (s *State) GPUEarnRatePerSec(g *GPU) float64 {
 		effFactor = 0.5
 	}
 	earnMult := s.earnMultiplier(now)
-	return eff * earnMult * effFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale
+	rate := eff * earnMult * effFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale
+	// Display-only haircut: the tick loop actually diverts SyndicateCutRate
+	// of each GPU's earn into the contribution pool. Mirror that here so
+	// the dashboard's "earn +₿/s" matches what the player sees hit BTC.
+	if s.SyndicateJoined {
+		rate *= (1.0 - SyndicateCutRate)
+	}
+	return rate
 }
 
 // RoomEarnRatePerSec is the sum of per-GPU earn rates for every running GPU

@@ -191,6 +191,43 @@ func TestSimOCDrainsDurabilityFaster(t *testing.T) {
 	}
 }
 
+// TestSimSyndicateDividendsAccrue pushes the full tick loop through a
+// week-plus of virtual time with the player joined to the syndicate. We
+// pre-seed LifetimeEarned so the probe can auto-join on tick 1 (otherwise
+// reaching the 500K-BTC threshold via the starter GPU alone would stretch
+// the test to hundreds of virtual days), then assert that one payout
+// window closes cleanly: TotalDividends > 0 and BTC stays finite.
+func TestSimSyndicateDividendsAccrue(t *testing.T) {
+	withTempHome(t)
+	// One week is 604 800 virtual seconds. Run a bit past that so the
+	// weekly payout has definitely rolled.
+	const ticks = SyndicatePayoutIntervalSec + 200
+	joined := false
+	s := runSimWithProbe(t, 1, int(ticks), func(i int, s *State) {
+		if joined {
+			return
+		}
+		if s.LifetimeEarned < SyndicateJoinThreshold {
+			s.LifetimeEarned = SyndicateJoinThreshold
+		}
+		if err := s.JoinSyndicate(simTestBaseUnix + int64(i)); err == nil {
+			joined = true
+		}
+	})
+	if !joined {
+		t.Fatal("probe never joined the syndicate")
+	}
+	if math.IsNaN(s.BTC) || math.IsInf(s.BTC, 0) {
+		t.Fatalf("BTC became non-finite: %v", s.BTC)
+	}
+	if math.IsNaN(s.SyndicateTotalDividends) || math.IsInf(s.SyndicateTotalDividends, 0) {
+		t.Fatalf("SyndicateTotalDividends became non-finite: %v", s.SyndicateTotalDividends)
+	}
+	if s.SyndicateTotalDividends <= 0 {
+		t.Fatalf("expected dividends to accrue after one payout window; got %v", s.SyndicateTotalDividends)
+	}
+}
+
 // TestSimMarketPriceInvariants runs a full virtual day through the sim and
 // asserts the market price stays finite + clamped every tick, and that it
 // actually moves off 1.0 across the run. This catches a drift path that's

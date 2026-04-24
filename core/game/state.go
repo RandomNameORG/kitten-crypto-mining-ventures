@@ -131,6 +131,19 @@ type State struct {
 	// LegacyPoints spent / available this run. True cross-run LP lives in legacy.json.
 	LegacyAvailable int `json:"legacy_available"`
 
+	// Syndicate: late-game cooperative pool. When Joined, advanceMining
+	// diverts SyndicateCutRate of each GPU's earn into SyndicateContribution
+	// before crediting BTC / LifetimeEarned. Every
+	// SyndicatePayoutIntervalSec the accumulator is paid back at
+	// SyndicateDividendMult (one bucket per call, regardless of missed
+	// intervals) and LastPayout advances by the interval so offline
+	// catch-up rolls clean without compounding payouts on a single pool.
+	SyndicateJoined         bool    `json:"syndicate_joined,omitempty"`
+	SyndicateJoinedAt       int64   `json:"syndicate_joined_at,omitempty"`
+	SyndicateLastPayoutUnix int64   `json:"syndicate_last_payout_unix,omitempty"`
+	SyndicateContribution   float64 `json:"syndicate_contribution,omitempty"`
+	SyndicateTotalDividends float64 `json:"syndicate_total_dividends,omitempty"`
+
 	// Lang persists the player's chosen language code ("en" | "zh"). Loaded
 	// by LoadFrom into the i18n package at startup.
 	Lang string `json:"lang,omitempty"`

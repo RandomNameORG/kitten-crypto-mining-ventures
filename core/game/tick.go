@@ -83,6 +83,7 @@ func (s *State) Tick(now int64) {
 	s.advanceMarket(now)
 	s.advanceMining(now, dt)
 	s.advanceBilling(now)
+	s.advanceSyndicate(now)
 	s.advanceResearch(now)
 	s.payWages(now)
 	s.CheckAchievements()
@@ -170,6 +171,15 @@ func (s *State) advanceMining(now int64, dt float64) {
 			}
 			if !miningPaused {
 				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale
+				// Syndicate cut: divert the agreed fraction into the
+				// contribution pool before crediting BTC so the player
+				// only sees (1-cut) of each GPU's raw earn. Proportional
+				// to hashpower falls out of the per-GPU loop naturally.
+				if s.SyndicateJoined && earned > 0 {
+					cut := earned * SyndicateCutRate
+					s.SyndicateContribution += cut
+					earned -= cut
+				}
 				s.BTC += earned
 				s.LifetimeEarned += earned
 			}
