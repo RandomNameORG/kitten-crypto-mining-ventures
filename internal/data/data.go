@@ -45,6 +45,7 @@ type RoomDef struct {
 	Slots             int      `json:"slots"`
 	BaseCooling       float64  `json:"base_cooling"`
 	MaxHeat           float64  `json:"max_heat"`
+	HeatTickSec       int      `json:"heat_tick_sec"` // seconds between heat updates (5 = fast, 60 = slow)
 	ElectricCostMult  float64  `json:"electric_cost_mult"`
 	RentPerHour       int      `json:"rent_per_hour"`
 	ThreatBase        float64  `json:"threat_base"`

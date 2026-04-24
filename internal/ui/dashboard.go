@@ -44,7 +44,8 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 	bill := a.state.RoomBillRatePerSec(roomID)
 	earn := a.state.RoomEarnRatePerSec(roomID)
 	net := earn - bill
-	heatDelta := a.state.RoomHeatDeltaPerSec(roomID)
+	heatDelta, heatTickSec := a.state.RoomHeatDeltaPerTick(roomID)
+	heatTickIn := a.state.SecondsUntilNextHeatTick(roomID)
 	nextBill := a.state.SecondsUntilNextBill()
 
 	var maxHeat float64 = 90
@@ -73,7 +74,7 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 	lines = append(lines, fmt.Sprintf("%s   %s",
 		VoltStyle.Render(i18n.T("dash.line.volt", volt, bill, nextBill)),
 		DimStyle.Render(i18n.T("dash.slots_of", len(gpus), def.Slots))))
-	lines = append(lines, heatStyle.Render(i18n.T("dash.line.heat", heat, maxHeat, heatDelta)+heatSuffix))
+	lines = append(lines, heatStyle.Render(i18n.T("dash.line.heat", heat, maxHeat, heatDelta, heatTickSec, heatTickIn)+heatSuffix))
 	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash", earn, net)))
 	lines = append(lines, "")
 
