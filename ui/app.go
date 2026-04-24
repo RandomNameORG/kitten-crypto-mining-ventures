@@ -59,6 +59,7 @@ type App struct {
 
 	storeCursor    int
 	gpusCursor     int
+	gpusSortMode   gpuSortMode
 	roomsCursor    int
 	skillsCursor   int
 	mercsCursor    int // index into hireable list when hiring; else 0

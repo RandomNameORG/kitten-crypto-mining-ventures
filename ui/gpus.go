@@ -39,10 +39,24 @@ func gpuDisplayName(s *game.State, g *game.GPU) string {
 	return g.DefID
 }
 
+// sortModeLabel translates a gpuSortMode to its localized display name.
+func sortModeLabel(m gpuSortMode) string {
+	switch m {
+	case gpuSortEarnDesc:
+		return i18n.T("gpus.sort_earn")
+	case gpuSortEffDesc:
+		return i18n.T("gpus.sort_eff")
+	case gpuSortDurAsc:
+		return i18n.T("gpus.sort_dur")
+	}
+	return i18n.T("gpus.sort_default")
+}
+
 func (a App) renderGPUsView() string {
-	gpus := a.state.GPUs
+	gpus, metrics, ranks := prepareGPUView(a.state, a.state.GPUs, a.gpusSortMode)
 	lines := []string{TitleStyle.Render(i18n.T("gpus.title"))}
 	lines = append(lines, DimStyle.Render(i18n.T("gpus.help")))
+	lines = append(lines, DimStyle.Render(i18n.T("gpus.sort_label", sortModeLabel(a.gpusSortMode))))
 	lines = append(lines, "")
 
 	if len(gpus) == 0 {
@@ -70,14 +84,23 @@ func (a App) renderGPUsView() string {
 		if pct := ocLevelPercent(g.OCLevel); pct > 0 {
 			ocMark = lipgloss.NewStyle().Foreground(ThreatOrange).Render(fmt.Sprintf(i18n.T("gpus.oc_mark"), pct))
 		}
-		rate := a.state.GPUEarnRatePerSec(g)
-		rateCell := ""
-		if rate > 0 {
-			rateCell = lipgloss.NewStyle().Foreground(OppGreen).Render(game.FmtBTC(rate) + "/s")
-		} else {
-			rateCell = DimStyle.Render("—")
+		m := metrics[g.InstanceID]
+		tier := ranks[g.InstanceID]
+
+		rateCell := DimStyle.Render("—")
+		if m.running && m.earn > 0 {
+			rateCell = lipgloss.NewStyle().Foreground(rankColour(tier)).Render(game.FmtBTC(m.earn) + "/s")
 		}
-		line := fmt.Sprintf("%s#%-3d %-36s%s%s  %-12s  %-18s  durab %5.1fh  %s",
+		powCell := DimStyle.Render("  —  ")
+		if m.running {
+			powCell = fmt.Sprintf("%4.0fW", m.power)
+		}
+		effCell := DimStyle.Render("    —    ")
+		if m.running && m.power > 0 {
+			effCell = DimStyle.Render(game.FmtBTC(m.eff) + "/W")
+		}
+
+		line := fmt.Sprintf("%s#%-3d %-30s%s%s  %-11s  %-12s  %5.1fh  %5s  %s  %s",
 			marker,
 			g.InstanceID,
 			gpuDisplayName(a.state, g),
@@ -86,7 +109,9 @@ func (a App) renderGPUsView() string {
 			statusDecor,
 			roomName,
 			g.HoursLeft,
+			powCell,
 			rateCell,
+			effCell,
 		)
 		lines = append(lines, line)
 	}
@@ -94,7 +119,9 @@ func (a App) renderGPUsView() string {
 }
 
 func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {
-	gpus := a.state.GPUs
+	// Work from the currently displayed (sorted) slice so cursor positions
+	// and `gpus[cursor]` pick the right GPU even with a non-default sort.
+	gpus, _, _ := prepareGPUView(a.state, a.state.GPUs, a.gpusSortMode)
 	switch key {
 	case "up", "k":
 		if a.gpusCursor > 0 {
@@ -137,6 +164,22 @@ func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {
 				}
 			}
 		}
+	case "b":
+		// Remember the anchor GPU under the cursor so the new sort keeps
+		// it highlighted instead of jumping to whatever lands at the same
+		// index. If the row is out of bounds (empty list), skip the anchor.
+		var anchorID int = -1
+		if a.gpusCursor >= 0 && a.gpusCursor < len(gpus) {
+			anchorID = gpus[a.gpusCursor].InstanceID
+		}
+		a.gpusSortMode = cycleGPUSortMode(a.gpusSortMode)
+		if anchorID >= 0 {
+			resorted, _, _ := prepareGPUView(a.state, a.state.GPUs, a.gpusSortMode)
+			if idx := indexOfGPU(resorted, anchorID); idx >= 0 {
+				a.gpusCursor = idx
+			}
+		}
+		a = a.withStatus(i18n.T("gpus.sort_label", sortModeLabel(a.gpusSortMode)))
 	case "esc":
 		a.view = viewDashboard
 	}

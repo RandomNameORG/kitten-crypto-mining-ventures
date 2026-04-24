@@ -100,10 +100,15 @@ var enStrings = map[string]string{
 	"store.help":  "↑/↓ select   [b] buy   [esc]/[1] back",
 
 	// GPUs view.
-	"gpus.title":   "🖥  Your GPUs",
-	"gpus.help":    "↑/↓ select   [u] upgrade   [o] overclock   [r] repair   [s] scrap   [esc]/[1] back",
-	"gpus.empty":   "  (no GPUs yet — visit the store)",
-	"gpus.oc_mark": " OC+%d%%",
+	"gpus.title":        "🖥  Your GPUs",
+	"gpus.help":         "↑/↓ select   [u] upgrade   [o] overclock   [r] repair   [s] scrap   [b] sort   [esc]/[1] back",
+	"gpus.empty":        "  (no GPUs yet — visit the store)",
+	"gpus.oc_mark":      " OC+%d%%",
+	"gpus.sort_label":   "sort: %s",
+	"gpus.sort_default": "default",
+	"gpus.sort_earn":    "earn ↓",
+	"gpus.sort_eff":     "efficiency ↓",
+	"gpus.sort_dur":     "durability ↑",
 
 	// Rooms view.
 	"rooms.title":      "🏠 Rooms",
