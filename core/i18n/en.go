@@ -226,6 +226,28 @@ var enStrings = map[string]string{
 	"prestige.perks":  "Legacy Perks",
 	"prestige.perk_owned": "owned / maxed",
 
+	// Syndicate — late-game cooperative pool, surfaced on the Prestige view.
+	"syndicate.title":         "🤝 Syndicate",
+	"syndicate.joined":        "  status: JOINED — %d%% of earn → shared pool",
+	"syndicate.not_joined":    "  status: independent (no pool)",
+	"syndicate.gated_need":    "  gated: need %s lifetime earned (have %s)",
+	"syndicate.contrib":       "  pending contribution: %s",
+	"syndicate.next_payout":   "  next dividend in %s  (×%.2f on payout)",
+	"syndicate.dividends_total": "  lifetime dividends paid: %s",
+	"syndicate.cta_join":      "  [Y] join — free, keeps %d%% of your earn",
+	"syndicate.cta_leave":     "  [N] leave — %s fee, forfeits pending contribution",
+	"syndicate.leave_fee":     "%s leave fee",
+	"syndicate.key_help":      "   · [Y] join syndicate · [N] leave",
+
+	"log.syndicate.joined":      "\uf0c0 Joined the Syndicate. 10%% of earn now feeds the pool.",
+	"log.syndicate.left":        "\uf235 Left the Syndicate. Paid %s leave fee; pool forfeited.",
+	"log.syndicate.payout":      "\uf0d6 Syndicate dividend: +%s.",
+	"log.syndicate.gate_failed": "Syndicate refused — need %s lifetime earned (have %s).",
+
+	"status.syndicate_joined": "🤝 joined the Syndicate",
+	"status.syndicate_left":   "🚪 left the Syndicate",
+	"status.syndicate_gate":   "❌ not yet eligible for the Syndicate",
+
 	// Small labels used across multiple views.
 	"label.eff":       "%s/s",
 	"label.bp_line":   "    eff %s/s · %.0fV · %.0f°C · %.0fh durability",

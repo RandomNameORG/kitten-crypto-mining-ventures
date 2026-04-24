@@ -21,7 +21,7 @@ func (a App) renderPrestigeView() string {
 			DimStyle.Render(i18n.T("prestige.locked")),
 		}, "\n")
 	}
-	help := DimStyle.Render(i18n.T("prestige.help"))
+	help := DimStyle.Render(i18n.T("prestige.help") + i18n.T("syndicate.key_help"))
 
 	lines := []string{HeaderStyle.Render(i18n.T("prestige.status"))}
 	lines = append(lines, i18n.T("prestige.lifetime", game.FmtBTC(a.state.LifetimeEarned), game.FmtBTC(game.PrestigeThreshold)))
@@ -58,10 +58,47 @@ func (a App) renderPrestigeView() string {
 	}
 	perksPanel := PanelStyle.Width(fitWidth(90, a.w)).Render(strings.Join(perkLines, "\n"))
 
+	syndicatePanel := a.renderSyndicatePanel()
+
 	return strings.Join([]string{
 		header, help, "",
-		lipgloss.JoinVertical(lipgloss.Left, statusPanel, perksPanel),
+		lipgloss.JoinVertical(lipgloss.Left, statusPanel, perksPanel, syndicatePanel),
 	}, "\n")
+}
+
+// renderSyndicatePanel renders the Syndicate status panel, reused only by the
+// Prestige view. Shows gate status when not joined, or live contribution /
+// next-payout / lifetime dividends when joined.
+func (a App) renderSyndicatePanel() string {
+	lines := []string{HeaderStyle.Render(i18n.T("syndicate.title"))}
+	keepPct := int((1.0 - game.SyndicateCutRate) * 100)
+	cutPct := int(game.SyndicateCutRate * 100)
+	if a.state.SyndicateJoined {
+		lines = append(lines,
+			lipgloss.NewStyle().Foreground(OppGreen).Render(i18n.T("syndicate.joined", cutPct)))
+		lines = append(lines, i18n.T("syndicate.contrib", game.FmtBTC(a.state.SyndicateContribution)))
+		nextSec := a.state.SecondsUntilNextSyndicatePayout()
+		lines = append(lines, i18n.T("syndicate.next_payout",
+			formatDuration(nextSec), game.SyndicateDividendMult))
+		lines = append(lines, i18n.T("syndicate.dividends_total",
+			game.FmtBTC(a.state.SyndicateTotalDividends)))
+		lines = append(lines, "")
+		lines = append(lines, DimStyle.Render(i18n.T("syndicate.cta_leave",
+			game.FmtBTC(game.SyndicateLeaveFee))))
+	} else {
+		lines = append(lines, DimStyle.Render(i18n.T("syndicate.not_joined")))
+		if a.state.CanJoinSyndicate() {
+			lines = append(lines, i18n.T("syndicate.dividends_total",
+				game.FmtBTC(a.state.SyndicateTotalDividends)))
+			lines = append(lines, "")
+			lines = append(lines, MoneyStyle.Render(i18n.T("syndicate.cta_join", keepPct)))
+		} else {
+			lines = append(lines, DimStyle.Render(i18n.T("syndicate.gated_need",
+				game.FmtBTC(game.SyndicateJoinThreshold),
+				game.FmtBTC(a.state.LifetimeEarned))))
+		}
+	}
+	return PanelStyle.Width(fitWidth(90, a.w)).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) handlePrestigeKey(key string) (tea.Model, tea.Cmd) {
@@ -103,6 +140,23 @@ func (a App) handlePrestigeKey(key string) (tea.Model, tea.Cmd) {
 			_ = a.saveNow()
 			a = a.withStatus(i18n.T("status.retired", lp))
 			a.view = viewDashboard
+		}
+	case "Y", "y":
+		now := time.Now().Unix()
+		if err := a.state.JoinSyndicate(now); err != nil {
+			if !a.state.CanJoinSyndicate() {
+				a = a.withStatus(i18n.T("status.syndicate_gate"))
+			} else {
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
+			}
+		} else {
+			a = a.withStatus(i18n.T("status.syndicate_joined"))
+		}
+	case "N", "n":
+		if err := a.state.LeaveSyndicate(); err != nil {
+			a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
+		} else {
+			a = a.withStatus(i18n.T("status.syndicate_left"))
 		}
 	case "esc":
 		a.view = viewDashboard
