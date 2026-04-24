@@ -51,6 +51,7 @@ var enStrings = map[string]string{
 	"dash.power.safe":      "safe",
 	"dash.power.deficit":   "losing ₿/s — balance lasts %s",
 	"dash.power.broke":     "empty wallet → 60s blackout",
+	"dash.market.label":    "📊 %.2f× %s",
 	"dash.line.power":      "\uf0e7 %.0fV  −%s/s  (next bill %ds)",
 	"dash.line.cash2":      "\uf201 +%s/s earn   net %s/s",
 	"dash.heat.label":      "\uf2c7 Heat  %.0f/%.0f°C  %+.1f/%ds",

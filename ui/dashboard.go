@@ -282,6 +282,7 @@ func (a App) renderRoomPanel(def data.RoomDef, width int, compact bool) string {
 	lines = append(lines, HeatStyle.Render(i18n.T("dash.heat.label", heat, maxHeat, heatDelta, heatTickSec)))
 	lines = append(lines, "  "+renderHeatBar(heatFrac, barW)+"  "+zoneStyle.Render(i18n.T(zoneLabel)))
 	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash2", game.FmtBTC(earn), game.FmtBTCSigned(net))))
+	lines = append(lines, renderMarketLine(a.state))
 	if !compact {
 		lines = append(lines, "")
 	}
@@ -410,6 +411,7 @@ func (a App) renderKeyInfoPanel(def data.RoomDef, width int, compact bool) strin
 		TitleStyle.Render(truncate(i18n.T("dash.location", def.LocalName()), innerW)),
 		VoltStyle.Render(fmt.Sprintf("%s %.0fW  −%s/s", IconBolt, volt, game.FmtBTC(bill))),
 		netStyle.Render(fmt.Sprintf("%s net %s/s", IconChartUp, game.FmtBTCSigned(net))),
+		renderMarketLine(a.state),
 		heatStyle.Render(fmt.Sprintf("%s %.0f/%.0f %+.1f/s", IconThermo, heat, maxHeat, heatDelta)),
 		renderHeatBar(heatFrac, barW),
 		impactStyle.Render(truncate(i18n.T(impactKey), innerW)),
@@ -689,6 +691,22 @@ func (a App) overlayOfflineSummary(content string) string {
 			DimStyle.Render(i18n.T("offline.dismiss")),
 		}, "\n"))
 	return lipgloss.NewStyle().Padding(1, 2).Render(box)
+}
+
+// renderMarketLine formats the BTC market multiplier + trend glyph. Colour
+// tracks sign of the trend so a glanceable read matches "green=up / red=down".
+func renderMarketLine(s *game.State) string {
+	arrow := "·"
+	style := DimStyle
+	switch s.MarketTrend() {
+	case 1:
+		arrow = "↑"
+		style = lipgloss.NewStyle().Foreground(OppGreen)
+	case -1:
+		arrow = "↓"
+		style = lipgloss.NewStyle().Foreground(CrisisRed)
+	}
+	return style.Render(i18n.T("dash.market.label", s.MarketPrice, arrow))
 }
 
 func truncate(s string, n int) string {

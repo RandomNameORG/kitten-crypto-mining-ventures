@@ -51,6 +51,7 @@ var zhStrings = map[string]string{
 	"dash.power.safe":      "盈利中",
 	"dash.power.deficit":   "亏损中 —— 余额撑 %s",
 	"dash.power.broke":     "钱包见底 → 60 秒断电",
+	"dash.market.label":    "📊 %.2f× %s",
 	"dash.line.power":      "\uf0e7 %.0fV  −%s/秒  （下次账单 %d 秒）",
 	"dash.line.cash2":      "\uf201 +%s/秒 收益   净 %s/秒",
 	"dash.heat.label":      "\uf2c7 温度  %.0f/%.0f°C  %+.1f/%d秒",
