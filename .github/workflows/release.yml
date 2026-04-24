@@ -31,12 +31,19 @@ jobs:
       - name: Cross-compile 8 binaries
         run: |
           mkdir -p bin
+          # Inject the tag name as main.Version so the running binary
+          # knows its own release — powers the startup update check.
+          # meowmine-ssh doesn't run the check (multiplayer server
+          # doesn't own the player's browser), so the ldflag is harmless
+          # there; it just leaves main.Version unset in that package.
+          VERSION="${GITHUB_REF_NAME}"
           for target in "windows amd64 .exe" "linux amd64 " "darwin amd64 " "darwin arm64 "; do
             set -- $target
             os=$1; arch=$2; ext=$3
             for cmd in meowmine meowmine-ssh; do
               echo "building $cmd-$os-$arch$ext"
-              GOOS=$os GOARCH=$arch go build -ldflags "-s -w" \
+              GOOS=$os GOARCH=$arch go build \
+                -ldflags "-s -w -X main.Version=${VERSION}" \
                 -o "bin/$cmd-$os-$arch$ext" "./cmd/$cmd"
             done
           done

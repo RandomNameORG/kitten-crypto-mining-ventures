@@ -197,4 +197,17 @@ var enStrings = map[string]string{
 
 	// Minimum terminal size warning.
 	"warn.terminal_too_small": "Please widen your terminal to at least 80x22.",
+
+	// Update-available splash — shown on startup when GitHub reports a
+	// newer release than the running binary. See core/update and
+	// ui/update_splash.go.
+	"update.title":     "🆕 Update available",
+	"update.from_to":   "Current: %s   →   Latest: %s",
+	"update.changelog": "What's new:",
+	"update.no_notes":  "(no changelog)",
+	"update.opt.yes":   "Open release page",
+	"update.opt.no":    "Remind me next time",
+	"update.opt.skip":  "Skip this version",
+	"update.help":      "[↑/↓] select  [enter] confirm  [y] open  [n] later  [s] skip  [o] release notes  [ctrl+c] quit",
+	"update.opening":   "Opening %s ...",
 }

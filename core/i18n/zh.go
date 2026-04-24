@@ -196,4 +196,15 @@ var zhStrings = map[string]string{
 	"hdr.achievements":    "🏆 %d/%d",
 
 	"warn.terminal_too_small": "终端太小了，请至少调到 80x22。",
+
+	// 启动时的新版本提示弹窗。参数顺序必须与 en.go 保持一致。
+	"update.title":     "🆕 发现新版本",
+	"update.from_to":   "当前：%s   →   最新：%s",
+	"update.changelog": "更新内容：",
+	"update.no_notes":  "（暂无更新说明）",
+	"update.opt.yes":   "打开发布页面",
+	"update.opt.no":    "下次再提醒我",
+	"update.opt.skip":  "跳过此版本",
+	"update.help":      "[↑/↓] 选择  [enter] 确认  [y] 打开  [n] 稍后  [s] 跳过  [o] 发布说明  [ctrl+c] 退出",
+	"update.opening":   "正在打开 %s ...",
 }
