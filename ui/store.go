@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/game"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
@@ -53,7 +54,7 @@ func (a App) renderStore() string {
 			name,
 			priceStyle.Render(fmt.Sprintf("₿%-6d", g.Price)),
 			DimStyle.Render(fmt.Sprintf("%s   %.0fV   %dh",
-				i18n.T("label.eff", g.Efficiency), g.PowerDraw, g.DurabilityHours)),
+				i18n.T("label.eff", g.Efficiency*game.MiningScale), g.PowerDraw, g.DurabilityHours)),
 		))
 	}
 
