@@ -72,6 +72,7 @@ var enStrings = map[string]string{
 	"status.retire_arm":   "⚠ press [R] again within 5s to confirm retirement",
 	"status.retire_deny":  "❌ not eligible to retire yet",
 	"status.pump_fired":   "📈 Pump & Dump fired",
+	"status.vent":         "🧊 Emergency vent fired",
 	"status.error_prefix": "❌ ",
 
 	// Store.
@@ -130,6 +131,7 @@ var enStrings = map[string]string{
 	"help.g.pump":     "[p]       Pump & Dump ability (dashboard, if unlocked)",
 	"help.g.lang":     "[L]       cycle language",
 	"help.g.quit":     "[q]       quit (auto-saves)",
+	"help.g.vent":     "[V]       emergency vent — reset room heat · -$100 · 30s pause · 2m cooldown",
 	"help.defense":    "Room defense (from rooms view)",
 	"help.defense_row": "[l] lock · [c] CCTV · [w] wiring · [o] cooling · [a] armor",
 	"help.tip.idle":    "Tip: it's an incremental game — feel free to leave it running in tmux.",

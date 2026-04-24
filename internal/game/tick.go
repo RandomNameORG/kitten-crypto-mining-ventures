@@ -218,6 +218,40 @@ func (s *State) UpgradeGPU(instanceID int) error {
 	return fmt.Errorf("no such GPU")
 }
 
+// EmergencyVentCost is the cash price of a single vent action.
+const EmergencyVentCost = 100
+
+// EmergencyVentCooldownSec is the minimum gap between two vents in the same
+// room. Prevents spamming it away; you still pay both in cash and in a
+// 30-second mining pause.
+const EmergencyVentCooldownSec = 120
+
+// EmergencyVent drops the current room's heat to 20°C immediately. Costs
+// cash and pauses mining for 30 seconds while the rack reboots.
+func (s *State) EmergencyVent() error {
+	room := s.Rooms[s.CurrentRoom]
+	if room == nil {
+		return fmt.Errorf("no room")
+	}
+	if s.Money < EmergencyVentCost {
+		return fmt.Errorf("need $%d", EmergencyVentCost)
+	}
+	now := time.Now().Unix()
+	last := s.EventCooldown["vent:"+s.CurrentRoom]
+	if now-last < EmergencyVentCooldownSec {
+		return fmt.Errorf("cooldown: %ds left", EmergencyVentCooldownSec-(now-last))
+	}
+	s.Money -= EmergencyVentCost
+	room.Heat = 20
+	s.EventCooldown["vent:"+s.CurrentRoom] = now
+	s.Modifiers = append(s.Modifiers, Modifier{
+		Kind:      "pause_mining",
+		ExpiresAt: now + 30,
+	})
+	s.appendLog("info", fmt.Sprintf("🧊 Emergency vent — heat reset, 30s power cycle, -$%d.", EmergencyVentCost))
+	return nil
+}
+
 // TogglePause flips the Paused flag.
 func (s *State) TogglePause() {
 	s.Paused = !s.Paused

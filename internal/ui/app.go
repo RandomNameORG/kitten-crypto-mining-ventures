@@ -243,6 +243,13 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		next := a.state.CycleLang()
 		a = a.withStatus(i18n.T("status.lang", i18n.Label(next)))
 		return a, nil
+	case "V":
+		if err := a.state.EmergencyVent(); err != nil {
+			a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
+		} else {
+			a = a.withStatus(i18n.T("status.vent"))
+		}
+		return a, nil
 	}
 
 	// View-specific.
