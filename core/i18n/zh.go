@@ -21,7 +21,6 @@ var zhStrings = map[string]string{
 	"hdr.tp":    "TP %d",
 	"hdr.rep":   "声望 %+d",
 	"hdr.frags": "碎片 %d",
-	"hdr.price": "$%.0f/BTC",
 
 	"footer.keys": "[空格]暂停  [S]存档  [L]语言  [?]帮助  [q]退出",
 
@@ -39,9 +38,9 @@ var zhStrings = map[string]string{
 
 	// Dashboard.
 	"dash.location":   "📍 %s",
-	"dash.line.volt":  "⚡ %.0fV 耗电  ·  账单 −$%.3f/秒  ·  下次结算 %d 秒",
+	"dash.line.volt":  "⚡ %.0fV 耗电  ·  账单 −₿%.3f/秒  ·  下次结算 %d 秒",
 	"dash.line.heat":  "🌡 %.0f°C / 最高 %.0f  ·  %+.1f°C 每 %d 秒  ·  下次 %d 秒",
-	"dash.line.cash":  "📈 收益 +$%.3f/秒  ·  扣费后净 %+.3f/秒",
+	"dash.line.cash":  "📈 收益 +₿%.3f/秒  ·  扣费后净 %+.3f/秒",
 	"dash.slots_of":   "槽位 %d/%d",
 	"dash.heat.warning":  "⚠ 温度过高 —— 效率减半 · 磨损 ×3",
 	"dash.heat.critical": "🔥 临界 —— 磨损 ×8 · 显卡即将烧毁",
@@ -92,7 +91,7 @@ var zhStrings = map[string]string{
 	"rooms.help":       "↑/↓ 选房间   [u] 解锁   [enter] 切换   [l/c/w/o/a] 升级当前房间的防御   [esc]/[1] 返回",
 	"rooms.here":       "● 此处",
 	"rooms.unlocked":   "已解锁",
-	"rooms.to_unlock":  "解锁 $%d",
+	"rooms.to_unlock":  "解锁 ₿%d",
 	"rooms.stats":      "  散热 %.1f · 电费 ×%.2f · 基础威胁 %.2f",
 	"rooms.defense":    "🛡  防御 —— 当前房间（%s）",
 	"rooms.dim.lock":    "门锁",
@@ -134,7 +133,7 @@ var zhStrings = map[string]string{
 	"help.g.pump":      "[p]      拉盘技能（主面板，需解锁）",
 	"help.g.lang":      "[L]      循环切换语言",
 	"help.g.quit":      "[q]      退出（自动存档）",
-	"help.g.vent":      "[V]      应急排热——重置房间温度 · -$100 · 30 秒停机 · 2 分钟冷却",
+	"help.g.vent":      "[V]      应急排热——重置房间温度 · -₿100 · 30 秒停机 · 2 分钟冷却",
 	"help.defense":     "房间防御（在房间视图里）",
 	"help.defense_row": "[l] 锁 · [c] 监控 · [w] 电路 · [o] 散热 · [a] 护甲",
 	"help.tip.idle":    "提示：这是增量器——放心开着 tmux 挂后台。",
@@ -142,12 +141,12 @@ var zhStrings = map[string]string{
 
 	// Mercs.
 	"mercs.title":      "🐾 佣兵",
-	"mercs.help":       "[tab] 切换标签   ↑/↓ 选择   [h] 雇佣   [f] 解雇   [b] 贿赂（忠诚 +15，$200）   [esc]/[1] 返回",
+	"mercs.help":       "[tab] 切换标签   ↑/↓ 选择   [h] 雇佣   [f] 解雇   [b] 贿赂（忠诚 +15，₿200）   [esc]/[1] 返回",
 	"mercs.yours":      "你的佣兵",
 	"mercs.empty":      "  （没有——切到雇佣标签）",
 	"mercs.hire":       "雇佣",
-	"mercs.owned_line": "房间 %s  周薪 $%d  忠诚 %d",
-	"mercs.hire_line":  "雇佣 $%d",
+	"mercs.owned_line": "房间 %s  周薪 ₿%d  忠诚 %d",
+	"mercs.hire_line":  "雇佣 ₿%d",
 	"mercs.defbonus":   "防御 +%.0f%%",
 	"mercs.loyalty":    "忠诚 %d",
 
@@ -159,7 +158,7 @@ var zhStrings = map[string]string{
 	"lab.active_none": "  （无）",
 	"lab.plan":        "下一次研究计划",
 	"lab.plan_tier":   "  档位 %d —— %s",
-	"lab.plan_cost":   "  消耗：$%d + %d 碎片  ·  用时：%d 分钟",
+	"lab.plan_cost":   "  消耗：₿%d + %d 碎片  ·  用时：%d 分钟",
 	"lab.plan_boosts": "  加成：%s + %s",
 	"lab.plan_hint":   "  （按 [r] 开始研究）",
 	"lab.bp_title":    "蓝图（%d 个）—— 按 [p] 打印选中的",
@@ -170,7 +169,7 @@ var zhStrings = map[string]string{
 	"prestige.locked":       "转生未解锁。先去大亨技能里解锁「Venture Capital」。",
 	"prestige.help":         "[↑/↓] 选特权   [p] 购买   [R] 退休（按两次确认）   [esc]/[1] 返回",
 	"prestige.status":       "状态",
-	"prestige.lifetime":     "  累计收入：$%.0f / $%.0f",
+	"prestige.lifetime":     "  累计收入：₿%.0f / ₿%.0f",
 	"prestige.eligible_yes": "可以转生",
 	"prestige.eligible_no":  "暂时还不行",
 	"prestige.eligible_row": "  退休资格：%s",

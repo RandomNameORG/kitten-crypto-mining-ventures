@@ -2,7 +2,6 @@ package game
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"time"
 
@@ -73,7 +72,6 @@ func (s *State) GPUStats(g *GPU) (eff, pow, heat, dur float64) {
 func (s *State) advanceMining(now int64, dt float64) {
 	miningPaused := s.IsMiningPaused(now)
 	earnMult := s.earnMultiplier(now)
-	price := s.BTCPriceAt(now)
 
 	for roomID, room := range s.Rooms {
 		roomDef, ok := data.RoomByID(roomID)
@@ -92,8 +90,9 @@ func (s *State) advanceMining(now int64, dt float64) {
 				efficiencyFactor = 0.5
 			}
 			if !miningPaused {
-				btcEarned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult()
-				s.BTC += btcEarned
+				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * MiningScale
+				s.BTC += earned
+				s.LifetimeEarned += earned
 			}
 
 			// Durability decay — GPUs wear out faster when the room is hot.
@@ -157,16 +156,6 @@ func (s *State) advanceMining(now int64, dt float64) {
 			room.Heat = room.MaxHeat
 		}
 	}
-
-	// Auto-cash-out BTC — small trickle so money moves too. Accumulate to
-	// LifetimeEarned for prestige tracking.
-	if s.BTC > 0 {
-		sell := s.BTC * (1 - math.Pow(0.95, dt))
-		cashIn := sell * price
-		s.Money += cashIn
-		s.LifetimeEarned += cashIn
-		s.BTC -= sell
-	}
 }
 
 // advanceBilling deducts electricity bill + rent every 60s.
@@ -196,13 +185,13 @@ func (s *State) advanceBilling(now int64) {
 		totalBill += volt * ElectricPerVoltMin * roomDef.ElectricCostMult * minutes * billMult
 		totalRent += float64(roomDef.RentPerHour) * (minutes / 60.0) * s.DifficultyBillMult()
 	}
-	s.Money -= totalBill
-	s.Money -= totalRent
+	s.BTC -= totalBill
+	s.BTC -= totalRent
 	if totalBill+totalRent > 0 {
-		s.appendLog("info", fmt.Sprintf("💸 Bills settled: $%.2f electricity, $%.2f rent.", totalBill, totalRent))
+		s.appendLog("info", fmt.Sprintf("💸 Bills settled: ₿%.2f electricity, ₿%.2f rent.", totalBill, totalRent))
 	}
-	if s.Money < 0 {
-		s.Money = 0
+	if s.BTC < 0 {
+		s.BTC = 0
 		s.Modifiers = append(s.Modifiers, Modifier{
 			Kind:      "pause_mining",
 			ExpiresAt: now + 60,
@@ -227,10 +216,10 @@ func (s *State) UpgradeGPU(instanceID int) error {
 			price = 3000 // MEOWCore default upgrade base
 		}
 		cost := price / 3
-		if s.Money < float64(cost) {
-			return fmt.Errorf("need $%d, have $%.0f", cost, s.Money)
+		if s.BTC < float64(cost) {
+			return fmt.Errorf("need ₿%d, have ₿%.0f", cost, s.BTC)
 		}
-		s.Money -= float64(cost)
+		s.BTC -= float64(cost)
 		failChance := 0.05 + 0.05*float64(g.UpgradeLevel)
 		if rand.Float64() < failChance {
 			g.Status = "broken"
@@ -259,15 +248,15 @@ func (s *State) EmergencyVent() error {
 	if room == nil {
 		return fmt.Errorf("no room")
 	}
-	if s.Money < EmergencyVentCost {
-		return fmt.Errorf("need $%d", EmergencyVentCost)
+	if s.BTC < EmergencyVentCost {
+		return fmt.Errorf("need ₿%d", EmergencyVentCost)
 	}
 	now := time.Now().Unix()
 	last := s.EventCooldown["vent:"+s.CurrentRoom]
 	if now-last < EmergencyVentCooldownSec {
 		return fmt.Errorf("cooldown: %ds left", EmergencyVentCooldownSec-(now-last))
 	}
-	s.Money -= EmergencyVentCost
+	s.BTC -= EmergencyVentCost
 	room.Heat = 20
 	room.LastHeatTickUnix = now // give the player a fresh interval after cooling
 	s.EventCooldown["vent:"+s.CurrentRoom] = now
@@ -275,7 +264,7 @@ func (s *State) EmergencyVent() error {
 		Kind:      "pause_mining",
 		ExpiresAt: now + 30,
 	})
-	s.appendLog("info", fmt.Sprintf("🧊 Emergency vent — heat reset, 30s power cycle, -$%d.", EmergencyVentCost))
+	s.appendLog("info", fmt.Sprintf("🧊 Emergency vent — heat reset, 30s power cycle, -₿%d.", EmergencyVentCost))
 	return nil
 }
 
@@ -305,11 +294,11 @@ func (s *State) TriggerPumpDump() error {
 	}
 	s.EventCooldown["pump_dump"] = now
 	s.Modifiers = append(s.Modifiers, Modifier{
-		Kind:      "btc_mult",
+		Kind:      "earn_mult",
 		Factor:    1.5,
 		ExpiresAt: now + 300,
 	})
-	s.appendLog("opportunity", "📈 Pump & Dump — BTC price ×1.5 for 5 minutes.")
+	s.appendLog("opportunity", "📈 Pump & Dump — mining output ×1.5 for 5 minutes.")
 	return nil
 }
 
@@ -340,10 +329,10 @@ func (s *State) UpgradeDefense(dim string) error {
 		return fmt.Errorf("%s already maxed", label)
 	}
 	cost := (*lvl + 1) * 250
-	if s.Money < float64(cost) {
-		return fmt.Errorf("need $%d, have $%.0f", cost, s.Money)
+	if s.BTC < float64(cost) {
+		return fmt.Errorf("need ₿%d, have ₿%.0f", cost, s.BTC)
 	}
-	s.Money -= float64(cost)
+	s.BTC -= float64(cost)
 	*lvl++
 	s.appendLog("info", fmt.Sprintf("🛡 %s upgraded to level %d.", label, *lvl))
 	return nil

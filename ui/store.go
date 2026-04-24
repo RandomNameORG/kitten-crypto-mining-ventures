@@ -17,11 +17,11 @@ import (
 // but short enough that intentional repeated presses still feel snappy.
 const storeBuyCooldown = 400 * time.Millisecond
 
-func storeCatalog(money float64) []data.GPUDef {
+func storeCatalog(balance float64) []data.GPUDef {
 	all := data.GPUs()
 	out := []data.GPUDef{}
 	for _, g := range all {
-		if money >= float64(g.Price)*0.15 || g.Tier == "trash" || g.Tier == "common" {
+		if balance >= float64(g.Price)*0.15 || g.Tier == "trash" || g.Tier == "common" {
 			out = append(out, g)
 		}
 	}
@@ -29,7 +29,7 @@ func storeCatalog(money float64) []data.GPUDef {
 }
 
 func (a App) renderStore() string {
-	cat := storeCatalog(a.state.Money)
+	cat := storeCatalog(a.state.BTC)
 	lines := []string{TitleStyle.Render(i18n.T("store.title"))}
 	lines = append(lines, DimStyle.Render(i18n.T("store.help")))
 	lines = append(lines, "")
@@ -39,8 +39,8 @@ func (a App) renderStore() string {
 		if i == a.storeCursor {
 			marker = TitleStyle.Render("▶ ")
 		}
-		affordable := a.state.Money >= float64(g.Price)
-		priceStyle := MoneyStyle
+		affordable := a.state.BTC >= float64(g.Price)
+		priceStyle := BTCStyle
 		if !affordable {
 			priceStyle = DimStyle
 		}
@@ -51,7 +51,7 @@ func (a App) renderStore() string {
 		lines = append(lines, fmt.Sprintf("%s%-32s  %s  %s",
 			marker,
 			name,
-			priceStyle.Render(fmt.Sprintf("$%-6d", g.Price)),
+			priceStyle.Render(fmt.Sprintf("₿%-6d", g.Price)),
 			DimStyle.Render(fmt.Sprintf("%s   %.0fV   %dh",
 				i18n.T("label.eff", g.Efficiency), g.PowerDraw, g.DurabilityHours)),
 		))
@@ -66,7 +66,7 @@ func (a App) renderStore() string {
 }
 
 func (a App) handleStoreKey(key string) (tea.Model, tea.Cmd) {
-	cat := storeCatalog(a.state.Money)
+	cat := storeCatalog(a.state.BTC)
 	switch key {
 	case "up", "k":
 		if a.storeCursor > 0 {

@@ -23,7 +23,7 @@ func TestNewStateInitialized(t *testing.T) {
 	if s.KittenName != "Test" {
 		t.Errorf("kitten name not applied")
 	}
-	if s.Money <= 0 {
+	if s.BTC <= 0 {
 		t.Error("new game should start with positive cash")
 	}
 	if len(s.GPUs) == 0 {
@@ -40,7 +40,7 @@ func TestNewStateInitialized(t *testing.T) {
 func TestStateSaveLoadRoundtrip(t *testing.T) {
 	withTempHome(t)
 	s := NewState("Roundtrip")
-	s.Money = 12345
+	s.BTC = 12345
 	s.ResearchFrags = 7
 	s.UnlockedSkills["undervolt_i"] = true
 	if err := s.Save(); err != nil {
@@ -50,7 +50,7 @@ func TestStateSaveLoadRoundtrip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load: %v", err)
 	}
-	if loaded.Money != 12345 || loaded.ResearchFrags != 7 {
+	if loaded.BTC != 12345 || loaded.ResearchFrags != 7 {
 		t.Errorf("numeric state did not roundtrip: %+v", loaded)
 	}
 	if !loaded.UnlockedSkills["undervolt_i"] {
@@ -85,7 +85,7 @@ func TestLoadFromBackfillsOldSaves(t *testing.T) {
 func TestBuyAndSellGPUFlow(t *testing.T) {
 	withTempHome(t)
 	s := NewState("Flow")
-	s.Money = 10000
+	s.BTC = 10000
 	if err := s.BuyGPU("gtx1060"); err != nil {
 		t.Fatalf("buy: %v", err)
 	}
@@ -110,11 +110,11 @@ func TestBuyAndSellGPUFlow(t *testing.T) {
 	if starter == nil {
 		t.Fatal("expected a running starter GPU")
 	}
-	before := s.Money
+	before := s.BTC
 	if err := s.SellGPU(starter.InstanceID); err != nil {
 		t.Fatalf("sell: %v", err)
 	}
-	if s.Money <= before {
+	if s.BTC <= before {
 		t.Error("selling should add money")
 	}
 	if s.ResearchFrags <= 0 {
@@ -125,7 +125,7 @@ func TestBuyAndSellGPUFlow(t *testing.T) {
 func TestBuyGPUInsufficientFunds(t *testing.T) {
 	withTempHome(t)
 	s := NewState("Broke")
-	s.Money = 1
+	s.BTC = 1
 	if err := s.BuyGPU("rtx4090"); err == nil {
 		t.Error("buying a $18k card with $1 should fail")
 	}
@@ -134,15 +134,15 @@ func TestBuyGPUInsufficientFunds(t *testing.T) {
 func TestUnlockRoomChargesMoney(t *testing.T) {
 	withTempHome(t)
 	s := NewState("Unlocker")
-	s.Money = 5000
-	before := s.Money
+	s.BTC = 5000
+	before := s.BTC
 	if err := s.UnlockRoom("warehouse"); err != nil {
 		t.Fatalf("unlock: %v", err)
 	}
 	if s.Rooms["warehouse"] == nil {
 		t.Error("warehouse should be unlocked")
 	}
-	if s.Money >= before {
+	if s.BTC >= before {
 		t.Error("unlocking should deduct money")
 	}
 }
@@ -185,7 +185,7 @@ func TestStateJSONTagsPresent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("marshal: %v", err)
 	}
-	for _, wanted := range []string{"kitten_name", "money", "current_room", "unlocked_skills", "mercs", "blueprints"} {
+	for _, wanted := range []string{"kitten_name", "btc", "current_room", "unlocked_skills", "mercs", "blueprints"} {
 		if !containsField(b, wanted) {
 			t.Errorf("marshaled state missing %q: %s", wanted, b)
 		}

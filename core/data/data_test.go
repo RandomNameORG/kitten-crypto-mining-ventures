@@ -64,7 +64,7 @@ func TestEventsValid(t *testing.T) {
 	}
 	validKinds := map[string]bool{
 		"steal_gpu": true, "pause_mining": true, "rep_change": true,
-		"tech_point": true, "gift_gpu": true, "btc_multiplier": true,
+		"tech_point": true, "gift_gpu": true,
 		"earn_multiplier": true, "damage_gpu": true, "burn_room_chance": true,
 		"eviction_warning": true, "money_loss": true,
 	}

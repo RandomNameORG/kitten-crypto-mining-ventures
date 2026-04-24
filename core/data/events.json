@@ -65,11 +65,11 @@
     "name_zh": "BTC 拉盘",
     "category": "opportunity",
     "emoji": "🎉",
-    "text": "Somewhere, a tweet fires. BTC rockets for the next few minutes.",
-    "text_zh": "某处一条推文爆了。BTC 接下来几分钟一飞冲天。",
+    "text": "Somewhere, a tweet fires. The whole market surges — your rigs cash in harder for a few minutes.",
+    "text_zh": "某处一条推文爆了。全场涨价，接下来几分钟产出大涨。",
     "weight": 4,
     "cooldown_sec": 1200,
-    "effects": [{"kind": "btc_multiplier", "factor": 1.5, "seconds": 300}]
+    "effects": [{"kind": "earn_multiplier", "factor": 1.5, "seconds": 300}]
   },
   {
     "id": "lucky_fish",
@@ -223,9 +223,21 @@
     "weight": 1,
     "cooldown_sec": 72000,
     "effects": [
-      {"kind": "btc_multiplier", "factor": 1.4, "seconds": 1800},
+      {"kind": "earn_multiplier", "factor": 1.4, "seconds": 1800},
       {"kind": "earn_multiplier", "factor": 1.2, "seconds": 10800}
     ]
+  },
+  {
+    "id": "voltage_dip",
+    "name": "Voltage Dip",
+    "name_zh": "电压不稳",
+    "category": "threat",
+    "emoji": "⚡",
+    "text": "The mains sag. Every rig throttles for a while.",
+    "text_zh": "电压拉跨，所有机器被迫降频。",
+    "weight": 3,
+    "cooldown_sec": 1500,
+    "effects": [{"kind": "earn_multiplier", "factor": 0.6, "seconds": 300}]
   },
   {
     "id": "polar_bear",

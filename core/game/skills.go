@@ -128,11 +128,12 @@ func (s *State) MercLoyaltyFloor() int {
 	return floor
 }
 
-// BTCVolatilityDamp returns a 0..1 factor that dampens price swings (1.0 = no damp).
-func (s *State) BTCVolatilityDamp() float64 {
+// EarnVolatilityDamp returns a 0..1 factor that dampens earn-multiplier
+// swings (1.0 = no damp). Hedged Wallet cuts event-driven volatility in half.
+func (s *State) EarnVolatilityDamp() float64 {
 	damp := 1.0
 	for id := range s.UnlockedSkills {
-		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "btc_damp" {
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "earn_damp" {
 			damp *= def.Effect.Value
 		}
 	}

@@ -58,11 +58,11 @@ func TestHasUnlockGatesResearch(t *testing.T) {
 func TestHireMercRequiresMoney(t *testing.T) {
 	withTempHome(t)
 	s := NewState("Merc")
-	s.Money = 50
+	s.BTC = 50
 	if err := s.HireMerc("tabby_guard"); err == nil {
 		t.Error("should refuse hire without enough money")
 	}
-	s.Money = 2000
+	s.BTC = 2000
 	if err := s.HireMerc("tabby_guard"); err != nil {
 		t.Fatalf("hire: %v", err)
 	}
@@ -74,7 +74,7 @@ func TestHireMercRequiresMoney(t *testing.T) {
 func TestBribeMercRaisesLoyalty(t *testing.T) {
 	withTempHome(t)
 	s := NewState("Bribe")
-	s.Money = 5000
+	s.BTC = 5000
 	_ = s.HireMerc("tabby_guard")
 	m := s.Mercs[0]
 	m.Loyalty = 30
@@ -89,7 +89,7 @@ func TestBribeMercRaisesLoyalty(t *testing.T) {
 func TestFireMercLowersPeerLoyalty(t *testing.T) {
 	withTempHome(t)
 	s := NewState("Fire")
-	s.Money = 10000
+	s.BTC = 10000
 	_ = s.HireMerc("tabby_guard")
 	_ = s.HireMerc("siamese_it")
 	peer := s.Mercs[1]
@@ -106,7 +106,7 @@ func TestFireMercLowersPeerLoyalty(t *testing.T) {
 func TestUpgradeDefenseIncrementsLevel(t *testing.T) {
 	withTempHome(t)
 	s := NewState("Defense")
-	s.Money = 5000
+	s.BTC = 5000
 	if err := s.UpgradeDefense("lock"); err != nil {
 		t.Fatalf("upgrade lock: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestUpgradeDefenseIncrementsLevel(t *testing.T) {
 func TestUpgradeDefenseRejectsBadDim(t *testing.T) {
 	withTempHome(t)
 	s := NewState("DefenseBad")
-	s.Money = 99999
+	s.BTC = 99999
 	if err := s.UpgradeDefense("nonsense"); err == nil {
 		t.Error("should reject unknown dim")
 	}

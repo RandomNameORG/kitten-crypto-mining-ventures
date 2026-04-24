@@ -55,11 +55,11 @@ func (a App) renderMercsView() string {
 		if a.mercsTab == 1 && i == a.mercsCursor {
 			cursor = TitleStyle.Render("▶ ")
 		}
-		priceStyle := MoneyStyle
-		if a.state.Money < float64(d.HireCost) {
+		priceStyle := BTCStyle
+		if a.state.BTC < float64(d.HireCost) {
 			priceStyle = DimStyle
 		}
-		line := fmt.Sprintf("%s%-24s  %s  wage $%d/wk  %s",
+		line := fmt.Sprintf("%s%-24s  %s  wage ₿%d/wk  %s",
 			cursor, d.LocalName(),
 			priceStyle.Render(i18n.T("mercs.hire_line", d.HireCost)),
 			d.WeeklyWage, i18n.T("mercs.defbonus", d.DefenseBonus*100),

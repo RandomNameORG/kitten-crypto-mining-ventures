@@ -4,7 +4,7 @@ import "github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 
 // SkillEffect describes what a skill changes when unlocked.
 type SkillEffect struct {
-	Kind    string  // power_mult, bill_mult, scrap_mult, btc_damp, repair_free, merc_loyalty, unlock
+	Kind    string  // power_mult, bill_mult, scrap_mult, earn_damp, repair_free, merc_loyalty, unlock
 	Value   float64 // multiplier or delta, depending on Kind
 	Unlocks string  // feature gate (e.g. "rd", "prestige", "pump_dump_action")
 }
@@ -63,11 +63,11 @@ var skillDefs = []SkillDef{
 		NameZH: "税务优化",
 		Desc:   "Scrap / sell value +20%.",
 		DescZH: "拆解/出售价值 +20%。"},
-	{ID: "hedged_wallet", Lane: "mogul", Cost: 6, Prereq: "smart_invoicing", Effect: SkillEffect{Kind: "btc_damp", Value: 0.50},
+	{ID: "hedged_wallet", Lane: "mogul", Cost: 6, Prereq: "smart_invoicing", Effect: SkillEffect{Kind: "earn_damp", Value: 0.50},
 		Name:   "Hedged Wallet",
 		NameZH: "对冲钱包",
-		Desc:   "BTC volatility halved.",
-		DescZH: "BTC 价格波动减半。"},
+		Desc:   "Event earn-rate swings halved (both ways).",
+		DescZH: "事件带来的产出波动减半（上下皆减）。"},
 	{ID: "venture_cap", Lane: "mogul", Cost: 12, Prereq: "hedged_wallet", Effect: SkillEffect{Kind: "unlock", Unlocks: "prestige"},
 		Name:   "Venture Capital",
 		NameZH: "风险投资",
@@ -83,8 +83,8 @@ var skillDefs = []SkillDef{
 	{ID: "pump_dump", Lane: "hacker", Cost: 6, Effect: SkillEffect{Kind: "unlock", Unlocks: "pump_dump_action"},
 		Name:   "Pump & Dump",
 		NameZH: "拉盘砸盘",
-		Desc:   "Manually trigger a BTC pump (cooldown).",
-		DescZH: "手动触发 BTC 拉盘（有冷却）。"},
+		Desc:   "Manually trigger a ×1.5 mining boost (5 min, 30 min cooldown).",
+		DescZH: "手动触发 ×1.5 产出加成（5 分钟，冷却 30 分钟）。"},
 	{ID: "chain_ghost", Lane: "hacker", Cost: 12, Prereq: "pump_dump", Effect: SkillEffect{Kind: "merc_loyalty", Value: 15},
 		Name:   "Chain Ghost",
 		NameZH: "链上幽灵",
