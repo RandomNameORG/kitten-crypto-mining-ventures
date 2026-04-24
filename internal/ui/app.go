@@ -250,6 +250,13 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 			a = a.withStatus(i18n.T("status.vent"))
 		}
 		return a, nil
+	case "S":
+		if err := a.saveNow(); err != nil {
+			a = a.withStatus(i18n.T("status.save_failed", err))
+		} else {
+			a = a.withStatus(i18n.T("status.saved"))
+		}
+		return a, nil
 	}
 
 	// View-specific.
@@ -271,13 +278,6 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 
 	// Dashboard-only fallbacks.
-	if key == "s" {
-		if err := a.saveNow(); err != nil {
-			a = a.withStatus(i18n.T("status.save_failed", err))
-		} else {
-			a = a.withStatus(i18n.T("status.saved"))
-		}
-	}
 	if key == "p" {
 		if err := a.state.TriggerPumpDump(); err != nil {
 			a = a.withStatus(i18n.T("status.error_prefix") + err.Error())

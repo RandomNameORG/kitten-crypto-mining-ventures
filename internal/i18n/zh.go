@@ -23,7 +23,7 @@ var zhStrings = map[string]string{
 	"hdr.frags": "碎片 %d",
 	"hdr.price": "$%.0f/BTC",
 
-	"footer.keys": "[空格]暂停  [s]存档  [L]语言  [?]帮助  [q]退出",
+	"footer.keys": "[空格]暂停  [S]存档  [L]语言  [?]帮助  [q]退出",
 
 	// Welcome / splash.
 	"welcome.title":    "🐾 喵星挖矿：加密猫的修罗场",
@@ -127,7 +127,7 @@ var zhStrings = map[string]string{
 	"help.view.9":      "[9]  转生 —— 退休 + 购买 Legacy 特权",
 	"help.global":      "全局",
 	"help.g.space":     "[空格]   暂停 / 继续",
-	"help.g.save":      "[s]      存档（仅主面板——其他视图里 s 有其他含义）",
+	"help.g.save":      "[S]      存档（任意视图）",
 	"help.g.pump":      "[p]      拉盘技能（主面板，需解锁）",
 	"help.g.lang":      "[L]      循环切换语言",
 	"help.g.quit":      "[q]      退出（自动存档）",

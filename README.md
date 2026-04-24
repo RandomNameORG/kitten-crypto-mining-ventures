@@ -96,7 +96,8 @@ Each client gets their own save keyed by SHA-256 of their SSH public key, stored
 | `enter` / `b` | Confirm / buy / hire |
 | `u` | Upgrade GPU · Unlock room · Unlock skill |
 | `r` | Repair GPU · Start research (lab) |
-| `s` | Scrap GPU · Save (dashboard) |
+| `s` | Scrap GPU |
+| `S` | Save (any view) |
 | `f` | Fire merc |
 | `b` | Bribe merc (+15 loyalty for $200) · cycle lab boost combo |
 | `t` | Cycle lab tier |
