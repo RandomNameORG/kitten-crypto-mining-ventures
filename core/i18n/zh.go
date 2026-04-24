@@ -159,13 +159,13 @@ var zhStrings = map[string]string{
 	"help.views":       "视图",
 	"help.view.1":      "[1]  主面板 —— 显卡架 + 实时事件日志",
 	"help.view.2":      "[2]  商店 —— 买新显卡（有快递延迟）",
-	"help.view.3":      "[3]  我的显卡 —— 升级·维修·拆解",
+	"help.view.3":      "[3]  我的显卡 —— 升级·维修·拆解 · [o] 超频 · [b] 排序",
 	"help.view.4":      "[4]  房间 —— 解锁·切换·升级防御",
 	"help.view.5":      "[5]  技能 —— 花 TechPoint",
 	"help.view.6":      "[6]  日志 —— 完整历史",
 	"help.view.7":      "[7]  佣兵 —— 雇佣·解雇·贿赂",
 	"help.view.8":      "[8]  实验室 —— 研究自制 MEOWCore 显卡",
-	"help.view.9":      "[9]  转生 —— 退休 + 购买 Legacy 特权",
+	"help.view.9":      "[9]  转生 —— 退休 + 购买 Legacy 特权 · [y]/[n] 加盟/退盟",
 	"help.view.0":      "[0]  统计 —— 累计计数 + 行情迷你图",
 	"help.global":      "全局",
 	"help.g.space":     "[空格]   暂停 / 继续",
@@ -179,6 +179,18 @@ var zhStrings = map[string]string{
 	"help.tip.idle":    "提示：这是增量器——放心开着 tmux 挂后台。",
 	"help.tip.offline": "离线进度在重启时追赶（上限 8 小时）。",
 
+	// 视图底部的浮动快捷键提示（每个视图一行）。暗色渲染，仅主视图显示，
+	// 日志和帮助视图已经有完整说明，所以跳过。详见 ui/hint.go。
+	"hint.dashboard": "[p] 拉盘  [V] 排热  [空格] 暂停",
+	"hint.store":     "[↑/↓] 选择  [b] 购买  [esc] 返回",
+	"hint.gpus":      "[u] 升级  [o] 超频  [b] 排序  [r] 维修",
+	"hint.rooms":     "[u] 解锁  [enter] 切换  [l/c/w/o/a] 防御",
+	"hint.skills":    "[u] 解锁  [esc] 返回",
+	"hint.mercs":     "[tab] 切换  [h] 雇佣  [f] 解雇  [b] 贿赂",
+	"hint.lab":       "[t] 档位  [b] 加成  [r] 研究  [p] 打印",
+	"hint.prestige":  "[p] 特权  [R R] 退休  [y]/[n] 加盟/退盟",
+	"hint.stats":     "[esc] 返回",
+
 	"help.mechanics":     "核心机制",
 	"help.mech.heat":     "\uf2c7 温度 —— 显卡产生热量，房间有上限。",
 	"help.mech.heat.z1":  "    0–80%   稳定 · 无惩罚",
@@ -191,6 +203,8 @@ var zhStrings = map[string]string{
 	"help.mech.power.act": "  → 盯紧主面板的「净」值，负号就是亏损。",
 	"help.mech.earn":     "\uf201 收益 —— 显卡每 tick 产 ₿，直接进余额。",
 	"help.mech.earn.2":   "  [8] 实验室产出的 MEOWCore 蓝图可以解锁自定义数值平衡。",
+	"help.mech.market":   "📊 行情 —— BTC 价格在 0.5× 到 2.0× 之间漂移。",
+	"help.mech.market.2": "  主面板上的 ↑/↓ 趋势箭头指示方向；拉盘砸盘可以强行制造一次短暂拉升。",
 
 	// Mercs.
 	"mercs.title":      "🐾 佣兵",
