@@ -408,7 +408,7 @@ func (a App) renderKeyInfoPanel(def data.RoomDef, width int, compact bool) strin
 	}
 	lines := []string{
 		TitleStyle.Render(truncate(i18n.T("dash.location", def.LocalName()), innerW)),
-		VoltStyle.Render(fmt.Sprintf("%s %.0fW  −$%.2f/s", IconBolt, volt, bill)),
+		VoltStyle.Render(fmt.Sprintf("%s %.0fW  −₿%.2f/s", IconBolt, volt, bill)),
 		netStyle.Render(fmt.Sprintf("%s net %+.2f/s", IconChartUp, net)),
 		heatStyle.Render(fmt.Sprintf("%s %.0f/%.0f %+.1f/s", IconThermo, heat, maxHeat, heatDelta)),
 		renderHeatBar(heatFrac, barW),
