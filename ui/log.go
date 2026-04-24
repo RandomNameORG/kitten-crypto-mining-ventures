@@ -70,6 +70,9 @@ func (a App) renderHelpView() string {
 		lipgloss.NewStyle().Foreground(OppGreen).Render(i18n.T("help.mech.earn")),
 		DimStyle.Render(i18n.T("help.mech.earn.2")),
 		"",
+		lipgloss.NewStyle().Foreground(AccentPurple).Render(i18n.T("help.mech.market")),
+		DimStyle.Render(i18n.T("help.mech.market.2")),
+		"",
 		DimStyle.Render(i18n.T("help.tip.idle")),
 		DimStyle.Render(i18n.T("help.tip.offline")),
 	}

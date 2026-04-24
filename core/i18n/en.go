@@ -159,13 +159,13 @@ var enStrings = map[string]string{
 	"help.views":      "Views",
 	"help.view.1":     "[1]  dashboard — GPU rack + live event log",
 	"help.view.2":     "[2]  store — buy new GPUs (shipping delay)",
-	"help.view.3":     "[3]  your GPUs — upgrade · repair · scrap",
+	"help.view.3":     "[3]  your GPUs — upgrade · repair · scrap · [o] overclock · [b] sort",
 	"help.view.4":     "[4]  rooms — unlock · switch · defense upgrades",
 	"help.view.5":     "[5]  skills — spend TechPoints",
 	"help.view.6":     "[6]  log — full history",
 	"help.view.7":     "[7]  mercs — hire · fire · bribe",
 	"help.view.8":     "[8]  lab — research custom MEOWCore GPUs",
-	"help.view.9":     "[9]  prestige — retire & buy legacy perks",
+	"help.view.9":     "[9]  prestige — retire & buy legacy perks · [y]/[n] syndicate",
 	"help.view.0":     "[0]  stats — lifetime counters & market sparkline",
 	"help.global":     "Global",
 	"help.g.space":    "[space]  pause / resume",
@@ -179,6 +179,19 @@ var enStrings = map[string]string{
 	"help.tip.idle":    "Tip: it's an incremental game — feel free to leave it running in tmux.",
 	"help.tip.offline": "Offline progress catches up on relaunch (capped at 8h).",
 
+	// Floating bottom-of-view key hints (one line per view). Rendered
+	// dim, only shown on main views — log/help skip because their own
+	// help text is already dense. See ui/hint.go.
+	"hint.dashboard": "[p] pump&dump  [V] vent  [space] pause",
+	"hint.store":     "[↑/↓] pick  [b] buy  [esc] back",
+	"hint.gpus":      "[u] upgrade  [o] overclock  [b] sort  [r] repair",
+	"hint.rooms":     "[u] unlock  [enter] switch  [l/c/w/o/a] defense",
+	"hint.skills":    "[u] unlock  [esc] back",
+	"hint.mercs":     "[tab] switch  [h] hire  [f] fire  [b] bribe",
+	"hint.lab":       "[t] tier  [b] boosts  [r] research  [p] print",
+	"hint.prestige":  "[p] perk  [R R] retire  [y]/[n] syndicate",
+	"hint.stats":     "[esc] back",
+
 	"help.mechanics":     "Game mechanics",
 	"help.mech.heat":     "\uf2c7 Heat — GPUs produce it; rooms have a max ceiling.",
 	"help.mech.heat.z1":  "    0–80%   stable · no penalty",
@@ -191,6 +204,8 @@ var enStrings = map[string]string{
 	"help.mech.power.act": "  → watch \"net\" on the dashboard. Negative = bleeding.",
 	"help.mech.earn":     "\uf201 Earnings — GPUs mint ₿ per tick, added to your balance.",
 	"help.mech.earn.2":   "  MEOWCore blueprints (from [8] lab) unlock custom stat trade-offs.",
+	"help.mech.market":   "📊 Market — BTC price drifts between 0.5× and 2.0×.",
+	"help.mech.market.2": "  ↑/↓ trend arrow on the dashboard signals direction; Pump & Dump can force a temporary spike.",
 
 	// Mercs.
 	"mercs.title":     "🐾 Mercenaries",

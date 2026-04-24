@@ -408,7 +408,11 @@ func (a App) View() string {
 
 	footer := a.renderFooter()
 
-	parts := []string{header, nav, body, footer}
+	parts := []string{header, nav, body}
+	if hint := a.renderViewHint(); hint != "" {
+		parts = append(parts, lipgloss.NewStyle().Padding(0, 1).Render(hint))
+	}
+	parts = append(parts, footer)
 	if hud := a.debugHUDLine(); hud != "" {
 		parts = append(parts, hud)
 	}
