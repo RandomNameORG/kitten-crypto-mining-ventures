@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // HireMerc hires a merc by def id into the current room.
@@ -31,7 +32,7 @@ func (s *State) HireMerc(defID string) error {
 	}
 	s.NextMercID++
 	s.Mercs = append(s.Mercs, m)
-	s.appendLog("info", fmt.Sprintf("🐾 Hired %s for ₿%d.", def.Name, def.HireCost))
+	s.appendLog("info", i18n.T("log.merc.hired", def.LocalName(), def.HireCost))
 	return nil
 }
 
@@ -41,7 +42,7 @@ func (s *State) FireMerc(instanceID int) error {
 		if m.InstanceID == instanceID {
 			def, _ := data.MercByID(m.DefID)
 			s.Mercs = append(s.Mercs[:i], s.Mercs[i+1:]...)
-			s.appendLog("info", fmt.Sprintf("Dismissed %s. The other mercs noticed.", def.Name))
+			s.appendLog("info", i18n.T("log.merc.dismissed", def.LocalName()))
 			for _, other := range s.Mercs {
 				other.Loyalty -= 5
 			}
@@ -65,7 +66,7 @@ func (s *State) BribeMerc(instanceID int) error {
 				m.Loyalty = 100
 			}
 			def, _ := data.MercByID(m.DefID)
-			s.appendLog("info", fmt.Sprintf("🎁 Bribed %s — loyalty now %d.", def.Name, m.Loyalty))
+			s.appendLog("info", i18n.T("log.merc.bribed", def.LocalName(), m.Loyalty))
 			return nil
 		}
 	}
@@ -106,7 +107,7 @@ func (s *State) payWages(now int64) {
 		}
 	}
 	if totalWage > 0 {
-		s.appendLog("info", fmt.Sprintf("💼 Paid ₿%.2f in mercenary wages.", totalWage))
+		s.appendLog("info", i18n.T("log.merc.wages", totalWage))
 	}
 
 	// Random betrayal check — once per wage tick, one low-loyalty merc might flip.
@@ -124,31 +125,31 @@ func (s *State) triggerBetrayal(m *Merc) {
 	switch def.Specialty {
 	case "guard":
 		// Let the nearest thief in.
-		s.appendLog("crisis", fmt.Sprintf("🐾 %s unlocked the door on the way out.", def.Name))
+		s.appendLog("crisis", i18n.T("log.merc.betray.unlock", def.LocalName()))
 		if room := s.Rooms[m.RoomID]; room != nil {
 			room.LockLvl = 0
 		}
 	case "tech":
 		// Sabotage: damage a random GPU.
 		s.damageRandomGPU(0.5)
-		s.appendLog("crisis", fmt.Sprintf("💥 %s sabotaged something on the way out.", def.Name))
+		s.appendLog("crisis", i18n.T("log.merc.betray.sabotage", def.LocalName()))
 	case "social":
 		// Leak to competitors: rep hit.
 		s.Reputation -= 10
-		s.appendLog("crisis", fmt.Sprintf("📢 %s sold your story to a rival kitten. Rep −10.", def.Name))
+		s.appendLog("crisis", i18n.T("log.merc.betray.sold_story", def.LocalName()))
 	case "combat":
 		// Runs off with the biggest GPU.
 		s.stealMostValuable()
-		s.appendLog("crisis", fmt.Sprintf("🎯 %s made off with your best GPU.", def.Name))
+		s.appendLog("crisis", i18n.T("log.merc.betray.stole_gpu", def.LocalName()))
 	case "sea":
 		// Tips off pirates.
-		s.appendLog("crisis", fmt.Sprintf("🏴‍☠️ %s invited their old crew back. Brace yourself.", def.Name))
+		s.appendLog("crisis", i18n.T("log.merc.betray.pirate_crew", def.LocalName()))
 		s.Modifiers = append(s.Modifiers, Modifier{
 			Kind:      "pirate_warning",
 			ExpiresAt: time.Now().Unix() + 600,
 		})
 	default:
-		s.appendLog("crisis", fmt.Sprintf("%s betrayed you and left with some gear.", def.Name))
+		s.appendLog("crisis", i18n.T("log.merc.betray.generic", def.LocalName()))
 	}
 	// Fire the traitor.
 	for i, x := range s.Mercs {

@@ -92,6 +92,10 @@ type App struct {
 	status         string
 	statusExpires  time.Time
 	showEventPopup *data.EventDef
+	// showOfflineSummary surfaces the catch-up result from RunOfflineCatchup.
+	// Picked up once in NewApp and cleared as soon as the player dismisses
+	// it — any subsequent launches regenerate it fresh.
+	showOfflineSummary *game.OfflineSummary
 }
 
 func NewApp(s *game.State) App {
@@ -111,6 +115,13 @@ func NewApp(s *game.State) App {
 	case s.Difficulty == "":
 		a.splashPhase = splashDifficulty
 		a.diffPickerCur = 1 // default cursor on "normal"
+	}
+	// Offline catch-up handoff: steal the summary off the state so the UI
+	// owns it for the lifetime of this modal, and the state doesn't carry
+	// it forward if the process forks again for some reason.
+	if s.OfflineSummary != nil {
+		a.showOfflineSummary = s.OfflineSummary
+		s.OfflineSummary = nil
 	}
 	return a
 }
@@ -158,8 +169,10 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case splashDifficulty:
 			return a.handleDifficultyEntry(m)
 		}
-		if a.showEventPopup != nil {
+		// Any notification (event or offline summary) dismisses on any key.
+		if a.showEventPopup != nil || a.showOfflineSummary != nil {
 			a.showEventPopup = nil
+			a.showOfflineSummary = nil
 			return a, nil
 		}
 		return a.handleKey(m)
@@ -331,7 +344,7 @@ func (a App) saveNow() error {
 
 // View renders the full screen.
 func (a App) View() string {
-	if a.w < 80 || a.h < 22 {
+	if a.w < 40 || a.h < 14 {
 		return i18n.T("warn.terminal_too_small")
 	}
 	switch a.splashPhase {
@@ -374,8 +387,16 @@ func (a App) View() string {
 
 	content := lipgloss.JoinVertical(lipgloss.Left, header, nav, body, footer)
 
-	if a.showEventPopup != nil {
-		return a.overlayEvent(content)
+	// On dashboard, notifications render as an inline right-hand panel
+	// (see renderDashboard). On other views we still fall back to the
+	// floating box overlay so the player doesn't miss anything important.
+	if a.view != viewDashboard {
+		if a.showEventPopup != nil {
+			return a.overlayEvent(content)
+		}
+		if a.showOfflineSummary != nil {
+			return a.overlayOfflineSummary(content)
+		}
 	}
 	return content
 }
@@ -392,7 +413,7 @@ func (a App) renderHeader() string {
 	title := TitleStyle.Render(fmt.Sprintf("%s — %s", i18n.T("app.title"), a.state.KittenName)) + diffBadge
 
 	extras := []string{
-		BTCStyle.Render(fmt.Sprintf("₿%.0f", a.state.BTC)),
+		BTCStyle.Render(formatBTC(a.state.BTC)),
 		DimStyle.Render(i18n.T("hdr.tp", a.state.TechPoint)),
 		DimStyle.Render(i18n.T("hdr.rep", a.state.Reputation)),
 		DimStyle.Render(i18n.T("hdr.frags", a.state.ResearchFrags)),
@@ -400,7 +421,7 @@ func (a App) renderHeader() string {
 	}
 	if a.state.ActiveResearch != nil {
 		pct := int(a.state.ResearchProgress() * 100)
-		extras = append(extras, lipgloss.NewStyle().Foreground(AccentPurple).Render(fmt.Sprintf("🔬 %d%%", pct)))
+		extras = append(extras, lipgloss.NewStyle().Foreground(AccentPurple).Render(fmt.Sprintf("%s %d%%", IconFlask, pct)))
 	}
 	stats := strings.Join(extras, "  ")
 	line := title + paused + "  " + stats
@@ -422,16 +443,27 @@ func (a App) renderNav() string {
 		{"8", "nav.lab", viewLab},
 		{"9", "nav.prestige", viewPrestige},
 	}
+	// Full mode: [1]dashboard [2]store ... — labelled and spacious.
+	// Compact mode: [1][2][3]... — just numbers, current highlighted.
+	// Below ~72 cols the labelled form wraps ugly, so fall back.
+	compact := a.w < 72
 	parts := []string{}
 	for _, it := range items {
-		label := fmt.Sprintf("[%s]%s", it.key, i18n.T(it.labelKey))
+		label := "[" + it.key + "]"
+		if !compact {
+			label += i18n.T(it.labelKey)
+		}
 		if it.id == a.view {
 			parts = append(parts, TitleStyle.Render(label))
 		} else {
 			parts = append(parts, DimStyle.Render(label))
 		}
 	}
-	return lipgloss.NewStyle().Padding(0, 1).Render(strings.Join(parts, " "))
+	sep := " "
+	if compact {
+		sep = ""
+	}
+	return lipgloss.NewStyle().Padding(0, 1).Render(strings.Join(parts, sep))
 }
 
 func (a App) renderNameEntry() string {

@@ -35,7 +35,7 @@ func (a App) renderPrestigeView() string {
 	lines = append(lines, i18n.T("prestige.reward", reward))
 	lines = append(lines, "")
 	lines = append(lines, i18n.T("prestige.bank", legacy.TotalLP, legacy.SpentLP, legacy.LPAvailable()))
-	statusPanel := PanelStyle.Width(90).Render(strings.Join(lines, "\n"))
+	statusPanel := PanelStyle.Width(fitWidth(90, a.w)).Render(strings.Join(lines, "\n"))
 
 	perks := game.LegacyPerks()
 	perkLines := []string{HeaderStyle.Render(i18n.T("prestige.perks"))}
@@ -56,7 +56,7 @@ func (a App) renderPrestigeView() string {
 		perkLines = append(perkLines, fmt.Sprintf("%s%-26s  %s", cursor, label, meta))
 		perkLines = append(perkLines, DimStyle.Render("    "+p.Desc))
 	}
-	perksPanel := PanelStyle.Width(90).Render(strings.Join(perkLines, "\n"))
+	perksPanel := PanelStyle.Width(fitWidth(90, a.w)).Render(strings.Join(perkLines, "\n"))
 
 	return strings.Join([]string{
 		header, help, "",

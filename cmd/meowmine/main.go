@@ -38,23 +38,10 @@ func main() {
 		// Empty name makes the UI open a splash/name-entry overlay on start.
 		state = game.NewState("")
 	} else {
-		// Offline progress: catch up the simulation from the last tick to now,
-		// capped at 8 hours. Use a fake large-step Tick call; state.Tick already
-		// handles arbitrary dt. We just bill in chunks so a long offline
-		// doesn't bankrupt the player in a single blow.
-		now := time.Now().Unix()
-		gap := now - state.LastTickUnix
-		if gap > 8*3600 {
-			gap = 8 * 3600
-			state.LastTickUnix = now - gap
-			state.LastBillUnix = now - gap
-			state.LastWagesUnix = now - gap
-			state.AppendLog("info", "Offline > 8h — capped progress at 8 hours.")
-		}
-		if gap > 60 {
-			state.AppendLog("info", fmt.Sprintf("Caught up on %d offline minutes.", gap/60))
-		}
-		state.Tick(now)
+		// Catch the sim up to wall-clock, capped at 8 hours. The helper
+		// leaves an OfflineSummary on `state` for the UI to surface as a
+		// notification on first render.
+		state.RunOfflineCatchup(time.Now().Unix())
 	}
 
 	p := tea.NewProgram(ui.NewApp(state), tea.WithAltScreen())

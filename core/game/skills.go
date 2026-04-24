@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // UnlockSkill purchases a skill if the player can afford it and the prereq is met.
@@ -26,7 +27,7 @@ func (s *State) UnlockSkill(id string) error {
 		s.UnlockedSkills = map[string]bool{}
 	}
 	s.UnlockedSkills[id] = true
-	s.appendLog("opportunity", fmt.Sprintf("🧠 Learned: %s.", def.Name))
+	s.appendLog("opportunity", i18n.T("log.skill.learned", def.LocalName()))
 	return nil
 }
 

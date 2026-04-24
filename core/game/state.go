@@ -132,6 +132,21 @@ type State struct {
 	// Achievements holds the IDs of every milestone earned so far. Checked
 	// at end of tick by CheckAchievements().
 	Achievements []string `json:"achievements,omitempty"`
+
+	// OfflineSummary is a one-shot handoff from the offline catch-up pass
+	// (see RunOfflineCatchup) to the UI. The UI reads it on first render,
+	// shows a notification, and clears the field. Never persisted — if
+	// the game crashes before the UI reads it, it's simply lost.
+	OfflineSummary *OfflineSummary `json:"-"`
+}
+
+// OfflineSummary captures what happened during the offline catch-up sim
+// so the UI can surface a "welcome back" notification on re-entry.
+type OfflineSummary struct {
+	GapSeconds int64
+	BTCGained  float64
+	// Capped is true if the catch-up clamped the gap at 8 hours.
+	Capped bool
 }
 
 // NewState returns a fresh game. An empty kittenName signals that the UI
@@ -190,12 +205,12 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 	if legacy != nil {
 		if legacy.StarterCash > 0 {
 			s.BTC += legacy.StarterCash
-			s.appendLog("opportunity", fmt.Sprintf("Legacy bonus: +₿%.0f starter balance.", legacy.StarterCash))
+			s.appendLog("opportunity", i18n.T("log.legacy.cash", legacy.StarterCash))
 		}
 		if legacy.UnlockedUniversity {
 			if def, ok := data.RoomByID("university"); ok {
 				s.unlockRoomInternal(def)
-				s.appendLog("opportunity", "Legacy bonus: University Server Room pre-unlocked.")
+				s.appendLog("opportunity", i18n.T("log.legacy.room"))
 			}
 		}
 		// Carry over researched blueprints (deep-copied so run-state mutations
@@ -205,7 +220,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 			s.Blueprints = append(s.Blueprints, &dup)
 		}
 		if len(legacy.Blueprints) > 0 {
-			s.appendLog("opportunity", fmt.Sprintf("Legacy bonus: %d blueprints carried over.", len(legacy.Blueprints)))
+			s.appendLog("opportunity", i18n.T("log.legacy.blueprints", len(legacy.Blueprints)))
 		}
 	}
 	return s
@@ -240,7 +255,7 @@ func (s *State) UnlockRoom(id string) error {
 	}
 	s.BTC -= float64(def.UnlockCost)
 	s.unlockRoomInternal(def)
-	s.appendLog("info", fmt.Sprintf("Moved into %s.", def.Name))
+	s.appendLog("info", i18n.T("log.room.moved", def.LocalName()))
 	return nil
 }
 
@@ -315,7 +330,7 @@ func (s *State) BuyGPU(defID string) error {
 	}
 	s.BTC -= float64(def.Price)
 	s.addGPU(defID, s.CurrentRoom, true)
-	s.appendLog("info", fmt.Sprintf("Ordered %s for ₿%d. Tracking inbound...", def.Name, def.Price))
+	s.appendLog("info", i18n.T("log.gpu.ordered", def.LocalName(), def.Price))
 	return nil
 }
 
@@ -331,7 +346,7 @@ func (s *State) SellGPU(instanceID int) error {
 				name = fmt.Sprintf("MEOWCore v%d", s.blueprintTier(g.BlueprintID))
 			} else if def, ok := data.GPUByID(g.DefID); ok {
 				base = def.ScrapValue
-				name = def.Name
+				name = def.LocalName()
 			}
 			value := float64(base) * s.ScrapValueMult()
 			// Also grant 1-3 research fragments.
@@ -339,7 +354,7 @@ func (s *State) SellGPU(instanceID int) error {
 			s.BTC += value
 			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
-			s.appendLog("info", fmt.Sprintf("Scrapped %s for ₿%.0f + %d research fragments.", name, value, frags))
+			s.appendLog("info", i18n.T("log.gpu.scrapped", name, value, frags))
 			return nil
 		}
 	}

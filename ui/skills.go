@@ -40,6 +40,9 @@ func (a App) renderSkillsView() string {
 		"hacker":   "skills.lane.hacker",
 	}
 
+	// 3 cols side-by-side take ~112 chars (36*3 + gaps). Below that, stack
+	// them vertically with full terminal width per column.
+	var colW int
 	col := func(lane string) string {
 		lines := []string{TitleStyle.Render(i18n.T(laneKey[lane]))}
 		for i, it := range items {
@@ -65,13 +68,21 @@ func (a App) renderSkillsView() string {
 			lines = append(lines, cursor+label+"  "+gateStyle.Render(meta))
 			lines = append(lines, DimStyle.Render("   "+it.def.LocalDesc()))
 		}
-		return PanelStyle.Width(36).Render(strings.Join(lines, "\n"))
+		return PanelStyle.Width(colW).Render(strings.Join(lines, "\n"))
 	}
 
-	cols := lipgloss.JoinHorizontal(lipgloss.Top,
-		col("engineer"), " ", col("mogul"), " ", col("hacker"))
+	var body string
+	if a.w >= 112 {
+		colW = 36
+		body = lipgloss.JoinHorizontal(lipgloss.Top,
+			col("engineer"), " ", col("mogul"), " ", col("hacker"))
+	} else {
+		colW = fitWidth(36, a.w)
+		body = lipgloss.JoinVertical(lipgloss.Left,
+			col("engineer"), col("mogul"), col("hacker"))
+	}
 
-	return strings.Join([]string{header, help, "", cols}, "\n")
+	return strings.Join([]string{header, help, "", body}, "\n")
 }
 
 func (a App) handleSkillsKey(key string) (tea.Model, tea.Cmd) {
