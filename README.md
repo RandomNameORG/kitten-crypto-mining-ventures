@@ -8,23 +8,54 @@ The idea is you can leave it open in a `tmux` pane and come back to richer cats.
 
 ## 🎮 Running it
 
-Requires **Go 1.22+**. On first clone run `go mod tidy` to fetch dependencies.
+### Option A — pre-built binary (no Go needed)
+
+Grab the release binary for your platform from the [Releases](https://github.com/RandomNameORG/kitten-crypto-mining-ventures/releases) page (or ask a maintainer) and run it:
+
+| Platform | File |
+|---|---|
+| Windows (x64) | `meowmine-windows-amd64.exe` |
+| Linux (x64) | `meowmine-linux-amd64` |
+| macOS (Intel) | `meowmine-darwin-amd64` |
+| macOS (Apple Silicon) | `meowmine-darwin-arm64` |
+
+```bash
+# Linux / macOS
+chmod +x meowmine-linux-amd64
+./meowmine-linux-amd64
+
+# Windows (PowerShell or cmd)
+.\meowmine-windows-amd64.exe
+```
+
+### Option B — build from source
+
+Requires **Go 1.22+**.
 
 ```bash
 git clone https://github.com/RandomNameORG/kitten-crypto-mining-ventures
 cd kitten-crypto-mining-ventures
-go mod tidy
+go mod tidy     # first clone only; populates go.sum
 go run ./cmd/meowmine
 ```
 
-Build static binaries:
+With the bundled Makefile:
 
 ```bash
-go build -o meowmine     ./cmd/meowmine
-go build -o meowmine-ssh ./cmd/meowmine-ssh
+make run        # go run ./cmd/meowmine
+make build      # compile both binaries into bin/
+make release    # cross-compile all 8 release binaries (win/linux/mac × ssh)
+make test       # go test ./...
 ```
 
-Saves live at `~/.meowmine/save.json`. Offline progress catches up (capped at 8h) when you relaunch. Start a new game with `./meowmine -new`.
+### Flags
+
+```bash
+meowmine            # resume save (or start naming-overlay if first launch)
+meowmine -new       # discard save and start fresh
+```
+
+Saves live at `~/.meowmine/save.json`. Offline progress catches up when you relaunch (capped at 8h). Press `[L]` in-game to switch between English and 中文 at any time.
 
 ## 🛰 SSH server mode
 
