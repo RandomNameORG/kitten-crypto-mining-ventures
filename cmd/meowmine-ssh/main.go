@@ -93,6 +93,7 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 		if gap := now - state.LastTickUnix; gap > 8*3600 {
 			state.LastTickUnix = now - 8*3600
 			state.LastBillUnix = now - 8*3600
+			state.LastWagesUnix = now - 8*3600
 		}
 		state.Tick(now)
 	}

@@ -41,6 +41,7 @@ func main() {
 			gap = 8 * 3600
 			state.LastTickUnix = now - gap
 			state.LastBillUnix = now - gap
+			state.LastWagesUnix = now - gap
 			state.AppendLog("info", "Offline > 8h — capped progress at 8 hours.")
 		}
 		if gap > 60 {
