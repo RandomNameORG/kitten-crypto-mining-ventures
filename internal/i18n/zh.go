@@ -39,7 +39,10 @@ var zhStrings = map[string]string{
 
 	// Dashboard.
 	"dash.location":   "📍 %s",
-	"dash.meters":     "⚡ 耗电 %.0f V/s   🌡  %.0f°C   槽位 %d/%d",
+	"dash.line.volt":  "⚡ %.0fV 耗电  ·  账单 −$%.3f/秒  ·  下次结算 %d 秒",
+	"dash.line.heat":  "🌡 %.0f°C / 最高 %.0f  ·  趋势 %+.1f/秒",
+	"dash.line.cash":  "📈 收益 +$%.3f/秒  ·  扣费后净 %+.3f/秒",
+	"dash.slots_of":   "槽位 %d/%d",
 	"dash.rack":       "显卡架",
 	"dash.empty_hint": "  （空的——按 [2] 去商店）",
 	"dash.slot_empty": "  %d. （空）",

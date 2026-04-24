@@ -39,7 +39,29 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 		_, pow, _, _ := a.state.GPUStats(g)
 		volt += pow
 	}
-	lines = append(lines, i18n.T("dash.meters", volt, heat, len(gpus), def.Slots))
+
+	roomID := def.ID
+	bill := a.state.RoomBillRatePerSec(roomID)
+	earn := a.state.RoomEarnRatePerSec(roomID)
+	net := earn - bill
+	heatDelta := a.state.RoomHeatDeltaPerSec(roomID)
+	nextBill := a.state.SecondsUntilNextBill()
+
+	var maxHeat float64 = 90
+	if rs := a.state.Rooms[roomID]; rs != nil {
+		maxHeat = rs.MaxHeat
+	}
+
+	netStyle := lipgloss.NewStyle().Foreground(OppGreen)
+	if net < 0 {
+		netStyle = lipgloss.NewStyle().Foreground(CrisisRed)
+	}
+
+	lines = append(lines, fmt.Sprintf("%s   %s",
+		VoltStyle.Render(i18n.T("dash.line.volt", volt, bill, nextBill)),
+		DimStyle.Render(i18n.T("dash.slots_of", len(gpus), def.Slots))))
+	lines = append(lines, HeatStyle.Render(i18n.T("dash.line.heat", heat, maxHeat, heatDelta)))
+	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash", earn, net)))
 	lines = append(lines, "")
 
 	lines = append(lines, HeaderStyle.Render(i18n.T("dash.rack")))

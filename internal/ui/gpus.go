@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/game"
@@ -52,7 +53,14 @@ func (a App) renderGPUsView() string {
 		if g.UpgradeLevel > 0 {
 			upMark = fmt.Sprintf(" +%d", g.UpgradeLevel)
 		}
-		line := fmt.Sprintf("%s#%-3d %-36s%s  %-12s  %-24s  durab %.1fh",
+		rate := a.state.GPUEarnRatePerSec(g)
+		rateCell := ""
+		if rate > 0 {
+			rateCell = lipgloss.NewStyle().Foreground(OppGreen).Render(fmt.Sprintf("$%.3f/s", rate))
+		} else {
+			rateCell = DimStyle.Render("—")
+		}
+		line := fmt.Sprintf("%s#%-3d %-36s%s  %-12s  %-18s  durab %5.1fh  %s",
 			marker,
 			g.InstanceID,
 			gpuDisplayName(a.state, g),
@@ -60,6 +68,7 @@ func (a App) renderGPUsView() string {
 			statusDecor,
 			roomName,
 			g.HoursLeft,
+			rateCell,
 		)
 		lines = append(lines, line)
 	}
