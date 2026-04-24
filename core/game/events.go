@@ -53,6 +53,7 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 		baseFire = 0.12
 	}
 	baseFire *= s.DifficultyThreatMult()
+	baseFire *= s.DifficultyEventFreqMult()
 	// Rich-cat tax: flush players attract more attention.
 	baseFire *= 1.0 + s.GreedScore()
 	if rand.Float64() > baseFire {

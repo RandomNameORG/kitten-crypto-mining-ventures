@@ -10,7 +10,9 @@ const MarketTickSec int64 = 30
 // Market clamps. The drift equation is unbounded in principle, but
 // implausibly large swings make balance untunable — clamp the effective
 // multiplier to the window below so earnings stay within about 3× of
-// nominal in either direction.
+// nominal in either direction at default volatility. The band widens
+// symmetrically around 1.0 with the active difficulty's
+// MarketVolatilityMult (see advanceMarket).
 const (
 	marketPriceMin = 0.3
 	marketPriceMax = 3.0
@@ -67,14 +69,20 @@ func (s *State) advanceMarket(now int64) {
 	steps := elapsed / MarketTickSec
 	s.LastMarketTickUnix += steps * MarketTickSec
 	s.PrevMarketPrice = s.MarketPrice
+	volMult := s.DifficultyMarketVolatilityMult()
+	effMin := 1.0 - (1.0-marketPriceMin)*volMult
+	if effMin < 0.05 {
+		effMin = 0.05
+	}
+	effMax := 1.0 + (marketPriceMax-1.0)*volMult
 	price := s.MarketPrice
 	for i := int64(0); i < steps; i++ {
-		price += (1.0-price)*0.02 + rand.NormFloat64()*0.03
-		if price < marketPriceMin {
-			price = marketPriceMin
+		price += (1.0-price)*0.02 + rand.NormFloat64()*0.03*volMult
+		if price < effMin {
+			price = effMin
 		}
-		if price > marketPriceMax {
-			price = marketPriceMax
+		if price > effMax {
+			price = effMax
 		}
 	}
 	s.MarketPrice = price
