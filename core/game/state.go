@@ -157,6 +157,7 @@ type State struct {
 	EventsByCategory   map[string]int  `json:"events_by_category"`
 	TotalWagesPaid     float64         `json:"total_wages_paid"`
 	MarketPriceHistory []float64       `json:"market_price_history"`
+	MarketCrashCount   int             `json:"market_crash_count,omitempty"`
 
 	// OfflineSummary is a one-shot handoff from the offline catch-up pass
 	// (see RunOfflineCatchup) to the UI. The UI reads it on first render,
@@ -360,6 +361,9 @@ func (s *State) BuyGPU(defID string) error {
 	s.BTC -= float64(def.Price)
 	s.addGPU(defID, s.CurrentRoom, true)
 	s.appendLog("info", i18n.T("log.gpu.ordered", def.LocalName(), FmtBTCInt(def.Price)))
+	if s.MarketPrice < 0.7 {
+		s.grantAchievement("market_timing")
+	}
 	return nil
 }
 
@@ -385,6 +389,9 @@ func (s *State) SellGPU(instanceID int) error {
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
 			s.TotalGPUsScrapped++
 			s.appendLog("info", i18n.T("log.gpu.scrapped", name, FmtBTC(value), frags))
+			if s.MarketPrice > 1.5 {
+				s.grantAchievement("peak_sell")
+			}
 			return nil
 		}
 	}

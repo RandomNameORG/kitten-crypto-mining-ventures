@@ -71,4 +71,44 @@ func (s *State) CheckAchievements() {
 			break
 		}
 	}
+	// "oc_mastery": an hour of accumulated overclocked wall-time.
+	if s.OCTimeT1Sec+s.OCTimeT2Sec >= 3600 {
+		s.grantAchievement("oc_mastery")
+	}
+	// "overdrive": every installed (non-shipping/non-stolen) GPU is pegged
+	// at OCLevel == 2. Requires at least one GPU so an empty rack can't
+	// trivially satisfy the universal quantifier.
+	if len(s.GPUs) > 0 {
+		allMax := true
+		counted := 0
+		for _, g := range s.GPUs {
+			if g.Status == "shipping" || g.Status == "stolen" {
+				continue
+			}
+			counted++
+			if g.OCLevel != 2 {
+				allMax = false
+				break
+			}
+		}
+		if allMax && counted > 0 {
+			s.grantAchievement("overdrive")
+		}
+	}
+	// "event_veteran": 50 events total across all categories.
+	eventTotal := 0
+	for _, n := range s.EventsByCategory {
+		eventTotal += n
+	}
+	if eventTotal >= 50 {
+		s.grantAchievement("event_veteran")
+	}
+	// "marathon": virtual-time endurance milestone.
+	if s.TotalTicks >= 100_000 {
+		s.grantAchievement("marathon")
+	}
+	// "crisis_manager": three market crashes on this save.
+	if s.MarketCrashCount >= 3 {
+		s.grantAchievement("crisis_manager")
+	}
 }
