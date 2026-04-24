@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 
@@ -37,7 +38,11 @@ func (a App) renderStatsView() string {
 	if spark == "" {
 		spark = DimStyle.Render(i18n.T("stats.empty_history"))
 	} else {
-		spark = lipgloss.NewStyle().Foreground(AccentPurple).Render(spark)
+		sparkColor := AccentPurple
+		if time.Now().Before(a.statsPulseUntil) {
+			sparkColor = BTCGreen
+		}
+		spark = lipgloss.NewStyle().Foreground(sparkColor).Render(spark)
 	}
 	lines = append(lines, row(i18n.T("stats.row.spark"), spark))
 
