@@ -1,6 +1,8 @@
 # Go build artifacts
 /meowmine
 /meowmine.exe
+/meowmine-ssh
+/meowmine-sim
 /dist/
 /bin/
 

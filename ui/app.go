@@ -96,6 +96,10 @@ type App struct {
 	// Picked up once in NewApp and cleared as soon as the player dismisses
 	// it — any subsequent launches regenerate it fresh.
 	showOfflineSummary *game.OfflineSummary
+
+	// debug is populated only when EnableDebug() is called (local --debug
+	// flag). SSH sessions leave this zero-valued and all debug paths no-op.
+	debug debugState
 }
 
 func NewApp(s *game.State) App {
@@ -142,7 +146,14 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tickMsg:
 		if a.splashPhase == splashNone {
-			a.state.Tick(time.Now().Unix())
+			// In debug mode with a time multiplier, advance virtual time
+			// faster than wall clock: each real second of multiplier=N
+			// advances N virtual seconds. offset accumulates so the
+			// progression remains monotonic across repeated ticks.
+			if a.debug.enabled && a.debug.timeMult > 1 {
+				a.debug.virtualOffset += int64(a.debug.timeMult - 1)
+			}
+			a.state.Tick(time.Now().Unix() + a.debug.virtualOffset)
 			if def := a.state.MaybeFireEvent(); def != nil {
 				a.showEventPopup = def
 			}
@@ -239,6 +250,11 @@ func (a App) handleDifficultyEntry(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
+	if a.debug.enabled {
+		if na, cmd, handled := a.handleDebugKey(k); handled {
+			return na, cmd
+		}
+	}
 	key := k.String()
 	// Universal keys.
 	switch key {
@@ -385,7 +401,11 @@ func (a App) View() string {
 
 	footer := a.renderFooter()
 
-	content := lipgloss.JoinVertical(lipgloss.Left, header, nav, body, footer)
+	parts := []string{header, nav, body, footer}
+	if hud := a.debugHUDLine(); hud != "" {
+		parts = append(parts, hud)
+	}
+	content := lipgloss.JoinVertical(lipgloss.Left, parts...)
 
 	// On dashboard, notifications render as an inline right-hand panel
 	// (see renderDashboard). On other views we still fall back to the

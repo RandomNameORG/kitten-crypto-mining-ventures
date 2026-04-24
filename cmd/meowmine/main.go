@@ -21,7 +21,13 @@ var Version = "dev"
 
 func main() {
 	newGame := flag.Bool("new", false, "start a new game, discarding any save")
+	debug := flag.Bool("debug", false, "enable debug mode: time multiplier, state dump, cheat keys, HUD")
+	debugSeed := flag.Int64("debug-seed", 0, "if non-zero and --debug is set, seed the RNG for reproducible runs")
 	flag.Parse()
+
+	if *debug && *debugSeed != 0 {
+		game.SeedRNG(*debugSeed)
+	}
 
 	var state *game.State
 	if !*newGame {
@@ -44,13 +50,18 @@ func main() {
 		state.RunOfflineCatchup(time.Now().Unix())
 	}
 
-	p := tea.NewProgram(ui.NewApp(state), tea.WithAltScreen())
+	app := ui.NewApp(state)
+	if *debug {
+		app.EnableDebug()
+	}
+	p := tea.NewProgram(app, tea.WithAltScreen())
 
 	// Fire the update check in a goroutine BEFORE the tea Program runs.
 	// Once it resolves we deliver the result via p.Send so the App
 	// transitions into the splashUpdate phase. Anything that fails
 	// (offline, HTTP error, same version, dismissed tag) is silent.
 	go runStartupUpdateCheck(p)
+
 
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "ui error: %v\n", err)
