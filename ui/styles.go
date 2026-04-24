@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -52,6 +53,23 @@ var (
 // fitWidth clamps an ideal panel width to what the terminal can actually
 // show, with a sensible floor so we don't collapse past readability.
 // `availW` should be the current terminal width (App.w).
+// formatBTC renders a balance with adaptive precision: 3 decimals under
+// ₿10 (so ticks at 0.3/s feel alive early game), 2 under ₿1K, 1 under
+// ₿100K, 0 above. Keeps the header from getting ugly at late-game scale
+// while preserving the "dribble upward" feel at the start.
+func formatBTC(v float64) string {
+	switch {
+	case v < 10:
+		return fmt.Sprintf("₿%.3f", v)
+	case v < 1000:
+		return fmt.Sprintf("₿%.2f", v)
+	case v < 100000:
+		return fmt.Sprintf("₿%.1f", v)
+	default:
+		return fmt.Sprintf("₿%.0f", v)
+	}
+}
+
 func fitWidth(ideal, availW int) int {
 	max := availW - 2 // outer padding around panels
 	if max < 30 {

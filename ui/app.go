@@ -413,7 +413,7 @@ func (a App) renderHeader() string {
 	title := TitleStyle.Render(fmt.Sprintf("%s — %s", i18n.T("app.title"), a.state.KittenName)) + diffBadge
 
 	extras := []string{
-		BTCStyle.Render(fmt.Sprintf("₿%.0f", a.state.BTC)),
+		BTCStyle.Render(formatBTC(a.state.BTC)),
 		DimStyle.Render(i18n.T("hdr.tp", a.state.TechPoint)),
 		DimStyle.Render(i18n.T("hdr.rep", a.state.Reputation)),
 		DimStyle.Render(i18n.T("hdr.frags", a.state.ResearchFrags)),
