@@ -25,6 +25,7 @@ const (
 	viewMercs
 	viewLab
 	viewPrestige
+	viewStats
 	viewHelp
 )
 
@@ -58,6 +59,7 @@ type App struct {
 
 	storeCursor    int
 	gpusCursor     int
+	gpusSortMode   gpuSortMode
 	roomsCursor    int
 	skillsCursor   int
 	mercsCursor    int // index into hireable list when hiring; else 0
@@ -85,6 +87,13 @@ type App struct {
 
 	// Retire confirmation — double-press [R] within a short window.
 	retireArmedUntil time.Time
+
+	// Stats view pulse: flashes the sparkline for ~1.2s when a new market
+	// price lands while the Stats view is open. `statsLastHistLen` is
+	// updated every tick regardless of view so opening Stats doesn't
+	// trigger a spurious flash against stale state.
+	statsLastHistLen int
+	statsPulseUntil  time.Time
 
 	// Buy rate-limit — prevents held-key auto-repeat from mass-buying.
 	lastBuyAt time.Time
@@ -157,6 +166,11 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if def := a.state.MaybeFireEvent(); def != nil {
 				a.showEventPopup = def
 			}
+			newLen := len(a.state.MarketPriceHistory)
+			if newLen > a.statsLastHistLen && a.view == viewStats {
+				a.statsPulseUntil = time.Now().Add(1200 * time.Millisecond)
+			}
+			a.statsLastHistLen = newLen
 		}
 		return a, tickCmd()
 
@@ -288,6 +302,9 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "9":
 		a.view = viewPrestige
 		return a, nil
+	case "0":
+		a.view = viewStats
+		return a, nil
 	case "?":
 		a.view = viewHelp
 		return a, nil
@@ -395,13 +412,19 @@ func (a App) View() string {
 		body = a.renderLabView()
 	case viewPrestige:
 		body = a.renderPrestigeView()
+	case viewStats:
+		body = a.renderStatsView()
 	case viewHelp:
 		body = a.renderHelpView()
 	}
 
 	footer := a.renderFooter()
 
-	parts := []string{header, nav, body, footer}
+	parts := []string{header, nav, body}
+	if hint := a.renderViewHint(); hint != "" {
+		parts = append(parts, lipgloss.NewStyle().Padding(0, 1).Render(hint))
+	}
+	parts = append(parts, footer)
 	if hud := a.debugHUDLine(); hud != "" {
 		parts = append(parts, hud)
 	}
@@ -462,6 +485,7 @@ func (a App) renderNav() string {
 		{"7", "nav.mercs", viewMercs},
 		{"8", "nav.lab", viewLab},
 		{"9", "nav.prestige", viewPrestige},
+		{"0", "nav.stats", viewStats},
 	}
 	// Full mode: [1]dashboard [2]store ... — labelled and spacious.
 	// Compact mode: [1][2][3]... — just numbers, current highlighted.

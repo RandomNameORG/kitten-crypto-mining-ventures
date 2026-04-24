@@ -23,6 +23,10 @@ type GPU struct {
 	Room         string  `json:"room"`
 	// BlueprintID is set for MEOWCore instances; maps to a Blueprint for stats.
 	BlueprintID string `json:"blueprint_id,omitempty"`
+	// OCLevel is the overclock level (0 off, 1 +25%, 2 +50%). Boosts earn but
+	// scales power/heat/wear harder — see ocEarnMult/ocPowerMult/ocHeatMult/
+	// ocWearMult in tick.go for the exact tradeoff table.
+	OCLevel int `json:"oc_level,omitempty"`
 }
 
 // RoomState is the runtime instance of a Room owned by the player.
@@ -114,10 +118,31 @@ type State struct {
 	Blueprints     []*Blueprint    `json:"blueprints"`
 	NextBlueprintN int             `json:"next_blueprint_n"`
 
+	// MarketPrice is the current BTC market multiplier applied to mining earn
+	// rate. Drifts around 1.0 via a mean-reverting random walk (see market.go).
+	// PrevMarketPrice holds the last-observed value so the dashboard can show
+	// a trend arrow. LastMarketTickUnix anchors the drift cadence.
+	MarketPrice         float64 `json:"market_price"`
+	PrevMarketPrice     float64 `json:"prev_market_price"`
+	LastMarketTickUnix  int64   `json:"last_market_tick_unix"`
+
 	// Lifetime + prestige.
 	LifetimeEarned float64 `json:"lifetime_earned"`
 	// LegacyPoints spent / available this run. True cross-run LP lives in legacy.json.
 	LegacyAvailable int `json:"legacy_available"`
+
+	// Syndicate: late-game cooperative pool. When Joined, advanceMining
+	// diverts SyndicateCutRate of each GPU's earn into SyndicateContribution
+	// before crediting BTC / LifetimeEarned. Every
+	// SyndicatePayoutIntervalSec the accumulator is paid back at
+	// SyndicateDividendMult (one bucket per call, regardless of missed
+	// intervals) and LastPayout advances by the interval so offline
+	// catch-up rolls clean without compounding payouts on a single pool.
+	SyndicateJoined         bool    `json:"syndicate_joined,omitempty"`
+	SyndicateJoinedAt       int64   `json:"syndicate_joined_at,omitempty"`
+	SyndicateLastPayoutUnix int64   `json:"syndicate_last_payout_unix,omitempty"`
+	SyndicateContribution   float64 `json:"syndicate_contribution,omitempty"`
+	SyndicateTotalDividends float64 `json:"syndicate_total_dividends,omitempty"`
 
 	// Lang persists the player's chosen language code ("en" | "zh"). Loaded
 	// by LoadFrom into the i18n package at startup.
@@ -132,6 +157,20 @@ type State struct {
 	// Achievements holds the IDs of every milestone earned so far. Checked
 	// at end of tick by CheckAchievements().
 	Achievements []string `json:"achievements,omitempty"`
+
+	// Lifetime counters powering the Stats view ([0]). Incremented in their
+	// respective systems (Tick, addGPU, SellGPU, payWages, applyEvent,
+	// advanceMarket). MarketPriceHistory is bounded to MarketHistoryCap
+	// entries via a rolling window.
+	TotalTicks         int64           `json:"total_ticks"`
+	TotalGPUsBought    int             `json:"total_gpus_bought"`
+	TotalGPUsScrapped  int             `json:"total_gpus_scrapped"`
+	OCTimeT1Sec        int64           `json:"oc_time_t1_sec"`
+	OCTimeT2Sec        int64           `json:"oc_time_t2_sec"`
+	EventsByCategory   map[string]int  `json:"events_by_category"`
+	TotalWagesPaid     float64         `json:"total_wages_paid"`
+	MarketPriceHistory []float64       `json:"market_price_history"`
+	MarketCrashCount   int             `json:"market_crash_count,omitempty"`
 
 	// OfflineSummary is a one-shot handoff from the offline catch-up pass
 	// (see RunOfflineCatchup) to the UI. The UI reads it on first render,
@@ -186,6 +225,9 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 		NextBlueprintN: 1,
 		LegacyAvailable: 0,
 		Lang:            i18n.Lang(),
+		MarketPrice:        1.0,
+		PrevMarketPrice:    1.0,
+		LastMarketTickUnix: now,
 	}
 	// Unlock every room flagged as default.
 	for _, r := range data.Rooms() {
@@ -286,6 +328,7 @@ func (s *State) addGPU(defID, room string, shipping bool) *GPU {
 		g.ShipsAt = time.Now().Unix() + int64(30+rand.Intn(150))
 	}
 	s.GPUs = append(s.GPUs, g)
+	s.TotalGPUsBought++
 	return g
 }
 
@@ -331,6 +374,9 @@ func (s *State) BuyGPU(defID string) error {
 	s.BTC -= float64(def.Price)
 	s.addGPU(defID, s.CurrentRoom, true)
 	s.appendLog("info", i18n.T("log.gpu.ordered", def.LocalName(), FmtBTCInt(def.Price)))
+	if s.MarketPrice < 0.7 {
+		s.grantAchievement("market_timing")
+	}
 	return nil
 }
 
@@ -354,7 +400,11 @@ func (s *State) SellGPU(instanceID int) error {
 			s.BTC += value
 			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
+			s.TotalGPUsScrapped++
 			s.appendLog("info", i18n.T("log.gpu.scrapped", name, FmtBTC(value), frags))
+			if s.MarketPrice > 1.5 {
+				s.grantAchievement("peak_sell")
+			}
 			return nil
 		}
 	}
@@ -541,6 +591,12 @@ func (s *State) ensureInit() {
 	if s.Log == nil {
 		s.Log = []LogEntry{}
 	}
+	if s.EventsByCategory == nil {
+		s.EventsByCategory = map[string]int{}
+	}
+	if s.MarketPriceHistory == nil {
+		s.MarketPriceHistory = []float64{}
+	}
 	if s.NextGPUID < 1 {
 		s.NextGPUID = 1
 	}
@@ -566,11 +622,15 @@ func (s *State) ensureInit() {
 	}
 	// Migration: drop any lingering `stolen` GPUs from older saves where
 	// theft marked-but-didn't-remove. Stolen cards leak into the dashboard
-	// slot counter and the GPUs list otherwise.
+	// slot counter and the GPUs list otherwise. Also clamp OCLevel so a
+	// hand-edited or corrupted save can't spill out-of-table indices.
 	alive := s.GPUs[:0]
 	for _, g := range s.GPUs {
 		if g.Status == "stolen" {
 			continue
+		}
+		if g.OCLevel < 0 || g.OCLevel > 2 {
+			g.OCLevel = 0
 		}
 		alive = append(alive, g)
 	}
@@ -580,6 +640,13 @@ func (s *State) ensureInit() {
 	// KittenName and Difficulty empty and the UI handles both.
 	if s.Difficulty == "" && s.KittenName != "" {
 		s.Difficulty = "normal"
+	}
+	// Migration: saves from before the BTC market price feature had no
+	// MarketPrice field, so JSON-decodes leave it at 0. Treat that as
+	// "unset" and seed both current and prev price at the neutral 1.0×.
+	if s.MarketPrice == 0 {
+		s.MarketPrice = 1.0
+		s.PrevMarketPrice = 1.0
 	}
 }
 
@@ -599,6 +666,28 @@ func (s *State) DifficultyBillMult() float64 { return s.Diff().BillMult }
 
 // DifficultyThreatMult is the event-fire-probability multiplier.
 func (s *State) DifficultyThreatMult() float64 { return s.Diff().ThreatMult }
+
+// DifficultyMarketVolatilityMult scales the Gaussian drift kick and widens
+// the price clamp band for the active difficulty. 1.0 is the default; higher
+// values produce wilder market swings.
+func (s *State) DifficultyMarketVolatilityMult() float64 {
+	m := s.Diff().MarketVolatilityMult
+	if m <= 0 {
+		return 1.0
+	}
+	return m
+}
+
+// DifficultyEventFreqMult multiplies the per-tick event-fire probability.
+// 1.0 is the default; higher values mean events resolve more often. Separate
+// from ThreatMult so difficulties can tune cadence and severity independently.
+func (s *State) DifficultyEventFreqMult() float64 {
+	m := s.Diff().EventFreqMult
+	if m <= 0 {
+		return 1.0
+	}
+	return m
+}
 
 // SetDifficulty writes the chosen difficulty to state, applies the starter
 // balance, and logs the choice. Called once from the splash picker.

@@ -67,6 +67,7 @@ func TestEventsValid(t *testing.T) {
 		"tech_point": true, "gift_gpu": true,
 		"earn_multiplier": true, "damage_gpu": true, "burn_room_chance": true,
 		"eviction_warning": true, "money_loss": true,
+		"tax_audit": true, "damage_oc_gpu": true, "market_pin": true,
 	}
 	for _, e := range Events() {
 		if !validCats[e.Category] {

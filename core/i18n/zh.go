@@ -17,6 +17,7 @@ var zhStrings = map[string]string{
 	"nav.mercs":       "佣兵",
 	"nav.lab":         "实验室",
 	"nav.prestige":    "转生",
+	"nav.stats":       "统计",
 
 	"hdr.tp":    "TP %d",
 	"hdr.rep":   "声望 %+d",
@@ -51,6 +52,7 @@ var zhStrings = map[string]string{
 	"dash.power.safe":      "盈利中",
 	"dash.power.deficit":   "亏损中 —— 余额撑 %s",
 	"dash.power.broke":     "钱包见底 → 60 秒断电",
+	"dash.market.label":    "📊 %.2f× %s",
 	"dash.line.power":      "\uf0e7 %.0fV  −%s/秒  （下次账单 %d 秒）",
 	"dash.line.cash2":      "\uf201 +%s/秒 收益   净 %s/秒",
 	"dash.heat.label":      "\uf2c7 温度  %.0f/%.0f°C  %+.1f/%d秒",
@@ -98,9 +100,15 @@ var zhStrings = map[string]string{
 	"store.help":  "↑/↓ 选择   [b] 购买   [esc]/[1] 返回",
 
 	// GPUs view.
-	"gpus.title": "🖥  我的显卡",
-	"gpus.help":  "↑/↓ 选择   [u] 升级   [r] 维修   [s] 拆解   [esc]/[1] 返回",
-	"gpus.empty": "  （还没有显卡，去商店看看）",
+	"gpus.title":        "🖥  我的显卡",
+	"gpus.help":         "↑/↓ 选择   [u] 升级   [o] 超频   [r] 维修   [s] 拆解   [b] 排序   [esc]/[1] 返回",
+	"gpus.empty":        "  （还没有显卡，去商店看看）",
+	"gpus.oc_mark":      " 超频+%d%%",
+	"gpus.sort_label":   "排序：%s",
+	"gpus.sort_default": "默认",
+	"gpus.sort_earn":    "收益 ↓",
+	"gpus.sort_eff":     "能效 ↓",
+	"gpus.sort_dur":     "寿命 ↑",
 
 	// Rooms view.
 	"rooms.title":      "🏠 房间",
@@ -126,6 +134,21 @@ var zhStrings = map[string]string{
 	"skills.owned":         "已有",
 	"skills.locked_suffix": "（未解锁前置）",
 
+	// Stats.
+	"stats.title":         "📊 累计统计",
+	"stats.help":          "[esc]/[1] 返回",
+	"stats.row.lifetime":  "累计 BTC 收入",
+	"stats.row.ticks":     "总 tick 数",
+	"stats.row.market":    "当前行情",
+	"stats.row.spark":     "近期价格",
+	"stats.row.gpus":      "买入 / 拆解显卡",
+	"stats.row.oc_t1":     "超频 +25%% 时长",
+	"stats.row.oc_t2":     "超频 +50%% 时长",
+	"stats.row.events":    "按类别累计事件",
+	"stats.row.wages":     "累计佣兵工资",
+	"stats.empty_history": "（采样还不够）",
+	"stats.empty_events":  "（暂无）",
+
 	// Log.
 	"log.title": "📜 完整事件日志",
 	"log.help":  "[esc]/[1] 返回",
@@ -136,13 +159,14 @@ var zhStrings = map[string]string{
 	"help.views":       "视图",
 	"help.view.1":      "[1]  主面板 —— 显卡架 + 实时事件日志",
 	"help.view.2":      "[2]  商店 —— 买新显卡（有快递延迟）",
-	"help.view.3":      "[3]  我的显卡 —— 升级·维修·拆解",
+	"help.view.3":      "[3]  我的显卡 —— 升级·维修·拆解 · [o] 超频 · [b] 排序",
 	"help.view.4":      "[4]  房间 —— 解锁·切换·升级防御",
 	"help.view.5":      "[5]  技能 —— 花 TechPoint",
 	"help.view.6":      "[6]  日志 —— 完整历史",
 	"help.view.7":      "[7]  佣兵 —— 雇佣·解雇·贿赂",
 	"help.view.8":      "[8]  实验室 —— 研究自制 MEOWCore 显卡",
-	"help.view.9":      "[9]  转生 —— 退休 + 购买 Legacy 特权",
+	"help.view.9":      "[9]  转生 —— 退休 + 购买 Legacy 特权 · [y]/[n] 加盟/退盟",
+	"help.view.0":      "[0]  统计 —— 累计计数 + 行情迷你图",
 	"help.global":      "全局",
 	"help.g.space":     "[空格]   暂停 / 继续",
 	"help.g.save":      "[S]      存档（任意视图）",
@@ -154,6 +178,18 @@ var zhStrings = map[string]string{
 	"help.defense_row": "[l] 锁 · [c] 监控 · [w] 电路 · [o] 散热 · [a] 护甲",
 	"help.tip.idle":    "提示：这是增量器——放心开着 tmux 挂后台。",
 	"help.tip.offline": "离线进度在重启时追赶（上限 8 小时）。",
+
+	// 视图底部的浮动快捷键提示（每个视图一行）。暗色渲染，仅主视图显示，
+	// 日志和帮助视图已经有完整说明，所以跳过。详见 ui/hint.go。
+	"hint.dashboard": "[p] 拉盘  [V] 排热  [空格] 暂停",
+	"hint.store":     "[↑/↓] 选择  [b] 购买  [esc] 返回",
+	"hint.gpus":      "[u] 升级  [o] 超频  [b] 排序  [r] 维修",
+	"hint.rooms":     "[u] 解锁  [enter] 切换  [l/c/w/o/a] 防御",
+	"hint.skills":    "[u] 解锁  [esc] 返回",
+	"hint.mercs":     "[tab] 切换  [h] 雇佣  [f] 解雇  [b] 贿赂",
+	"hint.lab":       "[t] 档位  [b] 加成  [r] 研究  [p] 打印",
+	"hint.prestige":  "[p] 特权  [R R] 退休  [y]/[n] 加盟/退盟",
+	"hint.stats":     "[esc] 返回",
 
 	"help.mechanics":     "核心机制",
 	"help.mech.heat":     "\uf2c7 温度 —— 显卡产生热量，房间有上限。",
@@ -167,6 +203,8 @@ var zhStrings = map[string]string{
 	"help.mech.power.act": "  → 盯紧主面板的「净」值，负号就是亏损。",
 	"help.mech.earn":     "\uf201 收益 —— 显卡每 tick 产 ₿，直接进余额。",
 	"help.mech.earn.2":   "  [8] 实验室产出的 MEOWCore 蓝图可以解锁自定义数值平衡。",
+	"help.mech.market":   "📊 行情 —— BTC 价格在 0.5× 到 2.0× 之间漂移。",
+	"help.mech.market.2": "  主面板上的 ↑/↓ 趋势箭头指示方向；拉盘砸盘可以强行制造一次短暂拉升。",
 
 	// Mercs.
 	"mercs.title":      "🐾 佣兵",
@@ -206,6 +244,28 @@ var zhStrings = map[string]string{
 	"prestige.bank":         "  LP 存款：总计 %d · 已花 %d · 可用 %d",
 	"prestige.perks":        "Legacy 特权",
 	"prestige.perk_owned":   "已拥有 / 满级",
+
+	// Syndicate — 中后期合作矿池，嵌在转生视图下方。
+	"syndicate.title":           "🤝 矿工联盟",
+	"syndicate.joined":          "  状态：已加盟 —— %d%% 收益入池",
+	"syndicate.not_joined":      "  状态：单干（未加盟）",
+	"syndicate.gated_need":      "  门槛：需累计收入 %s（当前 %s）",
+	"syndicate.contrib":         "  待分红贡献：%s",
+	"syndicate.next_payout":     "  下次分红还有 %s（分红倍率 ×%.2f）",
+	"syndicate.dividends_total": "  累计收到分红：%s",
+	"syndicate.cta_join":        "  [Y] 加盟 —— 免费，自留 %d%% 收益",
+	"syndicate.cta_leave":       "  [N] 退盟 —— %s 违约金，待分红贡献作废",
+	"syndicate.leave_fee":       "违约金 %s",
+	"syndicate.key_help":        "   · [Y] 加盟 · [N] 退盟",
+
+	"log.syndicate.joined":      "\uf0c0 你加入了矿工联盟，10%% 的收益开始进入共享池。",
+	"log.syndicate.left":        "\uf235 你退出了联盟，支付 %s 违约金；待分红贡献全部作废。",
+	"log.syndicate.payout":      "\uf0d6 联盟分红到账：+%s。",
+	"log.syndicate.gate_failed": "联盟拒绝了你 —— 需累计收入 %s（当前 %s）。",
+
+	"status.syndicate_joined": "🤝 已加入联盟",
+	"status.syndicate_left":   "🚪 已退出联盟",
+	"status.syndicate_gate":   "❌ 累计收入还不够加盟",
 
 	// Small labels used across multiple views.
 	"label.eff":     "%s/秒",
@@ -264,6 +324,11 @@ var zhStrings = map[string]string{
 	"log.event.gpu.damaged":    "\uf071 一张显卡受损。",
 	"log.event.repair.free":    "\uf0ad PCB 手术 —— 免费修复。",
 	"log.event.repair.paid":    "\uf0ad 修复完成，花费 %s。",
+	"log.event.tax.clean":      "\uf132 储备金顶住了稽查，稽查员空手而归。",
+	"log.event.tax.hit":        "\uf155 稽查中招：损失 %s（余额的 %.0f%%）。声望 −5。",
+	"log.event.surge.damaged":  "\uf071 电压浪涌把一张超频显卡电糊了。",
+	"log.event.surge.fizzle":   "\uf021 浪涌冲进来了，但没有超频卡可烧，虚惊一场。",
+	"log.event.crash.fired":    "\uf063 市场崩盘：价格被按在 %.2f×，持续 %d 秒。",
 
 	"log.gpu.arrived":         "\uf1b2 %s 已抵达并上线。",
 	"log.gpu.failed":          "\uf1e2 %s 出故障了，需要维修或拆解。",
@@ -271,6 +336,7 @@ var zhStrings = map[string]string{
 	"log.gpu.upgrade.bricked": "\uf06d 升级失败 —— 显卡砖了。",
 	"log.gpu.ordered":         "下单 %s，%s。正在追踪物流……",
 	"log.gpu.scrapped":        "拆解 %s，获得 %s 和 %d 研究碎片。",
+	"log.gpu.oc_set":          "\uf0e7 %s 超频至 +%d%%（更热、更耗电）。",
 
 	"log.bills.settled":  "\uf155 账单结清：电费 %s，房租 %s。",
 	"log.bills.blackout": "\uf1e6 付不起账单了。停电 60 秒。",

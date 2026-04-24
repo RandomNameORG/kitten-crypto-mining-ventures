@@ -276,12 +276,13 @@ func (a App) renderRoomPanel(def data.RoomDef, width int, compact bool) string {
 	}
 
 	lines = append(lines, fmt.Sprintf("%s   %s",
-		VoltStyle.Render(i18n.T("dash.line.power", volt, game.FmtBTC(bill), nextBill)),
+		VoltStyle.Render(IconBolt+" "+i18n.T("dash.line.power", volt, game.FmtBTC(bill), nextBill)),
 		DimStyle.Render(i18n.T("dash.slots_of", len(gpus), def.Slots))))
 	lines = append(lines, "  "+powerHint)
-	lines = append(lines, HeatStyle.Render(i18n.T("dash.heat.label", heat, maxHeat, heatDelta, heatTickSec)))
+	lines = append(lines, HeatStyle.Render(IconThermo+" "+i18n.T("dash.heat.label", heat, maxHeat, heatDelta, heatTickSec)))
 	lines = append(lines, "  "+renderHeatBar(heatFrac, barW)+"  "+zoneStyle.Render(i18n.T(zoneLabel)))
 	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash2", game.FmtBTC(earn), game.FmtBTCSigned(net))))
+	lines = append(lines, renderMarketLine(a.state))
 	if !compact {
 		lines = append(lines, "")
 	}
@@ -321,7 +322,11 @@ func (a App) renderRoomPanel(def data.RoomDef, width int, compact bool) string {
 			if g.UpgradeLevel > 0 {
 				upMark = lipgloss.NewStyle().Foreground(AccentPurple).Render(fmt.Sprintf(" +%d", g.UpgradeLevel))
 			}
-			line := fmt.Sprintf("  %d. %s %s%s  %s", i+1, indicator, gpuDisplayName(a.state, g), upMark, DimStyle.Render(statusText))
+			ocMark := ""
+			if pct := ocLevelPercent(g.OCLevel); pct > 0 {
+				ocMark = OCLevelStyle(g.OCLevel).Render(fmt.Sprintf(" +%d%%", pct))
+			}
+			line := fmt.Sprintf("  %d. %s %s%s%s  %s", i+1, indicator, gpuDisplayName(a.state, g), upMark, ocMark, DimStyle.Render(statusText))
 			lines = append(lines, line)
 		case i < len(installed)+len(inbound):
 			lines = append(lines, lipgloss.NewStyle().Foreground(SocialCyan).Render(fmt.Sprintf(i18n.T("dash.slot_reserved"), i+1)))
@@ -410,6 +415,7 @@ func (a App) renderKeyInfoPanel(def data.RoomDef, width int, compact bool) strin
 		TitleStyle.Render(truncate(i18n.T("dash.location", def.LocalName()), innerW)),
 		VoltStyle.Render(fmt.Sprintf("%s %.0fW  −%s/s", IconBolt, volt, game.FmtBTC(bill))),
 		netStyle.Render(fmt.Sprintf("%s net %s/s", IconChartUp, game.FmtBTCSigned(net))),
+		renderMarketLine(a.state),
 		heatStyle.Render(fmt.Sprintf("%s %.0f/%.0f %+.1f/s", IconThermo, heat, maxHeat, heatDelta)),
 		renderHeatBar(heatFrac, barW),
 		impactStyle.Render(truncate(i18n.T(impactKey), innerW)),
@@ -450,13 +456,19 @@ func (a App) renderKeyInfoPanel(def data.RoomDef, width int, compact bool) strin
 				up = fmt.Sprintf(" +%d", g.UpgradeLevel)
 				upMark = lipgloss.NewStyle().Foreground(AccentPurple).Render(up)
 			}
-			// "  ● " = 4, up display width = len(up), leave 1 trailing.
-			nameBudget := innerW - 4 - len([]rune(up)) - 1
+			ocMark := ""
+			oc := ""
+			if pct := ocLevelPercent(g.OCLevel); pct > 0 {
+				oc = fmt.Sprintf(" +%d%%", pct)
+				ocMark = OCLevelStyle(g.OCLevel).Render(oc)
+			}
+			// "  ● " = 4, up+oc display widths tallied, leave 1 trailing.
+			nameBudget := innerW - 4 - len([]rune(up)) - len([]rune(oc)) - 1
 			if nameBudget < 3 {
 				nameBudget = 3
 			}
 			name := truncate(gpuDisplayName(a.state, g), nameBudget)
-			lines = append(lines, fmt.Sprintf("  %s %s%s", indicator, name, upMark))
+			lines = append(lines, fmt.Sprintf("  %s %s%s%s", indicator, name, upMark, ocMark))
 		case i < len(installed)+len(inbound):
 			lines = append(lines, lipgloss.NewStyle().Foreground(SocialCyan).Render("  · inbound"))
 		default:
@@ -689,6 +701,22 @@ func (a App) overlayOfflineSummary(content string) string {
 			DimStyle.Render(i18n.T("offline.dismiss")),
 		}, "\n"))
 	return lipgloss.NewStyle().Padding(1, 2).Render(box)
+}
+
+// renderMarketLine formats the BTC market multiplier + trend glyph. Colour
+// tracks sign of the trend so a glanceable read matches "green=up / red=down".
+func renderMarketLine(s *game.State) string {
+	arrow := "·"
+	style := DimStyle
+	switch s.MarketTrend() {
+	case 1:
+		arrow = "↑"
+		style = lipgloss.NewStyle().Foreground(OppGreen)
+	case -1:
+		arrow = "↓"
+		style = lipgloss.NewStyle().Foreground(CrisisRed)
+	}
+	return style.Render(i18n.T("dash.market.label", s.MarketPrice, arrow))
 }
 
 func truncate(s string, n int) string {

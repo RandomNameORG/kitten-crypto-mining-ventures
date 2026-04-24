@@ -17,6 +17,7 @@ var enStrings = map[string]string{
 	"nav.mercs":       "mercs",
 	"nav.lab":         "lab",
 	"nav.prestige":    "prestige",
+	"nav.stats":       "stats",
 
 	"hdr.tp":    "TP %d",
 	"hdr.rep":   "Rep %+d",
@@ -51,6 +52,7 @@ var enStrings = map[string]string{
 	"dash.power.safe":      "safe",
 	"dash.power.deficit":   "losing ₿/s — balance lasts %s",
 	"dash.power.broke":     "empty wallet → 60s blackout",
+	"dash.market.label":    "📊 %.2f× %s",
 	"dash.line.power":      "\uf0e7 %.0fV  −%s/s  (next bill %ds)",
 	"dash.line.cash2":      "\uf201 +%s/s earn   net %s/s",
 	"dash.heat.label":      "\uf2c7 Heat  %.0f/%.0f°C  %+.1f/%ds",
@@ -98,9 +100,15 @@ var enStrings = map[string]string{
 	"store.help":  "↑/↓ select   [b] buy   [esc]/[1] back",
 
 	// GPUs view.
-	"gpus.title": "🖥  Your GPUs",
-	"gpus.help":  "↑/↓ select   [u] upgrade   [r] repair   [s] scrap   [esc]/[1] back",
-	"gpus.empty": "  (no GPUs yet — visit the store)",
+	"gpus.title":        "🖥  Your GPUs",
+	"gpus.help":         "↑/↓ select   [u] upgrade   [o] overclock   [r] repair   [s] scrap   [b] sort   [esc]/[1] back",
+	"gpus.empty":        "  (no GPUs yet — visit the store)",
+	"gpus.oc_mark":      " OC+%d%%",
+	"gpus.sort_label":   "sort: %s",
+	"gpus.sort_default": "default",
+	"gpus.sort_earn":    "earn ↓",
+	"gpus.sort_eff":     "efficiency ↓",
+	"gpus.sort_dur":     "durability ↑",
 
 	// Rooms view.
 	"rooms.title":      "🏠 Rooms",
@@ -126,6 +134,21 @@ var enStrings = map[string]string{
 	"skills.owned":         "owned",
 	"skills.locked_suffix": " (locked)",
 
+	// Stats.
+	"stats.title":          "📊 Lifetime Stats",
+	"stats.help":           "[esc]/[1] back",
+	"stats.row.lifetime":   "Lifetime BTC earned",
+	"stats.row.ticks":      "Ticks played",
+	"stats.row.market":     "Market price",
+	"stats.row.spark":      "Recent price",
+	"stats.row.gpus":       "GPUs bought / scrapped",
+	"stats.row.oc_t1":      "Time at OC +25%%",
+	"stats.row.oc_t2":      "Time at OC +50%%",
+	"stats.row.events":     "Events fired by category",
+	"stats.row.wages":      "Total wages paid",
+	"stats.empty_history":  "(not enough samples yet)",
+	"stats.empty_events":   "(none yet)",
+
 	// Log.
 	"log.title": "📜 Full Event Log",
 	"log.help":  "[esc]/[1] back",
@@ -136,13 +159,14 @@ var enStrings = map[string]string{
 	"help.views":      "Views",
 	"help.view.1":     "[1]  dashboard — GPU rack + live event log",
 	"help.view.2":     "[2]  store — buy new GPUs (shipping delay)",
-	"help.view.3":     "[3]  your GPUs — upgrade · repair · scrap",
+	"help.view.3":     "[3]  your GPUs — upgrade · repair · scrap · [o] overclock · [b] sort",
 	"help.view.4":     "[4]  rooms — unlock · switch · defense upgrades",
 	"help.view.5":     "[5]  skills — spend TechPoints",
 	"help.view.6":     "[6]  log — full history",
 	"help.view.7":     "[7]  mercs — hire · fire · bribe",
 	"help.view.8":     "[8]  lab — research custom MEOWCore GPUs",
-	"help.view.9":     "[9]  prestige — retire & buy legacy perks",
+	"help.view.9":     "[9]  prestige — retire & buy legacy perks · [y]/[n] syndicate",
+	"help.view.0":     "[0]  stats — lifetime counters & market sparkline",
 	"help.global":     "Global",
 	"help.g.space":    "[space]  pause / resume",
 	"help.g.save":     "[S]       save (any view)",
@@ -154,6 +178,19 @@ var enStrings = map[string]string{
 	"help.defense_row": "[l] lock · [c] CCTV · [w] wiring · [o] cooling · [a] armor",
 	"help.tip.idle":    "Tip: it's an incremental game — feel free to leave it running in tmux.",
 	"help.tip.offline": "Offline progress catches up on relaunch (capped at 8h).",
+
+	// Floating bottom-of-view key hints (one line per view). Rendered
+	// dim, only shown on main views — log/help skip because their own
+	// help text is already dense. See ui/hint.go.
+	"hint.dashboard": "[p] pump&dump  [V] vent  [space] pause",
+	"hint.store":     "[↑/↓] pick  [b] buy  [esc] back",
+	"hint.gpus":      "[u] upgrade  [o] overclock  [b] sort  [r] repair",
+	"hint.rooms":     "[u] unlock  [enter] switch  [l/c/w/o/a] defense",
+	"hint.skills":    "[u] unlock  [esc] back",
+	"hint.mercs":     "[tab] switch  [h] hire  [f] fire  [b] bribe",
+	"hint.lab":       "[t] tier  [b] boosts  [r] research  [p] print",
+	"hint.prestige":  "[p] perk  [R R] retire  [y]/[n] syndicate",
+	"hint.stats":     "[esc] back",
 
 	"help.mechanics":     "Game mechanics",
 	"help.mech.heat":     "\uf2c7 Heat — GPUs produce it; rooms have a max ceiling.",
@@ -167,6 +204,8 @@ var enStrings = map[string]string{
 	"help.mech.power.act": "  → watch \"net\" on the dashboard. Negative = bleeding.",
 	"help.mech.earn":     "\uf201 Earnings — GPUs mint ₿ per tick, added to your balance.",
 	"help.mech.earn.2":   "  MEOWCore blueprints (from [8] lab) unlock custom stat trade-offs.",
+	"help.mech.market":   "📊 Market — BTC price drifts between 0.5× and 2.0×.",
+	"help.mech.market.2": "  ↑/↓ trend arrow on the dashboard signals direction; Pump & Dump can force a temporary spike.",
 
 	// Mercs.
 	"mercs.title":     "🐾 Mercenaries",
@@ -206,6 +245,28 @@ var enStrings = map[string]string{
 	"prestige.bank":   "  bank balance: %d LP total · %d spent · %d available",
 	"prestige.perks":  "Legacy Perks",
 	"prestige.perk_owned": "owned / maxed",
+
+	// Syndicate — late-game cooperative pool, surfaced on the Prestige view.
+	"syndicate.title":         "🤝 Syndicate",
+	"syndicate.joined":        "  status: JOINED — %d%% of earn → shared pool",
+	"syndicate.not_joined":    "  status: independent (no pool)",
+	"syndicate.gated_need":    "  gated: need %s lifetime earned (have %s)",
+	"syndicate.contrib":       "  pending contribution: %s",
+	"syndicate.next_payout":   "  next dividend in %s  (×%.2f on payout)",
+	"syndicate.dividends_total": "  lifetime dividends paid: %s",
+	"syndicate.cta_join":      "  [Y] join — free, keeps %d%% of your earn",
+	"syndicate.cta_leave":     "  [N] leave — %s fee, forfeits pending contribution",
+	"syndicate.leave_fee":     "%s leave fee",
+	"syndicate.key_help":      "   · [Y] join syndicate · [N] leave",
+
+	"log.syndicate.joined":      "\uf0c0 Joined the Syndicate. 10%% of earn now feeds the pool.",
+	"log.syndicate.left":        "\uf235 Left the Syndicate. Paid %s leave fee; pool forfeited.",
+	"log.syndicate.payout":      "\uf0d6 Syndicate dividend: +%s.",
+	"log.syndicate.gate_failed": "Syndicate refused — need %s lifetime earned (have %s).",
+
+	"status.syndicate_joined": "🤝 joined the Syndicate",
+	"status.syndicate_left":   "🚪 left the Syndicate",
+	"status.syndicate_gate":   "❌ not yet eligible for the Syndicate",
 
 	// Small labels used across multiple views.
 	"label.eff":       "%s/s",
@@ -265,6 +326,11 @@ var enStrings = map[string]string{
 	"log.event.gpu.damaged":    "\uf071 A GPU is damaged.",
 	"log.event.repair.free":    "\uf0ad PCB surgery — free repair.",
 	"log.event.repair.paid":    "\uf0ad Repaired for %s.",
+	"log.event.tax.clean":      "\uf132 Reserves covered the audit. The auditor leaves empty-pawed.",
+	"log.event.tax.hit":        "\uf155 Audit bit down: lost %s (%.0f%% of balance). Reputation −5.",
+	"log.event.surge.damaged":  "\uf071 A power surge cooked an overclocked GPU.",
+	"log.event.surge.fizzle":   "\uf021 The surge hit the rail — nothing was overclocked to fry.",
+	"log.event.crash.fired":    "\uf063 Market crash: price pinned at %.2f× for %ds.",
 
 	"log.gpu.arrived":         "\uf1b2 %s arrived and is online.",
 	"log.gpu.failed":          "\uf1e2 %s failed. It needs repair or scrapping.",
@@ -272,6 +338,7 @@ var enStrings = map[string]string{
 	"log.gpu.upgrade.bricked": "\uf06d Upgrade failed — GPU is bricked.",
 	"log.gpu.ordered":         "Ordered %s for %s. Tracking inbound…",
 	"log.gpu.scrapped":        "Scrapped %s for %s + %d research fragments.",
+	"log.gpu.oc_set":          "\uf0e7 Overclocked %s to +%d%% (hotter, thirstier).",
 
 	"log.bills.settled":  "\uf155 Bills settled: %s electricity, %s rent.",
 	"log.bills.blackout": "\uf1e6 Couldn't pay the bill. Blackout for 60s.",

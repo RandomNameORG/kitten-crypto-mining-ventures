@@ -19,6 +19,8 @@ var (
 	OppGreen    = lipgloss.Color("#44FF88")
 	SocialCyan  = lipgloss.Color("#44CCFF")
 	ThreatOrange = lipgloss.Color("#FFAA44")
+	OCWarm1     = lipgloss.Color("#FFD467") // amber/gold — +25% OC (modest boost)
+	OCWarm2     = lipgloss.Color("#FF8A5B") // coral — +50% OC (bigger boost)
 
 	TitleStyle = lipgloss.NewStyle().
 			Foreground(KittenPink).
@@ -125,4 +127,16 @@ func CategoryStyle(category string) lipgloss.Style {
 	default:
 		return lipgloss.NewStyle().Foreground(MutedGrey)
 	}
+}
+
+// OCLevelStyle returns the style for an OC marker given the GPU's OC level.
+// 1 → OCWarm1, 2 → OCWarm2. Callers should gate on ocLevelPercent > 0.
+func OCLevelStyle(level int) lipgloss.Style {
+	switch level {
+	case 1:
+		return lipgloss.NewStyle().Foreground(OCWarm1)
+	case 2:
+		return lipgloss.NewStyle().Foreground(OCWarm2).Bold(true)
+	}
+	return lipgloss.NewStyle()
 }
