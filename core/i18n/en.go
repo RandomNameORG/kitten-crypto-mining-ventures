@@ -17,6 +17,7 @@ var enStrings = map[string]string{
 	"nav.mercs":       "mercs",
 	"nav.lab":         "lab",
 	"nav.prestige":    "prestige",
+	"nav.stats":       "stats",
 
 	"hdr.tp":    "TP %d",
 	"hdr.rep":   "Rep %+d",
@@ -128,6 +129,21 @@ var enStrings = map[string]string{
 	"skills.owned":         "owned",
 	"skills.locked_suffix": " (locked)",
 
+	// Stats.
+	"stats.title":          "📊 Lifetime Stats",
+	"stats.help":           "[esc]/[1] back",
+	"stats.row.lifetime":   "Lifetime BTC earned",
+	"stats.row.ticks":      "Ticks played",
+	"stats.row.market":     "Market price",
+	"stats.row.spark":      "Recent price",
+	"stats.row.gpus":       "GPUs bought / scrapped",
+	"stats.row.oc_t1":      "Time at OC +25%%",
+	"stats.row.oc_t2":      "Time at OC +50%%",
+	"stats.row.events":     "Events fired by category",
+	"stats.row.wages":      "Total wages paid",
+	"stats.empty_history":  "(not enough samples yet)",
+	"stats.empty_events":   "(none yet)",
+
 	// Log.
 	"log.title": "📜 Full Event Log",
 	"log.help":  "[esc]/[1] back",
@@ -145,6 +161,7 @@ var enStrings = map[string]string{
 	"help.view.7":     "[7]  mercs — hire · fire · bribe",
 	"help.view.8":     "[8]  lab — research custom MEOWCore GPUs",
 	"help.view.9":     "[9]  prestige — retire & buy legacy perks",
+	"help.view.0":     "[0]  stats — lifetime counters & market sparkline",
 	"help.global":     "Global",
 	"help.g.space":    "[space]  pause / resume",
 	"help.g.save":     "[S]       save (any view)",

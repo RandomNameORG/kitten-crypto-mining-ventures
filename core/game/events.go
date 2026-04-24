@@ -112,6 +112,10 @@ func (s *State) eventGatePasses(id string) bool {
 
 func (s *State) applyEvent(e data.EventDef) {
 	s.appendLog(e.Category, fmt.Sprintf("%s %s — %s", e.Emoji, e.LocalName(), e.LocalText()))
+	if s.EventsByCategory == nil {
+		s.EventsByCategory = map[string]int{}
+	}
+	s.EventsByCategory[e.Category]++
 	now := time.Now().Unix()
 
 	for _, eff := range e.Effects {

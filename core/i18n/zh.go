@@ -17,6 +17,7 @@ var zhStrings = map[string]string{
 	"nav.mercs":       "佣兵",
 	"nav.lab":         "实验室",
 	"nav.prestige":    "转生",
+	"nav.stats":       "统计",
 
 	"hdr.tp":    "TP %d",
 	"hdr.rep":   "声望 %+d",
@@ -128,6 +129,21 @@ var zhStrings = map[string]string{
 	"skills.owned":         "已有",
 	"skills.locked_suffix": "（未解锁前置）",
 
+	// Stats.
+	"stats.title":         "📊 累计统计",
+	"stats.help":          "[esc]/[1] 返回",
+	"stats.row.lifetime":  "累计 BTC 收入",
+	"stats.row.ticks":     "总 tick 数",
+	"stats.row.market":    "当前行情",
+	"stats.row.spark":     "近期价格",
+	"stats.row.gpus":      "买入 / 拆解显卡",
+	"stats.row.oc_t1":     "超频 +25%% 时长",
+	"stats.row.oc_t2":     "超频 +50%% 时长",
+	"stats.row.events":    "按类别累计事件",
+	"stats.row.wages":     "累计佣兵工资",
+	"stats.empty_history": "（采样还不够）",
+	"stats.empty_events":  "（暂无）",
+
 	// Log.
 	"log.title": "📜 完整事件日志",
 	"log.help":  "[esc]/[1] 返回",
@@ -145,6 +161,7 @@ var zhStrings = map[string]string{
 	"help.view.7":      "[7]  佣兵 —— 雇佣·解雇·贿赂",
 	"help.view.8":      "[8]  实验室 —— 研究自制 MEOWCore 显卡",
 	"help.view.9":      "[9]  转生 —— 退休 + 购买 Legacy 特权",
+	"help.view.0":      "[0]  统计 —— 累计计数 + 行情迷你图",
 	"help.global":      "全局",
 	"help.g.space":     "[空格]   暂停 / 继续",
 	"help.g.save":      "[S]      存档（任意视图）",

@@ -54,6 +54,29 @@ func (s *State) Tick(now int64) {
 	}
 	dt := float64(now - s.LastTickUnix)
 	s.LastTickUnix = now
+	s.TotalTicks += int64(dt)
+
+	// OC time bookkeeping: add dt to T1/T2 buckets if any running GPU sits at
+	// that level this tick. Counted once per tick, not per GPU — the metric
+	// is "wall-time spent overclocking" rather than GPU-seconds.
+	hasT1, hasT2 := false, false
+	for _, g := range s.GPUs {
+		if g.Status != "running" {
+			continue
+		}
+		switch g.OCLevel {
+		case 1:
+			hasT1 = true
+		case 2:
+			hasT2 = true
+		}
+	}
+	if hasT1 {
+		s.OCTimeT1Sec += int64(dt)
+	}
+	if hasT2 {
+		s.OCTimeT2Sec += int64(dt)
+	}
 
 	s.pruneModifiers(now)
 	s.advanceShipping(now)
