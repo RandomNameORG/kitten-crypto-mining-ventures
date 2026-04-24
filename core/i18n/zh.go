@@ -38,9 +38,9 @@ var zhStrings = map[string]string{
 
 	// Dashboard.
 	"dash.location":   "📍 %s",
-	"dash.line.volt":  "⚡ %.0fV 耗电  ·  账单 −₿%.3f/秒  ·  下次结算 %d 秒",
+	"dash.line.volt":  "⚡ %.0fV 耗电  ·  账单 −%s/秒  ·  下次结算 %d 秒",
 	"dash.line.heat":  "🌡 %.0f°C / 最高 %.0f  ·  %+.1f°C 每 %d 秒  ·  下次 %d 秒",
-	"dash.line.cash":  "📈 收益 +₿%.3f/秒  ·  扣费后净 %+.3f/秒",
+	"dash.line.cash":  "📈 收益 +%s/秒  ·  扣费后净 %s/秒",
 	"dash.slots_of":   "槽位 %d/%d",
 	"dash.heat.warning":  "\uf071 温度过高 —— 效率减半 · 磨损 ×3",
 	"dash.heat.critical": "\uf06d 临界 —— 磨损 ×8 · 显卡即将烧毁",
@@ -51,8 +51,8 @@ var zhStrings = map[string]string{
 	"dash.power.safe":      "盈利中",
 	"dash.power.deficit":   "亏损中 —— 余额撑 %s",
 	"dash.power.broke":     "钱包见底 → 60 秒断电",
-	"dash.line.power":      "\uf0e7 %.0fV  −₿%.3f/秒  （下次账单 %d 秒）",
-	"dash.line.cash2":      "\uf201 +₿%.3f/秒 收益   净 %+.3f/秒",
+	"dash.line.power":      "\uf0e7 %.0fV  −%s/秒  （下次账单 %d 秒）",
+	"dash.line.cash2":      "\uf201 +%s/秒 收益   净 %s/秒",
 	"dash.heat.label":      "\uf2c7 温度  %.0f/%.0f°C  %+.1f/%d秒",
 	"dash.rack":           "显卡架",
 	"dash.empty_hint":     "  （空的——按 [2] 去商店）",
@@ -107,7 +107,7 @@ var zhStrings = map[string]string{
 	"rooms.help":       "↑/↓ 选房间   [u] 解锁   [enter] 切换   [l/c/w/o/a] 升级当前房间的防御   [esc]/[1] 返回",
 	"rooms.here":       "● 此处",
 	"rooms.unlocked":   "已解锁",
-	"rooms.to_unlock":  "解锁 ₿%d",
+	"rooms.to_unlock":  "解锁 %s",
 	"rooms.stats":      "  散热 %.1f · 电费 ×%.2f · 基础威胁 %.2f",
 	"rooms.defense":    "🛡  防御 —— 当前房间（%s）",
 	"rooms.dim.lock":    "门锁",
@@ -149,7 +149,7 @@ var zhStrings = map[string]string{
 	"help.g.pump":      "[p]      拉盘技能（主面板，需解锁）",
 	"help.g.lang":      "[L]      循环切换语言",
 	"help.g.quit":      "[q]      退出（自动存档）",
-	"help.g.vent":      "[V]      应急排热——重置房间温度 · -₿100 · 30 秒停机 · 2 分钟冷却",
+	"help.g.vent":      "[V]      应急排热——重置房间温度 · %s · 30 秒停机 · 2 分钟冷却",
 	"help.defense":     "房间防御（在房间视图里）",
 	"help.defense_row": "[l] 锁 · [c] 监控 · [w] 电路 · [o] 散热 · [a] 护甲",
 	"help.tip.idle":    "提示：这是增量器——放心开着 tmux 挂后台。",
@@ -170,12 +170,12 @@ var zhStrings = map[string]string{
 
 	// Mercs.
 	"mercs.title":      "🐾 佣兵",
-	"mercs.help":       "[tab] 切换标签   ↑/↓ 选择   [h] 雇佣   [f] 解雇   [b] 贿赂（忠诚 +15，₿200）   [esc]/[1] 返回",
+	"mercs.help":       "[tab] 切换标签   ↑/↓ 选择   [h] 雇佣   [f] 解雇   [b] 贿赂（忠诚 +15，%s）   [esc]/[1] 返回",
 	"mercs.yours":      "你的佣兵",
 	"mercs.empty":      "  （没有——切到雇佣标签）",
 	"mercs.hire":       "雇佣",
-	"mercs.owned_line": "房间 %s  周薪 ₿%d  忠诚 %d",
-	"mercs.hire_line":  "雇佣 ₿%d",
+	"mercs.owned_line": "房间 %s  周薪 %s  忠诚 %d",
+	"mercs.hire_line":  "雇佣 %s",
 	"mercs.defbonus":   "防御 +%.0f%%",
 	"mercs.loyalty":    "忠诚 %d",
 
@@ -187,7 +187,7 @@ var zhStrings = map[string]string{
 	"lab.active_none": "  （无）",
 	"lab.plan":        "下一次研究计划",
 	"lab.plan_tier":   "  档位 %d —— %s",
-	"lab.plan_cost":   "  消耗：₿%d + %d 碎片  ·  用时：%d 分钟",
+	"lab.plan_cost":   "  消耗：%s + %d 碎片  ·  用时：%d 分钟",
 	"lab.plan_boosts": "  加成：%s + %s",
 	"lab.plan_hint":   "  （按 [r] 开始研究）",
 	"lab.bp_title":    "蓝图（%d 个）—— 按 [p] 打印选中的",
@@ -198,7 +198,7 @@ var zhStrings = map[string]string{
 	"prestige.locked":       "转生未解锁。先去大亨技能里解锁「Venture Capital」。",
 	"prestige.help":         "[↑/↓] 选特权   [p] 购买   [R] 退休（按两次确认）   [esc]/[1] 返回",
 	"prestige.status":       "状态",
-	"prestige.lifetime":     "  累计收入：₿%.0f / ₿%.0f",
+	"prestige.lifetime":     "  累计收入：%s / %s",
 	"prestige.eligible_yes": "可以转生",
 	"prestige.eligible_no":  "暂时还不行",
 	"prestige.eligible_row": "  退休资格：%s",
@@ -208,15 +208,15 @@ var zhStrings = map[string]string{
 	"prestige.perk_owned":   "已拥有 / 满级",
 
 	// Small labels used across multiple views.
-	"label.eff":     "效率 %.4f ₿/秒",
-	"label.bp_line": "    效率 %.4f ₿/秒 · %.0fV · %.0f°C · %.0fh 耐久",
+	"label.eff":     "%s/秒",
+	"label.bp_line": "    效率 %s/秒 · %.0fV · %.0f°C · %.0fh 耐久",
 
 	// Event popup prompts.
 	"event.dismiss": "[按任意键关闭]",
 
 	// 离线收益欢迎回来提示。
 	"offline.title":   "😽 欢迎回来！",
-	"offline.body":    "你离开了 %s。\n矿机一直在嗡嗡作响，共赚了 ₿%.4f。",
+	"offline.body":    "你离开了 %s。\n矿机一直在嗡嗡作响，共赚了 %s。",
 	"offline.capped":  "（最多结算 8 小时，超过部分不计入）",
 	"offline.dismiss": "[按任意键关闭]",
 
@@ -237,10 +237,10 @@ var zhStrings = map[string]string{
 
 	"log.skill.learned": "\uf0eb 已学习：%s。",
 
-	"log.merc.hired":              "\uf1b0 雇佣 %s，花费 ₿%d。",
+	"log.merc.hired":              "\uf1b0 雇佣 %s，花费 %s。",
 	"log.merc.dismissed":          "已解雇 %s。其他佣兵注意到了。",
 	"log.merc.bribed":             "\uf06b 贿赂 %s —— 忠诚度 %d。",
-	"log.merc.wages":              "\uf0b1 支付了 ₿%.2f 佣兵工资。",
+	"log.merc.wages":              "\uf0b1 支付了 %s 佣兵工资。",
 	"log.merc.betray.unlock":      "\uf1b0 %s 离开时顺手把门解锁了。",
 	"log.merc.betray.sabotage":    "\uf1e2 %s 离开时破坏了些设备。",
 	"log.merc.betray.sold_story":  "\uf0a1 %s 把你的故事卖给了对家小猫。声望 −10。",
@@ -254,7 +254,7 @@ var zhStrings = map[string]string{
 	"log.event.gift.sold":      "……但是没地方放，直接卖掉了 %s。",
 	"log.event.fire.averted":   "\uf132 装甲挡住了，火情被压制。",
 	"log.event.fire.warning":   "已经警告过了。再来一次，这间房就没了。",
-	"log.event.fire.money":     "\uf155 损失 ₿%.0f（余额的 %.0f%%）。",
+	"log.event.fire.money":     "\uf155 损失 %s（余额的 %.0f%%）。",
 	"log.event.fire.destroyed": "\uf06d 失火！损失 %d 张显卡（%s）。",
 	"log.event.thief.empty":    "小偷没找到值钱的东西。",
 	"log.event.thief.defended": "\uf132 防御挡住了，没被偷走东西。",
@@ -263,19 +263,19 @@ var zhStrings = map[string]string{
 	"log.event.gpu.broken":     "\uf1e2 一张显卡承受了太多伤害 —— 彻底烧毁。",
 	"log.event.gpu.damaged":    "\uf071 一张显卡受损。",
 	"log.event.repair.free":    "\uf0ad PCB 手术 —— 免费修复。",
-	"log.event.repair.paid":    "\uf0ad 修复完成，花费 ₿%d。",
+	"log.event.repair.paid":    "\uf0ad 修复完成，花费 %s。",
 
 	"log.gpu.arrived":         "\uf1b2 %s 已抵达并上线。",
 	"log.gpu.failed":          "\uf1e2 %s 出故障了，需要维修或拆解。",
 	"log.gpu.upgrade.success": "\uf013 显卡升级到 %d 级。",
 	"log.gpu.upgrade.bricked": "\uf06d 升级失败 —— 显卡砖了。",
-	"log.gpu.ordered":         "下单 %s，₿%d。正在追踪物流……",
-	"log.gpu.scrapped":        "拆解 %s，获得 ₿%.0f 和 %d 研究碎片。",
+	"log.gpu.ordered":         "下单 %s，%s。正在追踪物流……",
+	"log.gpu.scrapped":        "拆解 %s，获得 %s 和 %d 研究碎片。",
 
-	"log.bills.settled":  "\uf155 账单结清：电费 ₿%.2f，房租 ₿%.2f。",
+	"log.bills.settled":  "\uf155 账单结清：电费 %s，房租 %s。",
 	"log.bills.blackout": "\uf1e6 付不起账单了。停电 60 秒。",
 
-	"log.room.vent":        "\uf2dc 紧急排热 —— 温度重置，断电 30 秒，花费 ₿%d。",
+	"log.room.vent":        "\uf2dc 紧急排热 —— 温度重置，断电 30 秒，花费 %s。",
 	"log.room.moved":       "搬进了 %s。",
 	"log.defense.upgraded": "\uf132 %s 升级到 %d 级。",
 
@@ -288,7 +288,7 @@ var zhStrings = map[string]string{
 	"log.pump.fired": "\uf201 拉盘砸盘 —— BTC 价格 ×1.5，持续 5 分钟。",
 
 	"log.prestige.retired":  "\uf1b0 你功成身退。+%d LegacyPoints 入账。",
-	"log.legacy.cash":       "Legacy 奖励：启动余额 +₿%.0f。",
+	"log.legacy.cash":       "Legacy 奖励：启动余额 +%s。",
 	"log.legacy.room":       "Legacy 奖励：大学机房已提前解锁。",
 	"log.legacy.blueprints": "Legacy 奖励：继承了 %d 份蓝图。",
 	"hdr.achievements":    "🏆 %d/%d",

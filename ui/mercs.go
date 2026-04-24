@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/game"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
@@ -16,7 +17,7 @@ func (a App) renderMercsView() string {
 	hireable := data.Mercs()
 
 	header := TitleStyle.Render(i18n.T("mercs.title"))
-	help := DimStyle.Render(i18n.T("mercs.help"))
+	help := DimStyle.Render(i18n.T("mercs.help", game.FmtBTCInt(200)))
 
 	ownedLines := []string{HeaderStyle.Render(i18n.T("mercs.yours"))}
 	if len(owned) == 0 {
@@ -44,7 +45,7 @@ func (a App) renderMercsView() string {
 		}
 		line := fmt.Sprintf("%s#%-3d %-28s  %s",
 			cursor, m.InstanceID, def.LocalName(),
-			loyStyle.Render(i18n.T("mercs.owned_line", roomName, def.WeeklyWage, m.Loyalty)),
+			loyStyle.Render(i18n.T("mercs.owned_line", roomName, game.FmtBTCInt(def.WeeklyWage), m.Loyalty)),
 		)
 		ownedLines = append(ownedLines, line)
 	}
@@ -59,10 +60,10 @@ func (a App) renderMercsView() string {
 		if a.state.BTC < float64(d.HireCost) {
 			priceStyle = DimStyle
 		}
-		line := fmt.Sprintf("%s%-24s  %s  wage ₿%d/wk  %s",
+		line := fmt.Sprintf("%s%-24s  %s  wage %s/wk  %s",
 			cursor, d.LocalName(),
-			priceStyle.Render(i18n.T("mercs.hire_line", d.HireCost)),
-			d.WeeklyWage, i18n.T("mercs.defbonus", d.DefenseBonus*100),
+			priceStyle.Render(i18n.T("mercs.hire_line", game.FmtBTCInt(d.HireCost))),
+			game.FmtBTCInt(d.WeeklyWage), i18n.T("mercs.defbonus", d.DefenseBonus*100),
 		)
 		hireLines = append(hireLines, line)
 		hireLines = append(hireLines, DimStyle.Render("   "+d.LocalFlavor()))

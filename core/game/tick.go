@@ -219,7 +219,7 @@ func (s *State) advanceBilling(now int64) {
 	s.BTC -= totalBill
 	s.BTC -= totalRent
 	if totalBill+totalRent > 0 {
-		s.appendLog("info", i18n.T("log.bills.settled", totalBill, totalRent))
+		s.appendLog("info", i18n.T("log.bills.settled", FmtBTC(totalBill), FmtBTC(totalRent)))
 	}
 	if s.BTC < 0 {
 		s.BTC = 0
@@ -248,7 +248,7 @@ func (s *State) UpgradeGPU(instanceID int) error {
 		}
 		cost := price / 3
 		if s.BTC < float64(cost) {
-			return fmt.Errorf("need ₿%d, have ₿%.0f", cost, s.BTC)
+			return fmt.Errorf("need %s, have %s", FmtBTCInt(cost), FmtBTC(s.BTC))
 		}
 		s.BTC -= float64(cost)
 		failChance := 0.05 + 0.05*float64(g.UpgradeLevel)
@@ -280,7 +280,7 @@ func (s *State) EmergencyVent() error {
 		return fmt.Errorf("no room")
 	}
 	if s.BTC < EmergencyVentCost {
-		return fmt.Errorf("need ₿%d", EmergencyVentCost)
+		return fmt.Errorf("need %s", FmtBTCInt(EmergencyVentCost))
 	}
 	now := time.Now().Unix()
 	last := s.EventCooldown["vent:"+s.CurrentRoom]
@@ -295,7 +295,7 @@ func (s *State) EmergencyVent() error {
 		Kind:      "pause_mining",
 		ExpiresAt: now + 30,
 	})
-	s.appendLog("info", i18n.T("log.room.vent", EmergencyVentCost))
+	s.appendLog("info", i18n.T("log.room.vent", FmtBTCInt(EmergencyVentCost)))
 	return nil
 }
 
@@ -361,7 +361,7 @@ func (s *State) UpgradeDefense(dim string) error {
 	}
 	cost := (*lvl + 1) * 250
 	if s.BTC < float64(cost) {
-		return fmt.Errorf("need ₿%d, have ₿%.0f", cost, s.BTC)
+		return fmt.Errorf("need %s, have %s", FmtBTCInt(cost), FmtBTC(s.BTC))
 	}
 	s.BTC -= float64(cost)
 	*lvl++

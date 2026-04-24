@@ -38,9 +38,9 @@ var enStrings = map[string]string{
 
 	// Dashboard.
 	"dash.location":   "📍 %s",
-	"dash.line.volt":  "⚡ %.0fV draw  ·  bill −₿%.3f/s  ·  next bill %ds",
+	"dash.line.volt":  "⚡ %.0fV draw  ·  bill −%s/s  ·  next bill %ds",
 	"dash.line.heat":  "🌡 %.0f°C / %.0f max  ·  %+.1f°C every %ds  ·  next in %ds",
-	"dash.line.cash":  "📈 earn +₿%.3f/s  ·  net %+.3f/s",
+	"dash.line.cash":  "📈 earn +%s/s  ·  net %s/s",
 	"dash.slots_of":   "slots %d/%d",
 	"dash.heat.warning":  "\uf071 HOT — efficiency ½ · wear 3×",
 	"dash.heat.critical": "\uf06d CRITICAL — wear 8× · GPU failure imminent",
@@ -51,8 +51,8 @@ var enStrings = map[string]string{
 	"dash.power.safe":      "safe",
 	"dash.power.deficit":   "losing ₿/s — balance lasts %s",
 	"dash.power.broke":     "empty wallet → 60s blackout",
-	"dash.line.power":      "\uf0e7 %.0fV  −₿%.3f/s  (next bill %ds)",
-	"dash.line.cash2":      "\uf201 +₿%.3f/s earn   net %+.3f/s",
+	"dash.line.power":      "\uf0e7 %.0fV  −%s/s  (next bill %ds)",
+	"dash.line.cash2":      "\uf201 +%s/s earn   net %s/s",
 	"dash.heat.label":      "\uf2c7 Heat  %.0f/%.0f°C  %+.1f/%ds",
 	"dash.rack":           "GPU Rack",
 	"dash.empty_hint":     "  (empty — press [2] to go to the store)",
@@ -107,7 +107,7 @@ var enStrings = map[string]string{
 	"rooms.help":       "↑/↓ room   [u] unlock   [enter] switch   [l/c/w/o/a] upgrade defense on current room   [esc]/[1] back",
 	"rooms.here":       "● here",
 	"rooms.unlocked":   "unlocked",
-	"rooms.to_unlock":  "₿%d to unlock",
+	"rooms.to_unlock":  "%s to unlock",
 	"rooms.stats":      "  cooling %.1f · elec ×%.2f · threat base %.2f",
 	"rooms.defense":    "🛡  Defense — current room (%s)",
 	"rooms.dim.lock":    "Lock",
@@ -149,7 +149,7 @@ var enStrings = map[string]string{
 	"help.g.pump":     "[p]       Pump & Dump ability (dashboard, if unlocked)",
 	"help.g.lang":     "[L]       cycle language",
 	"help.g.quit":     "[q]       quit (auto-saves)",
-	"help.g.vent":     "[V]       emergency vent — reset room heat · -₿100 · 30s pause · 2m cooldown",
+	"help.g.vent":     "[V]       emergency vent — reset room heat · %s · 30s pause · 2m cooldown",
 	"help.defense":    "Room defense (from rooms view)",
 	"help.defense_row": "[l] lock · [c] CCTV · [w] wiring · [o] cooling · [a] armor",
 	"help.tip.idle":    "Tip: it's an incremental game — feel free to leave it running in tmux.",
@@ -170,12 +170,12 @@ var enStrings = map[string]string{
 
 	// Mercs.
 	"mercs.title":     "🐾 Mercenaries",
-	"mercs.help":      "[tab] switch tab   ↑/↓ select   [h] hire   [f] fire   [b] bribe (+15 loyalty, ₿200)   [esc]/[1] back",
+	"mercs.help":      "[tab] switch tab   ↑/↓ select   [h] hire   [f] fire   [b] bribe (+15 loyalty, %s)   [esc]/[1] back",
 	"mercs.yours":     "Your Mercs",
 	"mercs.empty":     "  (none — switch to Hire tab)",
 	"mercs.hire":      "Hire",
-	"mercs.owned_line": "room %s  wage ₿%d/wk  loyalty %d",
-	"mercs.hire_line":  "hire ₿%d",
+	"mercs.owned_line": "room %s  wage %s/wk  loyalty %d",
+	"mercs.hire_line":  "hire %s",
 	"mercs.defbonus":   "def +%.0f%%",
 	"mercs.loyalty":    "loyalty %d",
 
@@ -187,7 +187,7 @@ var enStrings = map[string]string{
 	"lab.active_none": "  (none)",
 	"lab.plan":        "Plan next research",
 	"lab.plan_tier":   "  Tier %d — %s",
-	"lab.plan_cost":   "  costs: ₿%d + %d frags  ·  duration: %dm",
+	"lab.plan_cost":   "  costs: %s + %d frags  ·  duration: %dm",
 	"lab.plan_boosts": "  boosts: %s + %s",
 	"lab.plan_hint":   "  (press [r] to start)",
 	"lab.bp_title":    "Blueprints (%d) — [p] to print selected",
@@ -198,7 +198,7 @@ var enStrings = map[string]string{
 	"prestige.locked":  "Prestige is locked. Unlock 'Venture Capital' in the Mogul skill lane.",
 	"prestige.help":    "[↑/↓] select perk   [p] buy perk   [R] RETIRE (press twice to confirm)   [esc]/[1] back",
 	"prestige.status":  "Status",
-	"prestige.lifetime": "  lifetime earned: ₿%.0f / ₿%.0f",
+	"prestige.lifetime": "  lifetime earned: %s / %s",
 	"prestige.eligible_yes": "ELIGIBLE",
 	"prestige.eligible_no":  "not eligible",
 	"prestige.eligible_row": "  retirement status: %s",
@@ -208,15 +208,15 @@ var enStrings = map[string]string{
 	"prestige.perk_owned": "owned / maxed",
 
 	// Small labels used across multiple views.
-	"label.eff":       "eff %.4f ₿/s",
-	"label.bp_line":   "    eff %.4f ₿/s · %.0fV · %.0f°C · %.0fh durability",
+	"label.eff":       "%s/s",
+	"label.bp_line":   "    eff %s/s · %.0fV · %.0f°C · %.0fh durability",
 
 	// Event popup prompts.
 	"event.dismiss": "[press any key to dismiss]",
 
 	// Offline catch-up welcome-back notification.
 	"offline.title":   "😽 Welcome back!",
-	"offline.body":    "You were away for %s.\nEarned ₿%.4f while the rack kept humming.",
+	"offline.body":    "You were away for %s.\nEarned %s while the rack kept humming.",
 	"offline.capped":  "(capped at 8h — longer gaps stop accruing.)",
 	"offline.dismiss": "[press any key to dismiss]",
 
@@ -238,10 +238,10 @@ var enStrings = map[string]string{
 
 	"log.skill.learned": "\uf0eb Learned: %s.",
 
-	"log.merc.hired":              "\uf1b0 Hired %s for ₿%d.",
+	"log.merc.hired":              "\uf1b0 Hired %s for %s.",
 	"log.merc.dismissed":          "Dismissed %s. The other mercs noticed.",
 	"log.merc.bribed":             "\uf06b Bribed %s — loyalty now %d.",
-	"log.merc.wages":              "\uf0b1 Paid ₿%.2f in mercenary wages.",
+	"log.merc.wages":              "\uf0b1 Paid %s in mercenary wages.",
 	"log.merc.betray.unlock":      "\uf1b0 %s unlocked the door on the way out.",
 	"log.merc.betray.sabotage":    "\uf1e2 %s sabotaged something on the way out.",
 	"log.merc.betray.sold_story":  "\uf0a1 %s sold your story to a rival kitten. Rep −10.",
@@ -255,7 +255,7 @@ var enStrings = map[string]string{
 	"log.event.gift.sold":      "…but no room. Sold %s.",
 	"log.event.fire.averted":   "\uf132 Armor held. Nothing caught fire.",
 	"log.event.fire.warning":   "You've been warned. One more incident and the room is gone.",
-	"log.event.fire.money":     "\uf155 Lost ₿%.0f (%.0f%% of balance).",
+	"log.event.fire.money":     "\uf155 Lost %s (%.0f%% of balance).",
 	"log.event.fire.destroyed": "\uf06d Fire! %d GPUs destroyed in %s.",
 	"log.event.thief.empty":    "Thief found nothing worth taking. Huh.",
 	"log.event.thief.defended": "\uf132 Defense held. Nothing stolen.",
@@ -264,19 +264,19 @@ var enStrings = map[string]string{
 	"log.event.gpu.broken":     "\uf1e2 A GPU took too much damage — broken.",
 	"log.event.gpu.damaged":    "\uf071 A GPU is damaged.",
 	"log.event.repair.free":    "\uf0ad PCB surgery — free repair.",
-	"log.event.repair.paid":    "\uf0ad Repaired for ₿%d.",
+	"log.event.repair.paid":    "\uf0ad Repaired for %s.",
 
 	"log.gpu.arrived":         "\uf1b2 %s arrived and is online.",
 	"log.gpu.failed":          "\uf1e2 %s failed. It needs repair or scrapping.",
 	"log.gpu.upgrade.success": "\uf013 GPU upgraded to level %d.",
 	"log.gpu.upgrade.bricked": "\uf06d Upgrade failed — GPU is bricked.",
-	"log.gpu.ordered":         "Ordered %s for ₿%d. Tracking inbound…",
-	"log.gpu.scrapped":        "Scrapped %s for ₿%.0f + %d research fragments.",
+	"log.gpu.ordered":         "Ordered %s for %s. Tracking inbound…",
+	"log.gpu.scrapped":        "Scrapped %s for %s + %d research fragments.",
 
-	"log.bills.settled":  "\uf155 Bills settled: ₿%.2f electricity, ₿%.2f rent.",
+	"log.bills.settled":  "\uf155 Bills settled: %s electricity, %s rent.",
 	"log.bills.blackout": "\uf1e6 Couldn't pay the bill. Blackout for 60s.",
 
-	"log.room.vent":        "\uf2dc Emergency vent — heat reset, 30s power cycle, -₿%d.",
+	"log.room.vent":        "\uf2dc Emergency vent — heat reset, 30s power cycle, -%s.",
 	"log.room.moved":       "Moved into %s.",
 	"log.defense.upgraded": "\uf132 %s upgraded to level %d.",
 
@@ -289,7 +289,7 @@ var enStrings = map[string]string{
 	"log.pump.fired": "\uf201 Pump & Dump — BTC price ×1.5 for 5 minutes.",
 
 	"log.prestige.retired":  "\uf1b0 You retired rich. +%d LegacyPoints banked.",
-	"log.legacy.cash":       "Legacy bonus: +₿%.0f starter balance.",
+	"log.legacy.cash":       "Legacy bonus: +%s starter balance.",
 	"log.legacy.room":       "Legacy bonus: University Server Room pre-unlocked.",
 	"log.legacy.blueprints": "Legacy bonus: %d blueprints carried over.",
 	"hdr.achievements":    "🏆 %d/%d",

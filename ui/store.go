@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/game"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
@@ -48,12 +49,12 @@ func (a App) renderStore() string {
 		if !affordable {
 			name = DimStyle.Render(name)
 		}
-		lines = append(lines, fmt.Sprintf("%s%-32s  %s  %s",
+		lines = append(lines, fmt.Sprintf("%s%-32s  %-9s  %s",
 			marker,
 			name,
-			priceStyle.Render(fmt.Sprintf("₿%-6d", g.Price)),
+			priceStyle.Render(game.FmtBTCInt(g.Price)),
 			DimStyle.Render(fmt.Sprintf("%s   %.0fV   %dh",
-				i18n.T("label.eff", g.Efficiency), g.PowerDraw, g.DurabilityHours)),
+				i18n.T("label.eff", game.FmtBTC(g.Efficiency*game.MiningScale)), g.PowerDraw, g.DurabilityHours)),
 		))
 	}
 

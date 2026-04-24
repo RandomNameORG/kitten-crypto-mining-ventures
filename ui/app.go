@@ -433,7 +433,7 @@ func (a App) renderHeader() string {
 	title := TitleStyle.Render(fmt.Sprintf("%s — %s", i18n.T("app.title"), a.state.KittenName)) + diffBadge
 
 	extras := []string{
-		BTCStyle.Render(formatBTC(a.state.BTC)),
+		BTCStyle.Render(game.FmtBTC(a.state.BTC)),
 		DimStyle.Render(i18n.T("hdr.tp", a.state.TechPoint)),
 		DimStyle.Render(i18n.T("hdr.rep", a.state.Reputation)),
 		DimStyle.Render(i18n.T("hdr.frags", a.state.ResearchFrags)),
@@ -518,8 +518,8 @@ func (a App) renderDifficultyPicker() string {
 		} else {
 			title = DimStyle.Render(title)
 		}
-		meta := DimStyle.Render(fmt.Sprintf("(earn ×%.2f · bills ×%.2f · threats ×%.2f · ₿%.0f start)",
-			d.EarnMult, d.BillMult, d.ThreatMult, d.StarterCash))
+		meta := DimStyle.Render(fmt.Sprintf("(earn ×%.2f · bills ×%.2f · threats ×%.2f · %s start)",
+			d.EarnMult, d.BillMult, d.ThreatMult, game.FmtBTC(d.StarterCash)))
 		lines = append(lines, cursor+title+"   "+meta)
 		lines = append(lines, DimStyle.Render("    "+d.LocalDesc()))
 		lines = append(lines, "")

@@ -126,7 +126,7 @@ func (a App) notification() *notification {
 		s := a.showOfflineSummary
 		body := i18n.T("offline.body",
 			formatDuration(s.GapSeconds),
-			s.BTCGained)
+			game.FmtBTC(s.BTCGained))
 		if s.Capped {
 			body += "\n" + i18n.T("offline.capped")
 		}
@@ -276,12 +276,12 @@ func (a App) renderRoomPanel(def data.RoomDef, width int, compact bool) string {
 	}
 
 	lines = append(lines, fmt.Sprintf("%s   %s",
-		VoltStyle.Render(i18n.T("dash.line.power", volt, bill, nextBill)),
+		VoltStyle.Render(i18n.T("dash.line.power", volt, game.FmtBTC(bill), nextBill)),
 		DimStyle.Render(i18n.T("dash.slots_of", len(gpus), def.Slots))))
 	lines = append(lines, "  "+powerHint)
 	lines = append(lines, HeatStyle.Render(i18n.T("dash.heat.label", heat, maxHeat, heatDelta, heatTickSec)))
 	lines = append(lines, "  "+renderHeatBar(heatFrac, barW)+"  "+zoneStyle.Render(i18n.T(zoneLabel)))
-	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash2", earn, net)))
+	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash2", game.FmtBTC(earn), game.FmtBTCSigned(net))))
 	if !compact {
 		lines = append(lines, "")
 	}
@@ -408,8 +408,8 @@ func (a App) renderKeyInfoPanel(def data.RoomDef, width int, compact bool) strin
 	}
 	lines := []string{
 		TitleStyle.Render(truncate(i18n.T("dash.location", def.LocalName()), innerW)),
-		VoltStyle.Render(fmt.Sprintf("%s %.0fW  −₿%.2f/s", IconBolt, volt, bill)),
-		netStyle.Render(fmt.Sprintf("%s net %+.2f/s", IconChartUp, net)),
+		VoltStyle.Render(fmt.Sprintf("%s %.0fW  −%s/s", IconBolt, volt, game.FmtBTC(bill))),
+		netStyle.Render(fmt.Sprintf("%s net %s/s", IconChartUp, game.FmtBTCSigned(net))),
 		heatStyle.Render(fmt.Sprintf("%s %.0f/%.0f %+.1f/s", IconThermo, heat, maxHeat, heatDelta)),
 		renderHeatBar(heatFrac, barW),
 		impactStyle.Render(truncate(i18n.T(impactKey), innerW)),
@@ -674,7 +674,7 @@ func (a App) overlayOfflineSummary(content string) string {
 	}
 	body := i18n.T("offline.body",
 		formatDuration(s.GapSeconds),
-		s.BTCGained)
+		game.FmtBTC(s.BTCGained))
 	if s.Capped {
 		body += "\n" + i18n.T("offline.capped")
 	}

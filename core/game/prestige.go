@@ -63,7 +63,7 @@ func (s *State) RetireReward() int {
 // Returns the NEW state (to swap in) and the LP awarded.
 func (s *State) Retire() (*State, int, error) {
 	if !s.CanRetire() {
-		return nil, 0, fmt.Errorf("need ₿%.0f lifetime earnings; have ₿%.0f", PrestigeThreshold, s.LifetimeEarned)
+		return nil, 0, fmt.Errorf("need %s lifetime earnings; have %s", FmtBTC(PrestigeThreshold), FmtBTC(s.LifetimeEarned))
 	}
 	lp := s.RetireReward()
 	legacy := LoadLegacy()

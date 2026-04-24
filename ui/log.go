@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/game"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
@@ -47,7 +48,7 @@ func (a App) renderHelpView() string {
 		KeyHint.Render(i18n.T("help.g.save")),
 		KeyHint.Render(i18n.T("help.g.pump")),
 		KeyHint.Render(i18n.T("help.g.lang")),
-		KeyHint.Render(i18n.T("help.g.vent")),
+		KeyHint.Render(i18n.T("help.g.vent", "-"+game.FmtBTCInt(game.EmergencyVentCost))),
 		KeyHint.Render(i18n.T("help.g.quit")),
 		"",
 		HeaderStyle.Render(i18n.T("help.defense")),
