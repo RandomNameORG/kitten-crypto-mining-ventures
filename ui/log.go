@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 func (a App) renderLogView() string {

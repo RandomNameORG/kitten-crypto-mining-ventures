@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // Tick advances the simulation forward to `now`. It's safe to call every

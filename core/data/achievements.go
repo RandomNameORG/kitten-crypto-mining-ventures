@@ -1,6 +1,6 @@
 package data
 
-import "github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
+import "github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 
 type AchievementDef struct {
 	ID     string

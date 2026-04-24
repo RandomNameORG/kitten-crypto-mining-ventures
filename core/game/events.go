@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
 )
 
 // MaybeFireEvent rolls once to decide if an event should fire now, and if so
