@@ -51,6 +51,28 @@ func runSimWithProbe(t *testing.T, seed int64, ticks int, probe func(i int, s *S
 	return s
 }
 
+// runSimDifficulty is runSimWithProbe but lets the caller pick the difficulty
+// tier. Used to compare two runs on the same seed under different knobs.
+func runSimDifficulty(t *testing.T, seed int64, ticks int, diffID string, probe func(i int, s *State)) *State {
+	t.Helper()
+	SeedRNG(seed)
+	s := NewState("sim-test")
+	s.SetDifficulty(diffID)
+	s.LastTickUnix = simTestBaseUnix
+	s.LastBillUnix = simTestBaseUnix
+	s.LastWagesUnix = simTestBaseUnix
+	s.LastMarketTickUnix = simTestBaseUnix
+	s.StartedUnix = simTestBaseUnix
+	for i := 1; i <= ticks; i++ {
+		s.Tick(simTestBaseUnix + int64(i))
+		_ = s.MaybeFireEvent()
+		if probe != nil {
+			probe(i, s)
+		}
+	}
+	return s
+}
+
 // TestSimLongRunSanity catches the class of regression the simulator exists
 // for: a broken tick path that silently produces NaN earnings, leaves the
 // clock stuck, or skips the billing subsystem entirely.
@@ -257,5 +279,69 @@ func TestSimMarketPriceInvariants(t *testing.T) {
 	// if min and max are both within ±0.01 of 1.0 something's clamping it.
 	if maxSeen-minSeen < 0.02 {
 		t.Errorf("MarketPrice range %.4f–%.4f is suspiciously tight — drift may be neutered", minSeen, maxSeen)
+	}
+}
+
+// TestSimCryptoWinterWiderSwingsAndMoreEvents verifies the two new
+// difficulty knobs actually change gameplay: crypto_winter must exhibit a
+// wider realized market-price range (MarketVolatilityMult=2.0) and roll more
+// successful event fires (EventFreqMult=1.5) than normal over the same 6h at
+// the same seed. Same seed across runs isolates the difference to the
+// multipliers, not RNG. Also asserts MarketPrice stays finite throughout the
+// winter run since the widened clamp band is a new code path.
+//
+// Per-tick, the probe zeroes EventCooldown *after* MaybeFireEvent has
+// already run — so the count of fires is accurate, but the NEXT tick sees a
+// clean cooldown map. This is load-bearing: MaybeFireEvent's cooldown
+// bookkeeping uses wall-clock time.Now() (see events.go), which in a rapid
+// sim means every event goes on effectively-permanent cooldown after one
+// fire. Without this reset, total fires saturates at the
+// eligible-event count and hides the effect of EventFreqMult entirely.
+func TestSimCryptoWinterWiderSwingsAndMoreEvents(t *testing.T) {
+	const ticks = 21600 // 6 virtual hours
+	const seed = int64(1)
+
+	type runStats struct{ min, max float64; fires, prevEvents int }
+
+	runDiff := func(diff string) *runStats {
+		p := &runStats{min: 1.0, max: 1.0}
+		withTempHome(t)
+		runSimDifficulty(t, seed, ticks, diff, func(_ int, s *State) {
+			if math.IsNaN(s.MarketPrice) || math.IsInf(s.MarketPrice, 0) {
+				t.Fatalf("%s MarketPrice non-finite: %v", diff, s.MarketPrice)
+			}
+			if s.MarketPrice < p.min {
+				p.min = s.MarketPrice
+			}
+			if s.MarketPrice > p.max {
+				p.max = s.MarketPrice
+			}
+			cur := 0
+			for _, v := range s.EventsByCategory {
+				cur += v
+			}
+			if cur > p.prevEvents {
+				p.fires += cur - p.prevEvents
+				p.prevEvents = cur
+			}
+			for k := range s.EventCooldown {
+				delete(s.EventCooldown, k)
+			}
+		})
+		return p
+	}
+
+	normal := runDiff("normal")
+	winter := runDiff("crypto_winter")
+
+	normalRange := normal.max - normal.min
+	winterRange := winter.max - winter.min
+	if winterRange <= normalRange {
+		t.Errorf("crypto_winter market range (%.4f) not wider than normal (%.4f) — MarketVolatilityMult not wired",
+			winterRange, normalRange)
+	}
+	if winter.fires <= normal.fires {
+		t.Errorf("crypto_winter fired %d events, normal fired %d — EventFreqMult not wired",
+			winter.fires, normal.fires)
 	}
 }

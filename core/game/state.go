@@ -667,6 +667,28 @@ func (s *State) DifficultyBillMult() float64 { return s.Diff().BillMult }
 // DifficultyThreatMult is the event-fire-probability multiplier.
 func (s *State) DifficultyThreatMult() float64 { return s.Diff().ThreatMult }
 
+// DifficultyMarketVolatilityMult scales the Gaussian drift kick and widens
+// the price clamp band for the active difficulty. 1.0 is the default; higher
+// values produce wilder market swings.
+func (s *State) DifficultyMarketVolatilityMult() float64 {
+	m := s.Diff().MarketVolatilityMult
+	if m <= 0 {
+		return 1.0
+	}
+	return m
+}
+
+// DifficultyEventFreqMult multiplies the per-tick event-fire probability.
+// 1.0 is the default; higher values mean events resolve more often. Separate
+// from ThreatMult so difficulties can tune cadence and severity independently.
+func (s *State) DifficultyEventFreqMult() float64 {
+	m := s.Diff().EventFreqMult
+	if m <= 0 {
+		return 1.0
+	}
+	return m
+}
+
 // SetDifficulty writes the chosen difficulty to state, applies the starter
 // balance, and logs the choice. Called once from the splash picker.
 func (s *State) SetDifficulty(id string) {
