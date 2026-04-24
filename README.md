@@ -8,7 +8,17 @@ The idea is you can leave it open in a `tmux` pane and come back to richer cats.
 
 ## 🎮 Running it
 
-### Option A — pre-built binary (no Go needed)
+### Option A — Homebrew (macOS / Linux)
+
+```bash
+brew tap RandomNameORG/meowmine https://github.com/RandomNameORG/kitten-crypto-mining-ventures
+brew install meowmine
+meow            # or: meow-ssh
+```
+
+The formula lives at [`Formula/meowmine.rb`](Formula/meowmine.rb). Installed commands are `meow` (local TUI) and `meow-ssh` (SSH server). The formula pulls the pre-built binaries from the matching GitHub Release, so no Go toolchain is required.
+
+### Option B — pre-built binary (no Go needed)
 
 Download from the [**latest release**](https://github.com/RandomNameORG/kitten-crypto-mining-ventures/releases/latest):
 
@@ -31,7 +41,7 @@ xattr -d com.apple.quarantine meowmine-darwin-*
 .\meowmine-windows-amd64.exe
 ```
 
-### Option B — build from source
+### Option C — build from source
 
 Requires **Go 1.22+**.
 
