@@ -9,38 +9,36 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/game"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 func (a App) renderPrestigeView() string {
 	legacy := game.LoadLegacy()
-	header := TitleStyle.Render("🎓 Prestige — Retire & Restart")
+	header := TitleStyle.Render(i18n.T("prestige.title"))
 	if !a.state.HasUnlock("prestige") {
 		return strings.Join([]string{
 			header, "",
-			DimStyle.Render("Prestige is locked. Unlock 'Venture Capital' in the Mogul skill lane."),
+			DimStyle.Render(i18n.T("prestige.locked")),
 		}, "\n")
 	}
-	help := DimStyle.Render("[↑/↓] select perk   [p] buy perk   [R] RETIRE (press twice to confirm)   [esc]/[1] back")
+	help := DimStyle.Render(i18n.T("prestige.help"))
 
-	// Status.
-	lines := []string{HeaderStyle.Render("Status")}
-	lines = append(lines, fmt.Sprintf("  lifetime earned: $%.0f / $%.0f", a.state.LifetimeEarned, game.PrestigeThreshold))
+	lines := []string{HeaderStyle.Render(i18n.T("prestige.status"))}
+	lines = append(lines, i18n.T("prestige.lifetime", a.state.LifetimeEarned, game.PrestigeThreshold))
 	reward := a.state.RetireReward()
 	canRetire := a.state.CanRetire()
-	status := DimStyle.Render("not eligible")
+	status := DimStyle.Render(i18n.T("prestige.eligible_no"))
 	if canRetire {
-		status = lipgloss.NewStyle().Foreground(OppGreen).Render("ELIGIBLE")
+		status = lipgloss.NewStyle().Foreground(OppGreen).Render(i18n.T("prestige.eligible_yes"))
 	}
-	lines = append(lines, fmt.Sprintf("  retirement status: %s", status))
-	lines = append(lines, fmt.Sprintf("  retire reward: %d LP", reward))
+	lines = append(lines, i18n.T("prestige.eligible_row", status))
+	lines = append(lines, i18n.T("prestige.reward", reward))
 	lines = append(lines, "")
-	lines = append(lines, fmt.Sprintf("  bank balance: %d LP total · %d spent · %d available",
-		legacy.TotalLP, legacy.SpentLP, legacy.LPAvailable()))
+	lines = append(lines, i18n.T("prestige.bank", legacy.TotalLP, legacy.SpentLP, legacy.LPAvailable()))
 	statusPanel := PanelStyle.Width(90).Render(strings.Join(lines, "\n"))
 
-	// Perks.
 	perks := game.LegacyPerks()
-	perkLines := []string{HeaderStyle.Render("Legacy Perks")}
+	perkLines := []string{HeaderStyle.Render(i18n.T("prestige.perks"))}
 	for i, p := range perks {
 		cursor := "  "
 		if i == a.prestigeCursor {
@@ -51,7 +49,7 @@ func (a App) renderPrestigeView() string {
 		meta := fmt.Sprintf("%d LP", p.Cost)
 		if !available {
 			label = DimStyle.Render("✓ " + label)
-			meta = "owned / maxed"
+			meta = i18n.T("prestige.perk_owned")
 		} else if legacy.LPAvailable() >= p.Cost {
 			label = MoneyStyle.Render(label)
 		}
@@ -81,30 +79,29 @@ func (a App) handlePrestigeKey(key string) (tea.Model, tea.Cmd) {
 		if a.prestigeCursor < len(perks) {
 			sel := perks[a.prestigeCursor]
 			if err := game.BuyLegacyPerk(sel.ID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("🎁 perk purchased")
+				a = a.withStatus(i18n.T("status.perk_bought"))
 			}
 		}
 	case "R":
 		if !a.state.CanRetire() {
-			a = a.withStatus("❌ not eligible to retire yet")
+			a = a.withStatus(i18n.T("status.retire_deny"))
 			return a, nil
 		}
-		// Double-press confirmation: first R arms for 5 seconds, second R commits.
 		if a.retireArmedUntil.IsZero() || time.Now().After(a.retireArmedUntil) {
 			a.retireArmedUntil = time.Now().Add(5 * time.Second)
-			a = a.withStatus("⚠ press [R] again within 5s to confirm retirement")
+			a = a.withStatus(i18n.T("status.retire_arm"))
 			return a, nil
 		}
 		a.retireArmedUntil = time.Time{}
 		fresh, lp, err := a.state.Retire()
 		if err != nil {
-			a = a.withStatus("❌ " + err.Error())
+			a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 		} else {
 			a.state = fresh
 			_ = a.saveNow()
-			a = a.withStatus(fmt.Sprintf("🐾 retired. +%d LP banked. New run begins.", lp))
+			a = a.withStatus(i18n.T("status.retired", lp))
 			a.view = viewDashboard
 		}
 	case "esc":

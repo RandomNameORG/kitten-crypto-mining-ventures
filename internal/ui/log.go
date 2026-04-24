@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 func (a App) renderLogView() string {
 	log := a.state.Log
-	lines := []string{TitleStyle.Render("📜 Full Event Log")}
-	lines = append(lines, DimStyle.Render("[esc]/[1] back"))
+	lines := []string{TitleStyle.Render(i18n.T("log.title"))}
+	lines = append(lines, DimStyle.Render(i18n.T("log.help")))
 	lines = append(lines, "")
 	if len(log) == 0 {
-		lines = append(lines, DimStyle.Render("  (empty)"))
+		lines = append(lines, DimStyle.Render(i18n.T("log.empty")))
 	}
-	// Print most recent first.
 	for i := len(log) - 1; i >= 0 && i > len(log)-50; i-- {
 		e := log[i]
 		ts := time.Unix(e.Time, 0).Format("15:04:05")
@@ -26,30 +27,31 @@ func (a App) renderLogView() string {
 
 func (a App) renderHelpView() string {
 	lines := []string{
-		TitleStyle.Render("🐾 Help"),
+		TitleStyle.Render(i18n.T("help.title")),
 		"",
-		HeaderStyle.Render("Views"),
-		KeyHint.Render("[1]") + "  dashboard — GPU rack + live event log",
-		KeyHint.Render("[2]") + "  store — buy new GPUs (shipping delay)",
-		KeyHint.Render("[3]") + "  your GPUs — upgrade · repair · scrap",
-		KeyHint.Render("[4]") + "  rooms — unlock · switch · defense upgrades",
-		KeyHint.Render("[5]") + "  skills — spend TechPoints",
-		KeyHint.Render("[6]") + "  log — full history",
-		KeyHint.Render("[7]") + "  mercs — hire · fire · bribe",
-		KeyHint.Render("[8]") + "  lab — research custom MEOWCore GPUs",
-		KeyHint.Render("[9]") + "  prestige — retire & buy legacy perks",
+		HeaderStyle.Render(i18n.T("help.views")),
+		KeyHint.Render(i18n.T("help.view.1")),
+		KeyHint.Render(i18n.T("help.view.2")),
+		KeyHint.Render(i18n.T("help.view.3")),
+		KeyHint.Render(i18n.T("help.view.4")),
+		KeyHint.Render(i18n.T("help.view.5")),
+		KeyHint.Render(i18n.T("help.view.6")),
+		KeyHint.Render(i18n.T("help.view.7")),
+		KeyHint.Render(i18n.T("help.view.8")),
+		KeyHint.Render(i18n.T("help.view.9")),
 		"",
-		HeaderStyle.Render("Global"),
-		KeyHint.Render("[space]") + "  pause / resume",
-		KeyHint.Render("[s]") + "       save (dashboard only — other views reuse 's')",
-		KeyHint.Render("[p]") + "       Pump & Dump ability (dashboard, if unlocked)",
-		KeyHint.Render("[q]") + "       quit (auto-saves)",
+		HeaderStyle.Render(i18n.T("help.global")),
+		KeyHint.Render(i18n.T("help.g.space")),
+		KeyHint.Render(i18n.T("help.g.save")),
+		KeyHint.Render(i18n.T("help.g.pump")),
+		KeyHint.Render(i18n.T("help.g.lang")),
+		KeyHint.Render(i18n.T("help.g.quit")),
 		"",
-		HeaderStyle.Render("Room defense (from rooms view)"),
-		DimStyle.Render("[l] lock · [c] CCTV · [w] wiring · [o] cooling · [a] armor"),
+		HeaderStyle.Render(i18n.T("help.defense")),
+		DimStyle.Render(i18n.T("help.defense_row")),
 		"",
-		DimStyle.Render("Tip: it's an incremental game — feel free to leave it running in tmux."),
-		DimStyle.Render("Offline progress catches up on relaunch (capped at 8h)."),
+		DimStyle.Render(i18n.T("help.tip.idle")),
+		DimStyle.Render(i18n.T("help.tip.offline")),
 	}
 	return PanelStyle.Width(70).Render(strings.Join(lines, "\n"))
 }

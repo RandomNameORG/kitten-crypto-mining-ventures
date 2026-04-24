@@ -8,9 +8,10 @@ import (
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/game"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
-// gpuDisplayName returns a human name for any GPU (catalog or MEOWCore).
+// gpuDisplayName returns the localized name for any GPU (catalog or MEOWCore).
 func gpuDisplayName(s *game.State, g *game.GPU) string {
 	if g.BlueprintID != "" {
 		if bp := s.BlueprintByID(g.BlueprintID); bp != nil {
@@ -19,19 +20,19 @@ func gpuDisplayName(s *game.State, g *game.GPU) string {
 		return "MEOWCore"
 	}
 	if def, ok := data.GPUByID(g.DefID); ok {
-		return def.Name
+		return def.LocalName()
 	}
 	return g.DefID
 }
 
 func (a App) renderGPUsView() string {
 	gpus := a.state.GPUs
-	lines := []string{TitleStyle.Render("🖥  Your GPUs")}
-	lines = append(lines, DimStyle.Render("↑/↓ select   [u] upgrade   [r] repair   [s] scrap   [esc]/[1] back"))
+	lines := []string{TitleStyle.Render(i18n.T("gpus.title"))}
+	lines = append(lines, DimStyle.Render(i18n.T("gpus.help")))
 	lines = append(lines, "")
 
 	if len(gpus) == 0 {
-		lines = append(lines, DimStyle.Render("  (no GPUs yet — visit the store)"))
+		lines = append(lines, DimStyle.Render(i18n.T("gpus.empty")))
 	}
 	for i, g := range gpus {
 		marker := "  "
@@ -39,7 +40,7 @@ func (a App) renderGPUsView() string {
 			marker = TitleStyle.Render("▶ ")
 		}
 		roomDef, _ := data.RoomByID(g.Room)
-		roomName := roomDef.Name
+		roomName := roomDef.LocalName()
 		if roomName == "" {
 			roomName = g.Room
 		}
@@ -79,25 +80,25 @@ func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {
 	case "u":
 		if a.gpusCursor < len(gpus) {
 			if err := a.state.UpgradeGPU(gpus[a.gpusCursor].InstanceID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("⚙️  upgrade attempted")
+				a = a.withStatus(i18n.T("status.upgrade"))
 			}
 		}
 	case "r":
 		if a.gpusCursor < len(gpus) {
 			if err := a.state.RepairGPU(gpus[a.gpusCursor].InstanceID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("🔧 repaired")
+				a = a.withStatus(i18n.T("status.repaired"))
 			}
 		}
 	case "s":
 		if a.gpusCursor < len(gpus) {
 			if err := a.state.SellGPU(gpus[a.gpusCursor].InstanceID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("💵 sold")
+				a = a.withStatus(i18n.T("status.sold"))
 				if a.gpusCursor > 0 {
 					a.gpusCursor--
 				}

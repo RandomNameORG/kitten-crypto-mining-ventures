@@ -7,14 +7,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 func (a App) renderDashboard() string {
 	roomDef, _ := data.RoomByID(a.state.CurrentRoom)
-
 	left := a.renderRoomPanel(roomDef)
 	right := a.renderLogPanel(10)
-
 	cols := lipgloss.JoinHorizontal(lipgloss.Top, left, "  ", right)
 	return lipgloss.NewStyle().Padding(0, 1).Render(cols)
 }
@@ -28,9 +27,8 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 	gpus := a.state.GPUsInRoom(def.ID)
 	lines := []string{}
 
-	header := TitleStyle.Render(fmt.Sprintf("📍 %s", def.Name))
-	lines = append(lines, header)
-	lines = append(lines, DimStyle.Render(def.Flavor))
+	lines = append(lines, TitleStyle.Render(i18n.T("dash.location", def.LocalName())))
+	lines = append(lines, DimStyle.Render(def.LocalFlavor()))
 	lines = append(lines, "")
 
 	var volt float64
@@ -41,17 +39,12 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 		_, pow, _, _ := a.state.GPUStats(g)
 		volt += pow
 	}
-	meters := fmt.Sprintf("%s   %s   %s",
-		VoltStyle.Render(fmt.Sprintf("⚡ %.0f V/s draw", volt)),
-		HeatStyle.Render(fmt.Sprintf("🌡  %.0f°C", heat)),
-		DimStyle.Render(fmt.Sprintf("slots %d/%d", len(gpus), def.Slots)),
-	)
-	lines = append(lines, meters)
+	lines = append(lines, i18n.T("dash.meters", volt, heat, len(gpus), def.Slots))
 	lines = append(lines, "")
 
-	lines = append(lines, HeaderStyle.Render("GPU Rack"))
+	lines = append(lines, HeaderStyle.Render(i18n.T("dash.rack")))
 	if len(gpus) == 0 {
-		lines = append(lines, DimStyle.Render("  (empty — press [2] to go to the store)"))
+		lines = append(lines, DimStyle.Render(i18n.T("dash.empty_hint")))
 	}
 	for i := 0; i < def.Slots; i++ {
 		if i < len(gpus) {
@@ -81,32 +74,29 @@ func (a App) renderRoomPanel(def data.RoomDef) string {
 			line := fmt.Sprintf("  %d. %s %s%s  %s", i+1, indicator, gpuDisplayName(a.state, g), upMark, DimStyle.Render(statusText))
 			lines = append(lines, line)
 		} else {
-			lines = append(lines, DimStyle.Render(fmt.Sprintf("  %d. (empty)", i+1)))
+			lines = append(lines, DimStyle.Render(fmt.Sprintf(i18n.T("dash.slot_empty"), i+1)))
 		}
 	}
-
-	width := 52
-	return PanelStyle.Width(width).Render(strings.Join(lines, "\n"))
+	return PanelStyle.Width(52).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) renderLogPanel(maxLines int) string {
 	log := a.state.Log
-	lines := []string{TitleStyle.Render("📜 Event Log")}
+	lines := []string{TitleStyle.Render(i18n.T("dash.log_title"))}
 
 	start := 0
 	if len(log) > maxLines {
 		start = len(log) - maxLines
 	}
 	if start == len(log) {
-		lines = append(lines, DimStyle.Render("  (quiet so far)"))
+		lines = append(lines, DimStyle.Render(i18n.T("dash.log_quiet")))
 	}
 	for i := start; i < len(log); i++ {
 		entry := log[i]
 		style := CategoryStyle(entry.Category)
 		lines = append(lines, "  "+style.Render(truncate(entry.Text, 44)))
 	}
-	width := 50
-	return PanelStyle.Width(width).Render(strings.Join(lines, "\n"))
+	return PanelStyle.Width(50).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) overlayEvent(content string) string {
@@ -118,14 +108,13 @@ func (a App) overlayEvent(content string) string {
 		Width(52).
 		BorderForeground(KittenPink).
 		Render(strings.Join([]string{
-			TitleStyle.Render(fmt.Sprintf("%s  %s", e.Emoji, e.Name)),
+			TitleStyle.Render(fmt.Sprintf("%s  %s", e.Emoji, e.LocalName())),
 			"",
-			wrap(e.Text, 48),
+			wrap(e.LocalText(), 48),
 			"",
-			DimStyle.Render("[press any key to dismiss]"),
+			DimStyle.Render(i18n.T("event.dismiss")),
 		}, "\n"))
 
-	// Simple centered overlay approximation: stack below content with a blank.
 	return lipgloss.JoinVertical(lipgloss.Left,
 		content,
 		lipgloss.NewStyle().Padding(1, 2).Render(box),

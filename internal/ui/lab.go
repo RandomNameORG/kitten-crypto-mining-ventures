@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/game"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 // boostCombos enumerates all 3 valid 2-of-3 boost picks.
@@ -18,19 +19,18 @@ var boostCombos = [][]string{
 }
 
 func (a App) renderLabView() string {
-	header := TitleStyle.Render("🔬 Lab — Custom MEOWCore Research")
+	header := TitleStyle.Render(i18n.T("lab.title"))
 	if !a.state.HasUnlock("rd") {
 		return strings.Join([]string{
 			header, "",
-			DimStyle.Render("R&D is locked. Unlock 'MEOWCore Blueprint' in the Engineer skill lane first."),
+			DimStyle.Render(i18n.T("lab.locked")),
 		}, "\n")
 	}
-	help := DimStyle.Render("[t] cycle tier   [b] cycle boost combo   [r] start research   [↑/↓] select blueprint   [p] print   [esc]/[1] back")
+	help := DimStyle.Render(i18n.T("lab.help"))
 
-	// Active research bar.
-	active := []string{HeaderStyle.Render("Active research")}
+	active := []string{HeaderStyle.Render(i18n.T("lab.active"))}
 	if a.state.ActiveResearch == nil {
-		active = append(active, DimStyle.Render("  (none)"))
+		active = append(active, DimStyle.Render(i18n.T("lab.active_none")))
 	} else {
 		ar := a.state.ActiveResearch
 		pct := a.state.ResearchProgress()
@@ -39,7 +39,6 @@ func (a App) renderLabView() string {
 			ar.BlueprintTier, strings.Join(ar.Boosts, "+"), bar, int(pct*100)))
 	}
 
-	// Plan next research.
 	tiers := game.ResearchTiers()
 	var curTier *game.ResearchTierInfo
 	for i := range tiers {
@@ -48,20 +47,18 @@ func (a App) renderLabView() string {
 			break
 		}
 	}
-	combo := boostCombos[a.labBoostCombo()%len(boostCombos)]
-	plan := []string{HeaderStyle.Render("Plan next research")}
+	combo := boostCombos[a.labBoost1%len(boostCombos)]
+	plan := []string{HeaderStyle.Render(i18n.T("lab.plan"))}
 	if curTier != nil {
-		plan = append(plan, fmt.Sprintf("  Tier %d — %s", curTier.Tier, curTier.Name))
-		plan = append(plan, DimStyle.Render(fmt.Sprintf("  costs: $%d + %d frags  ·  duration: %dm",
-			curTier.Money, curTier.Frags, curTier.Duration/60)))
-		plan = append(plan, fmt.Sprintf("  boosts: %s + %s", combo[0], combo[1]))
-		plan = append(plan, DimStyle.Render("  (press [r] to start)"))
+		plan = append(plan, i18n.T("lab.plan_tier", curTier.Tier, curTier.Name))
+		plan = append(plan, DimStyle.Render(i18n.T("lab.plan_cost", curTier.Money, curTier.Frags, curTier.Duration/60)))
+		plan = append(plan, i18n.T("lab.plan_boosts", combo[0], combo[1]))
+		plan = append(plan, DimStyle.Render(i18n.T("lab.plan_hint")))
 	}
 
-	// Blueprints.
-	bpLines := []string{HeaderStyle.Render(fmt.Sprintf("Blueprints (%d) — [p] to print selected", len(a.state.Blueprints)))}
+	bpLines := []string{HeaderStyle.Render(i18n.T("lab.bp_title", len(a.state.Blueprints)))}
 	if len(a.state.Blueprints) == 0 {
-		bpLines = append(bpLines, DimStyle.Render("  (none researched yet)"))
+		bpLines = append(bpLines, DimStyle.Render(i18n.T("lab.bp_empty")))
 	}
 	for i, bp := range a.state.Blueprints {
 		marker := "  "
@@ -71,8 +68,7 @@ func (a App) renderLabView() string {
 		eff, pow, heat, dur := game.BlueprintStats(bp)
 		bpLines = append(bpLines, fmt.Sprintf("%s[%s] tier %d  %s",
 			marker, bp.ID, bp.Tier, strings.Join(bp.Boosts, "+")))
-		bpLines = append(bpLines, DimStyle.Render(fmt.Sprintf("    eff %.4f ₿/s · %.0fV · %.0f°C · %.0fh durability",
-			eff, pow, heat, dur)))
+		bpLines = append(bpLines, DimStyle.Render(i18n.T("label.bp_line", eff, pow, heat, dur)))
 	}
 
 	panel1 := PanelStyle.Width(90).Render(strings.Join(active, "\n"))
@@ -83,11 +79,6 @@ func (a App) renderLabView() string {
 		header, help, "",
 		lipgloss.JoinVertical(lipgloss.Left, panel1, panel2, panel3),
 	}, "\n")
-}
-
-// labBoostCombo is stored in labBoost1 (we reuse the field as the combo index).
-func (a App) labBoostCombo() int {
-	return a.labBoost1
 }
 
 func (a App) handleLabKey(key string) (tea.Model, tea.Cmd) {
@@ -107,17 +98,17 @@ func (a App) handleLabKey(key string) (tea.Model, tea.Cmd) {
 	case "r":
 		combo := boostCombos[a.labBoost1%len(boostCombos)]
 		if err := a.state.StartResearch(a.labTier, combo); err != nil {
-			a = a.withStatus("❌ " + err.Error())
+			a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 		} else {
-			a = a.withStatus("🔬 research started")
+			a = a.withStatus(i18n.T("status.research_go"))
 		}
 	case "p":
 		if a.labCursor < len(a.state.Blueprints) {
 			bp := a.state.Blueprints[a.labCursor]
 			if err := a.state.PrintMEOWCore(bp.ID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("🛠 printed MEOWCore")
+				a = a.withStatus(i18n.T("status.printed"))
 			}
 		}
 	case "esc":
@@ -126,7 +117,6 @@ func (a App) handleLabKey(key string) (tea.Model, tea.Cmd) {
 	return a, nil
 }
 
-// progressBar renders a simple ascii progress bar.
 func progressBar(pct float64, width int) string {
 	if pct < 0 {
 		pct = 0
@@ -135,6 +125,5 @@ func progressBar(pct float64, width int) string {
 		pct = 1
 	}
 	filled := int(float64(width) * pct)
-	s := "[" + strings.Repeat("█", filled) + strings.Repeat("░", width-filled) + "]"
-	return s
+	return "[" + strings.Repeat("█", filled) + strings.Repeat("░", width-filled) + "]"
 }

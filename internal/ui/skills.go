@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -9,11 +8,11 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 var laneOrder = []string{"engineer", "mogul", "hacker"}
 
-// skillItem is one row in the flattened list used for cursor navigation.
 type skillItem struct {
 	lane string
 	def  data.SkillDef
@@ -31,18 +30,18 @@ func skillList() []skillItem {
 
 func (a App) renderSkillsView() string {
 	items := skillList()
-	header := TitleStyle.Render("🧠 Skill Tree") +
-		"   " + DimStyle.Render(fmt.Sprintf("TP: %d", a.state.TechPoint))
-	help := DimStyle.Render("↑/↓ select   [u]/[enter] unlock   [esc]/[1] back")
+	header := TitleStyle.Render(i18n.T("skills.title")) +
+		"   " + DimStyle.Render(i18n.T("skills.tp_count", a.state.TechPoint))
+	help := DimStyle.Render(i18n.T("skills.help"))
 
-	laneLabel := map[string]string{
-		"engineer": "🔧 Engineer",
-		"mogul":    "💰 Mogul",
-		"hacker":   "🕶 Hacker",
+	laneKey := map[string]string{
+		"engineer": "skills.lane.engineer",
+		"mogul":    "skills.lane.mogul",
+		"hacker":   "skills.lane.hacker",
 	}
 
 	col := func(lane string) string {
-		lines := []string{TitleStyle.Render(laneLabel[lane])}
+		lines := []string{TitleStyle.Render(i18n.T(laneKey[lane]))}
 		for i, it := range items {
 			if it.lane != lane {
 				continue
@@ -53,18 +52,18 @@ func (a App) renderSkillsView() string {
 			}
 			owned := a.state.HasSkill(it.def.ID)
 			gateStyle := DimStyle
-			label := it.def.Name
-			meta := fmt.Sprintf("%s TP", strconv.Itoa(it.def.Cost))
+			label := it.def.LocalName()
+			meta := strconv.Itoa(it.def.Cost) + " TP"
 			if owned {
-				label = lipgloss.NewStyle().Foreground(OppGreen).Render("✓ " + it.def.Name)
-				meta = "owned"
+				label = lipgloss.NewStyle().Foreground(OppGreen).Render("✓ " + it.def.LocalName())
+				meta = i18n.T("skills.owned")
 			} else if it.def.Prereq != "" && !a.state.HasSkill(it.def.Prereq) {
-				label = DimStyle.Render(label + " (locked)")
+				label = DimStyle.Render(label + i18n.T("skills.locked_suffix"))
 			} else if a.state.TechPoint >= it.def.Cost {
 				label = MoneyStyle.Render(label)
 			}
 			lines = append(lines, cursor+label+"  "+gateStyle.Render(meta))
-			lines = append(lines, DimStyle.Render("   "+it.def.Desc))
+			lines = append(lines, DimStyle.Render("   "+it.def.LocalDesc()))
 		}
 		return PanelStyle.Width(36).Render(strings.Join(lines, "\n"))
 	}
@@ -90,9 +89,9 @@ func (a App) handleSkillsKey(key string) (tea.Model, tea.Cmd) {
 		if a.skillsCursor < len(items) {
 			it := items[a.skillsCursor]
 			if err := a.state.UnlockSkill(it.def.ID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("✓ " + it.def.Name)
+				a = a.withStatus("✓ " + it.def.LocalName())
 			}
 		}
 	case "esc":

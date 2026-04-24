@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 // Tick advances the simulation forward to `now`. It's safe to call every
@@ -215,9 +216,9 @@ func (s *State) TogglePause() {
 	s.LastBillUnix = now
 	s.LastWagesUnix = now
 	if s.Paused {
-		s.appendLog("info", "⏸  Paused.")
+		s.appendLog("info", i18n.T("game.paused"))
 	} else {
-		s.appendLog("info", "▶️  Resumed.")
+		s.appendLog("info", i18n.T("game.resumed"))
 	}
 }
 

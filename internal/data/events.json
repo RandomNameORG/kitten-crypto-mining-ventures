@@ -2,181 +2,181 @@
   {
     "id": "petty_thief",
     "name": "Petty Thief",
+    "name_zh": "小偷来了",
     "category": "threat",
     "emoji": "🐀",
     "text": "A figure slips through the window. They eye your GPUs...",
+    "text_zh": "一个黑影从窗户翻进来，盯着你的显卡……",
     "weight": 10,
     "cooldown_sec": 180,
-    "effects": [
-      {"kind": "steal_gpu", "chance_if_no_defense": 0.45}
-    ]
+    "effects": [{"kind": "steal_gpu", "chance_if_no_defense": 0.45}]
   },
   {
     "id": "power_outage",
     "name": "Power Outage",
+    "name_zh": "市政断电",
     "category": "threat",
     "emoji": "⚡",
     "text": "The lights flicker and die. Your mining rigs go silent.",
+    "text_zh": "灯闪了一下熄灭。所有矿机陷入沉默。",
     "weight": 6,
     "cooldown_sec": 600,
-    "effects": [
-      {"kind": "pause_mining", "seconds": 120}
-    ]
+    "effects": [{"kind": "pause_mining", "seconds": 120}]
   },
   {
     "id": "nosy_neighbor",
     "name": "Nosy Neighbor",
+    "name_zh": "爱管闲事的邻居",
     "category": "social",
     "emoji": "🐶",
     "text": "Mrs. Chen from 2B says the humming is keeping her awake. She's threatening to call the cops.",
+    "text_zh": "2B 的陈阿姨说你的风扇吵得她睡不着，扬言要报警。",
     "weight": 5,
     "cooldown_sec": 600,
-    "effects": [
-      {"kind": "rep_change", "delta": -3}
-    ]
+    "effects": [{"kind": "rep_change", "delta": -3}]
   },
   {
     "id": "tech_share",
     "name": "Tech Share",
+    "name_zh": "技术分享",
     "category": "opportunity",
     "emoji": "📡",
     "text": "A friendly group-chat kitten just posted a new undervolting trick. You take notes.",
+    "text_zh": "群里一只友好的小猫刚刚分享了新的降压技巧。你记下来了。",
     "weight": 8,
     "cooldown_sec": 300,
-    "effects": [
-      {"kind": "tech_point", "delta": 1}
-    ]
+    "effects": [{"kind": "tech_point", "delta": 1}]
   },
   {
     "id": "extra_delivery",
     "name": "Mysterious Delivery",
+    "name_zh": "神秘包裹",
     "category": "opportunity",
     "emoji": "📦",
     "text": "A package with no return address. Inside: a GPU that clearly fell off a truck. Finders keepers?",
+    "text_zh": "没有寄件人的包裹。里面是一张「从卡车上掉下来的」显卡。拿了不亏？",
     "weight": 4,
     "cooldown_sec": 900,
-    "effects": [
-      {"kind": "gift_gpu", "tier": "common"}
-    ]
+    "effects": [{"kind": "gift_gpu", "tier": "common"}]
   },
   {
     "id": "btc_pump",
     "name": "BTC Pump",
+    "name_zh": "BTC 拉盘",
     "category": "opportunity",
     "emoji": "🎉",
     "text": "Somewhere, a tweet fires. BTC rockets for the next few minutes.",
+    "text_zh": "某处一条推文爆了。BTC 接下来几分钟一飞冲天。",
     "weight": 4,
     "cooldown_sec": 1200,
-    "effects": [
-      {"kind": "btc_multiplier", "factor": 1.5, "seconds": 300}
-    ]
+    "effects": [{"kind": "btc_multiplier", "factor": 1.5, "seconds": 300}]
   },
   {
     "id": "lucky_fish",
     "name": "Lucky Fish Can",
+    "name_zh": "幸运鱼罐头",
     "category": "opportunity",
     "emoji": "🐟",
     "text": "You find a forgotten tuna can in the drawer. Small morale boost. Big mining boost.",
+    "text_zh": "抽屉里发现一罐忘了的金枪鱼。士气微涨，算力大涨。",
     "weight": 5,
     "cooldown_sec": 900,
-    "effects": [
-      {"kind": "earn_multiplier", "factor": 1.20, "seconds": 600}
-    ]
+    "effects": [{"kind": "earn_multiplier", "factor": 1.20, "seconds": 600}]
   },
   {
     "id": "admin_discovery",
     "name": "The Admin Wakes Up",
+    "name_zh": "管理员醒了",
     "category": "threat",
     "emoji": "🕵",
     "text": "Footsteps in the corridor. Someone noticed the fans.",
+    "text_zh": "走廊里传来脚步声。有人注意到风扇的声音了。",
     "weight": 3,
     "cooldown_sec": 1500,
-    "effects": [
-      {"kind": "eviction_warning"}
-    ]
+    "effects": [{"kind": "eviction_warning"}]
   },
   {
     "id": "tunnel_heist",
     "name": "Underground Tunnel Heist",
+    "name_zh": "地下隧道抢劫",
     "category": "threat",
     "emoji": "🕳",
     "text": "A hole appears in the concrete floor. Well-funded enemies emerge.",
+    "text_zh": "水泥地上突然出现一个洞。装备精良的敌人从里面爬出来。",
     "weight": 2,
     "cooldown_sec": 2400,
-    "effects": [
-      {"kind": "steal_gpu", "chance_if_no_defense": 0.80, "count": 2}
-    ]
+    "effects": [{"kind": "steal_gpu", "chance_if_no_defense": 0.80, "count": 2}]
   },
   {
     "id": "pirates",
     "name": "Caribbean Pirates",
+    "name_zh": "加勒比海盗",
     "category": "crisis",
     "emoji": "🏴‍☠️",
     "text": "A dinghy pulls up to the container. Someone yells 'YARR' in a suspiciously practiced voice.",
+    "text_zh": "一艘小艇靠到集装箱边。有人用可疑熟练的嗓子喊「YARR」。",
     "weight": 2,
     "cooldown_sec": 3000,
-    "effects": [
-      {"kind": "burn_room_chance", "chance": 0.5}
-    ]
+    "effects": [{"kind": "burn_room_chance", "chance": 0.5}]
   },
   {
     "id": "street_dog",
     "name": "Stray Dog Visit",
+    "name_zh": "流浪狗来访",
     "category": "social",
     "emoji": "🐕",
     "text": "A dog wanders in, sniffs a GPU fan, and curls up nearby. Morale +1.",
+    "text_zh": "一只流浪狗溜进来，闻了闻显卡风扇，在旁边打了个盹。士气 +1。",
     "weight": 4,
     "cooldown_sec": 900,
-    "effects": [
-      {"kind": "rep_change", "delta": 1}
-    ]
+    "effects": [{"kind": "rep_change", "delta": 1}]
   },
   {
     "id": "rain_leak",
     "name": "Roof Leak",
+    "name_zh": "屋顶漏水",
     "category": "threat",
     "emoji": "💧",
     "text": "Water drips through the ceiling. One GPU is looking damp.",
+    "text_zh": "屋顶开始滴水。有一张显卡看着有点湿。",
     "weight": 3,
     "cooldown_sec": 1200,
-    "effects": [
-      {"kind": "damage_gpu", "amount": 0.15}
-    ]
+    "effects": [{"kind": "damage_gpu", "amount": 0.15}]
   },
   {
     "id": "gas_leak",
     "name": "Something Smells Off",
+    "name_zh": "味道不对",
     "category": "threat",
     "emoji": "☠️",
     "text": "A faint sweet smell. You should probably open a window.",
+    "text_zh": "一股甜腥味。你大概应该开个窗。",
     "weight": 2,
     "cooldown_sec": 1800,
-    "effects": [
-      {"kind": "pause_mining", "seconds": 60}
-    ]
+    "effects": [{"kind": "pause_mining", "seconds": 60}]
   },
   {
     "id": "typhoon",
     "name": "Typhoon",
+    "name_zh": "台风来袭",
     "category": "crisis",
     "emoji": "🌊",
     "text": "The ship pitches hard. A GPU slides off its rack.",
+    "text_zh": "船剧烈摇晃，一张显卡从架子上滑了下来。",
     "weight": 2,
     "cooldown_sec": 2400,
-    "effects": [
-      {"kind": "damage_gpu", "amount": 0.4}
-    ]
+    "effects": [{"kind": "damage_gpu", "amount": 0.4}]
   },
   {
     "id": "seagull",
     "name": "Seagull Theft",
+    "name_zh": "海鸥偷零件",
     "category": "threat",
     "emoji": "🐦",
     "text": "A seagull makes off with a GPU fan blade. Repair will take a bit.",
+    "text_zh": "一只海鸥叼走了一片风扇叶。修起来要点时间。",
     "weight": 4,
     "cooldown_sec": 900,
-    "effects": [
-      {"kind": "damage_gpu", "amount": 0.1}
-    ]
+    "effects": [{"kind": "damage_gpu", "amount": 0.1}]
   }
 ]

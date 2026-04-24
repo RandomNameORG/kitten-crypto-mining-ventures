@@ -10,6 +10,7 @@ import (
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/game"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 type viewID int
@@ -48,8 +49,8 @@ type App struct {
 	mercsOwnedCur  int // cursor in owned list
 	mercsTab       int // 0 = owned, 1 = hireable
 	labCursor      int
-	labBoost1      int // index in ResearchBoosts (reused as combo index)
-	labBoost2      int // (unused; kept so future slots can split)
+	labBoost1      int // reused as combo index
+	labBoost2      int // reserved
 	labTier        int // 1..3
 	prestigeCursor int
 
@@ -73,8 +74,6 @@ func NewApp(s *game.State) App {
 		labBoost1: 0,
 		labBoost2: 1,
 	}
-	// Anonymous save / freshly-created state with no name — open the naming
-	// overlay on first frame. Everything else pauses until they commit.
 	if s.KittenName == "" {
 		a.nameEntryActive = true
 		a.nameEntryBuf = ""
@@ -97,8 +96,6 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return a, nil
 
 	case tickMsg:
-		// Freeze sim while the name-entry overlay is up so the starter's
-		// shipping-timer doesn't tick past.
 		if !a.nameEntryActive {
 			a.state.Tick(time.Now().Unix())
 			if def := a.state.MaybeFireEvent(); def != nil {
@@ -128,12 +125,11 @@ func (a App) handleNameEntry(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "enter":
 		name := strings.TrimSpace(a.nameEntryBuf)
 		if name == "" {
-			name = "Whiskers"
+			name = i18n.T("welcome.default")
 		}
 		a.state.KittenName = name
-		a.state.AppendLog("info", fmt.Sprintf("Named kitten: %s.", name))
+		a.state.AppendLog("info", i18n.T("game.named", name))
 		a.nameEntryActive = false
-		// Reset the tick anchors so the shipping-timer countdown starts fresh.
 		now := time.Now().Unix()
 		a.state.LastTickUnix = now
 		a.state.LastBillUnix = now
@@ -141,14 +137,13 @@ func (a App) handleNameEntry(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		_ = a.saveNow()
 		return a, nil
 	case "backspace":
-		if n := len(a.nameEntryBuf); n > 0 {
-			a.nameEntryBuf = a.nameEntryBuf[:n-1]
+		if r := []rune(a.nameEntryBuf); len(r) > 0 {
+			a.nameEntryBuf = string(r[:len(r)-1])
 		}
 		return a, nil
 	default:
-		// Accept visible characters only, cap at 20.
 		r := k.Runes
-		if len(r) == 1 && r[0] >= 0x20 && r[0] < 0x7f && len(a.nameEntryBuf) < 20 {
+		if len(r) == 1 && r[0] >= 0x20 && r[0] != 0x7F && len([]rune(a.nameEntryBuf)) < 20 {
 			a.nameEntryBuf += string(r[0])
 		}
 	}
@@ -195,9 +190,13 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case " ":
 		a.state.TogglePause()
 		return a, nil
+	case "L":
+		next := a.state.CycleLang()
+		a = a.withStatus(i18n.T("status.lang", i18n.Label(next)))
+		return a, nil
 	}
 
-	// Per-view delegates (so overlapping keys resolve sensibly).
+	// View-specific.
 	switch a.view {
 	case viewStore:
 		return a.handleStoreKey(key)
@@ -215,20 +214,19 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a.handlePrestigeKey(key)
 	}
 
-	// Dashboard fallback: 's' = save.
+	// Dashboard-only fallbacks.
 	if key == "s" {
 		if err := a.saveNow(); err != nil {
-			a = a.withStatus(fmt.Sprintf("save failed: %v", err))
+			a = a.withStatus(i18n.T("status.save_failed", err))
 		} else {
-			a = a.withStatus("💾 saved")
+			a = a.withStatus(i18n.T("status.saved"))
 		}
 	}
-	// 'p' on dashboard = Pump & Dump (if unlocked).
 	if key == "p" {
 		if err := a.state.TriggerPumpDump(); err != nil {
-			a = a.withStatus("❌ " + err.Error())
+			a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 		} else {
-			a = a.withStatus("📈 Pump & Dump fired")
+			a = a.withStatus(i18n.T("status.pump_fired"))
 		}
 	}
 	return a, nil
@@ -241,8 +239,7 @@ func (a App) withStatus(text string) App {
 	return a
 }
 
-// saveNow writes the current state to the right destination (local save path
-// or an SSH-keyed override).
+// saveNow writes to the right destination (local or SSH-keyed override).
 func (a App) saveNow() error {
 	if a.SavePathOverride != "" {
 		return a.state.SaveAs(a.SavePathOverride)
@@ -253,9 +250,8 @@ func (a App) saveNow() error {
 // View renders the full screen.
 func (a App) View() string {
 	if a.w < 80 || a.h < 22 {
-		return "Please widen your terminal to at least 80x22."
+		return i18n.T("warn.terminal_too_small")
 	}
-
 	if a.nameEntryActive {
 		return a.renderNameEntry()
 	}
@@ -301,17 +297,17 @@ func (a App) renderHeader() string {
 	price := a.state.CurrentBTCPrice()
 	paused := ""
 	if a.state.Paused {
-		paused = DimStyle.Render(" [PAUSED]")
+		paused = DimStyle.Render(i18n.T("app.pill_paused"))
 	}
-	title := TitleStyle.Render(fmt.Sprintf("🐾 Kitten Crypto Mining — %s", a.state.KittenName))
+	title := TitleStyle.Render(fmt.Sprintf("%s — %s", i18n.T("app.title"), a.state.KittenName))
 
 	extras := []string{
 		MoneyStyle.Render(fmt.Sprintf("$%.0f", a.state.Money)),
 		BTCStyle.Render(fmt.Sprintf("₿%.4f", a.state.BTC)),
-		DimStyle.Render(fmt.Sprintf("$%.0f/BTC", price)),
-		DimStyle.Render(fmt.Sprintf("TP %d", a.state.TechPoint)),
-		DimStyle.Render(fmt.Sprintf("Rep %+d", a.state.Reputation)),
-		DimStyle.Render(fmt.Sprintf("frags %d", a.state.ResearchFrags)),
+		DimStyle.Render(i18n.T("hdr.price", price)),
+		DimStyle.Render(i18n.T("hdr.tp", a.state.TechPoint)),
+		DimStyle.Render(i18n.T("hdr.rep", a.state.Reputation)),
+		DimStyle.Render(i18n.T("hdr.frags", a.state.ResearchFrags)),
 	}
 	if a.state.ActiveResearch != nil {
 		pct := int(a.state.ResearchProgress() * 100)
@@ -324,22 +320,22 @@ func (a App) renderHeader() string {
 
 func (a App) renderNav() string {
 	items := []struct {
-		key, label string
-		id         viewID
+		key, labelKey string
+		id            viewID
 	}{
-		{"1", "dashboard", viewDashboard},
-		{"2", "store", viewStore},
-		{"3", "gpus", viewGPUs},
-		{"4", "rooms", viewRooms},
-		{"5", "skills", viewSkills},
-		{"6", "log", viewLog},
-		{"7", "mercs", viewMercs},
-		{"8", "lab", viewLab},
-		{"9", "prestige", viewPrestige},
+		{"1", "nav.dashboard", viewDashboard},
+		{"2", "nav.store", viewStore},
+		{"3", "nav.gpus", viewGPUs},
+		{"4", "nav.rooms", viewRooms},
+		{"5", "nav.skills", viewSkills},
+		{"6", "nav.log", viewLog},
+		{"7", "nav.mercs", viewMercs},
+		{"8", "nav.lab", viewLab},
+		{"9", "nav.prestige", viewPrestige},
 	}
 	parts := []string{}
 	for _, it := range items {
-		label := fmt.Sprintf("[%s]%s", it.key, it.label)
+		label := fmt.Sprintf("[%s]%s", it.key, i18n.T(it.labelKey))
 		if it.id == a.view {
 			parts = append(parts, TitleStyle.Render(label))
 		} else {
@@ -351,16 +347,16 @@ func (a App) renderNav() string {
 
 func (a App) renderNameEntry() string {
 	logo := "   /\\_/\\\n  ( o.o )\n   > ^ <"
-	prompt := "  Name your kitten engineer: " + a.nameEntryBuf + "█"
+	prompt := i18n.T("welcome.prompt") + a.nameEntryBuf + "█"
 	body := strings.Join([]string{
-		TitleStyle.Render("🐾 Kitten Crypto Mining Ventures"),
-		DimStyle.Render("an incremental game that respects your attention"),
+		TitleStyle.Render(i18n.T("welcome.title")),
+		DimStyle.Render(i18n.T("welcome.subtitle")),
 		"",
 		lipgloss.NewStyle().Foreground(KittenPink).Render(logo),
 		"",
 		prompt,
 		"",
-		DimStyle.Render("  [enter] start   [ctrl+c] quit"),
+		DimStyle.Render(i18n.T("welcome.keys")),
 	}, "\n")
 	return lipgloss.NewStyle().Padding(2, 4).Render(body)
 }
@@ -370,7 +366,7 @@ func (a App) renderFooter() string {
 	if time.Now().After(a.statusExpires) {
 		status = ""
 	}
-	keys := DimStyle.Render("[space] pause  [s] save  [?] help  [q] quit")
+	keys := DimStyle.Render(i18n.T("footer.keys"))
 	if status != "" {
 		return FooterStyle.Render(status + "   ·   " + keys)
 	}

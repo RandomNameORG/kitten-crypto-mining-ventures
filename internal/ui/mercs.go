@@ -8,19 +8,19 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 func (a App) renderMercsView() string {
 	owned := a.state.Mercs
 	hireable := data.Mercs()
 
-	header := TitleStyle.Render("🐾 Mercenaries")
-	help := DimStyle.Render("[tab] switch tab   ↑/↓ select   [h] hire   [f] fire   [b] bribe (+15 loyalty, $200)   [esc]/[1] back")
+	header := TitleStyle.Render(i18n.T("mercs.title"))
+	help := DimStyle.Render(i18n.T("mercs.help"))
 
-	// Owned column.
-	ownedLines := []string{HeaderStyle.Render("Your Mercs")}
+	ownedLines := []string{HeaderStyle.Render(i18n.T("mercs.yours"))}
 	if len(owned) == 0 {
-		ownedLines = append(ownedLines, DimStyle.Render("  (none — switch to Hire tab)"))
+		ownedLines = append(ownedLines, DimStyle.Render(i18n.T("mercs.empty")))
 	}
 	for i, m := range owned {
 		cursor := "  "
@@ -28,6 +28,11 @@ func (a App) renderMercsView() string {
 			cursor = TitleStyle.Render("▶ ")
 		}
 		def, _ := data.MercByID(m.DefID)
+		roomDef, _ := data.RoomByID(m.RoomID)
+		roomName := roomDef.LocalName()
+		if roomName == "" {
+			roomName = m.RoomID
+		}
 		loyStyle := DimStyle
 		switch {
 		case m.Loyalty < 20:
@@ -37,15 +42,14 @@ func (a App) renderMercsView() string {
 		case m.Loyalty >= 80:
 			loyStyle = lipgloss.NewStyle().Foreground(OppGreen)
 		}
-		line := fmt.Sprintf("%s#%-3d %-28s  room %-12s  wage $%d/wk  %s",
-			cursor, m.InstanceID, def.Name, m.RoomID, def.WeeklyWage,
-			loyStyle.Render(fmt.Sprintf("loyalty %d", m.Loyalty)),
+		line := fmt.Sprintf("%s#%-3d %-28s  %s",
+			cursor, m.InstanceID, def.LocalName(),
+			loyStyle.Render(i18n.T("mercs.owned_line", roomName, def.WeeklyWage, m.Loyalty)),
 		)
 		ownedLines = append(ownedLines, line)
 	}
 
-	// Hireable column.
-	hireLines := []string{HeaderStyle.Render("Hire")}
+	hireLines := []string{HeaderStyle.Render(i18n.T("mercs.hire"))}
 	for i, d := range hireable {
 		cursor := "  "
 		if a.mercsTab == 1 && i == a.mercsCursor {
@@ -55,13 +59,13 @@ func (a App) renderMercsView() string {
 		if a.state.Money < float64(d.HireCost) {
 			priceStyle = DimStyle
 		}
-		line := fmt.Sprintf("%s%-24s  %s  wage $%d/wk  def +%.0f%%",
-			cursor, d.Name,
-			priceStyle.Render(fmt.Sprintf("hire $%d", d.HireCost)),
-			d.WeeklyWage, d.DefenseBonus*100,
+		line := fmt.Sprintf("%s%-24s  %s  wage $%d/wk  %s",
+			cursor, d.LocalName(),
+			priceStyle.Render(i18n.T("mercs.hire_line", d.HireCost)),
+			d.WeeklyWage, i18n.T("mercs.defbonus", d.DefenseBonus*100),
 		)
 		hireLines = append(hireLines, line)
-		hireLines = append(hireLines, DimStyle.Render("   "+d.Flavor))
+		hireLines = append(hireLines, DimStyle.Render("   "+d.LocalFlavor()))
 	}
 
 	left := PanelStyle.Width(70).Render(strings.Join(ownedLines, "\n"))
@@ -106,18 +110,18 @@ func (a App) handleMercsKey(key string) (tea.Model, tea.Cmd) {
 		if a.mercsCursor < len(hireable) {
 			sel := hireable[a.mercsCursor]
 			if err := a.state.HireMerc(sel.ID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("🐾 hired " + sel.Name)
+				a = a.withStatus(i18n.T("status.hired", sel.LocalName()))
 			}
 		}
 	case "f":
 		if a.mercsOwnedCur < len(owned) {
 			sel := owned[a.mercsOwnedCur]
 			if err := a.state.FireMerc(sel.InstanceID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("dismissed")
+				a = a.withStatus(i18n.T("status.dismissed"))
 				if a.mercsOwnedCur > 0 {
 					a.mercsOwnedCur--
 				}
@@ -127,9 +131,9 @@ func (a App) handleMercsKey(key string) (tea.Model, tea.Cmd) {
 		if a.mercsOwnedCur < len(owned) {
 			sel := owned[a.mercsOwnedCur]
 			if err := a.state.BribeMerc(sel.InstanceID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus("🎁 loyalty boosted")
+				a = a.withStatus(i18n.T("status.bribed"))
 			}
 		}
 	case "esc":

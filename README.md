@@ -60,6 +60,7 @@ Each client gets their own save keyed by SHA-256 of their SSH public key, stored
 | `l c w o a` | Upgrade defense: Lock / CCTV / Wiring / cOoling / Armor (from rooms view) |
 | `R` | **Retire** (prestige view, only when eligible) |
 | `space` | Pause / resume |
+| `L` | Cycle language (English / 中文) |
 | `?` | Help |
 | `q` / `ctrl+c` | Save and quit |
 
@@ -98,6 +99,7 @@ Playable, feature-complete v0 for the core loop plus all the post-launch systems
 - ✅ Prestige — LifetimeEarned threshold, LegacyPoints, cross-run legacy perks, carry-over blueprints
 - ✅ SSH multiplayer mode (per-connection save keyed by pubkey)
 - ✅ Save / offline catch-up (8h cap)
+- ✅ Bilingual UI — English & 中文, toggle with `L`, persists in save
 
 ## License
 

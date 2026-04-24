@@ -8,15 +8,13 @@ import (
 	"github.com/charmbracelet/lipgloss"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
-// catalog returns the list of GPUs visible in the store — simple tier gate
-// by player money (don't show a $60k card when you have $200).
 func storeCatalog(money float64) []data.GPUDef {
 	all := data.GPUs()
 	out := []data.GPUDef{}
 	for _, g := range all {
-		// Reveal a card once the player has at least 15% of its price.
 		if money >= float64(g.Price)*0.15 || g.Tier == "trash" || g.Tier == "common" {
 			out = append(out, g)
 		}
@@ -26,8 +24,8 @@ func storeCatalog(money float64) []data.GPUDef {
 
 func (a App) renderStore() string {
 	cat := storeCatalog(a.state.Money)
-	lines := []string{TitleStyle.Render("🛒 Store  ·  Shipping: ~30–180s")}
-	lines = append(lines, DimStyle.Render("↑/↓ select   [b] buy   [esc]/[1] back"))
+	lines := []string{TitleStyle.Render(i18n.T("store.title"))}
+	lines = append(lines, DimStyle.Render(i18n.T("store.help")))
 	lines = append(lines, "")
 
 	for i, g := range cat {
@@ -40,7 +38,7 @@ func (a App) renderStore() string {
 		if !affordable {
 			priceStyle = DimStyle
 		}
-		name := g.Name
+		name := g.LocalName()
 		if !affordable {
 			name = DimStyle.Render(name)
 		}
@@ -48,14 +46,15 @@ func (a App) renderStore() string {
 			marker,
 			name,
 			priceStyle.Render(fmt.Sprintf("$%-6d", g.Price)),
-			DimStyle.Render(fmt.Sprintf("eff %.4f ₿/s   %.0fV   %dh", g.Efficiency, g.PowerDraw, g.DurabilityHours)),
+			DimStyle.Render(fmt.Sprintf("%s   %.0fV   %dh",
+				i18n.T("label.eff", g.Efficiency), g.PowerDraw, g.DurabilityHours)),
 		))
 	}
 
 	lines = append(lines, "")
 	if a.storeCursor < len(cat) {
 		sel := cat[a.storeCursor]
-		lines = append(lines, lipgloss.NewStyle().Foreground(AccentPurple).Italic(true).Render("  "+sel.Flavor))
+		lines = append(lines, lipgloss.NewStyle().Foreground(AccentPurple).Italic(true).Render("  "+sel.LocalFlavor()))
 	}
 	return PanelStyle.Width(90).Render(strings.Join(lines, "\n"))
 }
@@ -75,9 +74,9 @@ func (a App) handleStoreKey(key string) (tea.Model, tea.Cmd) {
 		if a.storeCursor < len(cat) {
 			sel := cat[a.storeCursor]
 			if err := a.state.BuyGPU(sel.ID); err != nil {
-				a = a.withStatus("❌ " + err.Error())
+				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
-				a = a.withStatus(fmt.Sprintf("📦 Ordered %s", sel.Name))
+				a = a.withStatus(i18n.T("status.order", sel.LocalName()))
 			}
 		}
 	case "esc":

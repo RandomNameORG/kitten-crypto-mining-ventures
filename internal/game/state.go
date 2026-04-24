@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
 
 // GPU is a runtime instance of a graphics card owned by the player.
@@ -114,6 +115,10 @@ type State struct {
 	LifetimeEarned float64 `json:"lifetime_earned"`
 	// LegacyPoints spent / available this run. True cross-run LP lives in legacy.json.
 	LegacyAvailable int `json:"legacy_available"`
+
+	// Lang persists the player's chosen language code ("en" | "zh"). Loaded
+	// by LoadFrom into the i18n package at startup.
+	Lang string `json:"lang,omitempty"`
 }
 
 // NewState returns a fresh game. An empty kittenName signals that the UI
@@ -154,6 +159,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 		Blueprints:     []*Blueprint{},
 		NextBlueprintN: 1,
 		LegacyAvailable: 0,
+		Lang:            i18n.Lang(),
 	}
 	// Unlock every room flagged as default.
 	for _, r := range data.Rooms() {
@@ -167,7 +173,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 	if welcomeName == "" {
 		welcomeName = "friend"
 	}
-	s.appendLog("info", fmt.Sprintf("Welcome, %s. Your first GPU hums to life.", welcomeName))
+	s.appendLog("info", i18n.T("game.welcome", welcomeName))
 
 	// Apply legacy bonuses at start.
 	if legacy != nil {
@@ -439,7 +445,20 @@ func LoadFrom(b []byte) (*State, error) {
 		return nil, err
 	}
 	s.ensureInit()
+	// Apply the player's persisted language choice to the i18n singleton.
+	if s.Lang != "" {
+		i18n.SetLang(s.Lang)
+	}
 	return &s, nil
+}
+
+// CycleLang advances the active language and updates the state's persisted
+// field. Returns the new active language code.
+func (s *State) CycleLang() string {
+	next := i18n.CycleLang()
+	s.Lang = next
+	s.appendLog("info", i18n.T("game.lang_switched", i18n.Label(next)))
+	return next
 }
 
 // ensureInit normalises a State so every map/slice is non-nil. Called after
