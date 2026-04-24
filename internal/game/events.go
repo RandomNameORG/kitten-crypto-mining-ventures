@@ -190,12 +190,12 @@ func (s *State) tryStealGPUs(eff data.EventEffect) {
 		}
 		idx := rand.Intn(len(candidates))
 		target := candidates[idx]
-		target.Status = "stolen"
 		if def, ok := data.GPUByID(target.DefID); ok {
-			s.appendLog("threat", fmt.Sprintf("🐀 They took your %s. Gone.", def.Name))
+			s.appendLog("threat", fmt.Sprintf("🐀 They took your %s. Gone.", def.LocalName()))
 		} else {
 			s.appendLog("threat", "🐀 They took one of your MEOWCores. Devastating.")
 		}
+		s.removeGPU(target.InstanceID)
 		candidates = append(candidates[:idx], candidates[idx+1:]...)
 	}
 }

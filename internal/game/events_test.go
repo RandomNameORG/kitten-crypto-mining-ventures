@@ -59,24 +59,28 @@ func TestApplyEventRespectsWiringForOutages(t *testing.T) {
 func TestApplyEventDefenseReducesStealRate(t *testing.T) {
 	withTempHome(t)
 
+	// runSteals: dispatch 100 steal attempts with the given defense level,
+	// refilling the rack after each so theft has a target every round.
+	// Returns the total number of GPUs successfully removed.
 	runSteals := func(lockLvl int) int {
 		rand.Seed(42)
 		s := NewState("Defense")
-		for _, g := range s.GPUs {
-			g.Status = "running"
-		}
 		s.Rooms[s.CurrentRoom].LockLvl = lockLvl
 		s.Rooms[s.CurrentRoom].CCTVLvl = lockLvl
 		s.Rooms[s.CurrentRoom].ArmorLvl = lockLvl
+		// Fill the rack to steady state so theft always has candidates.
+		for len(s.GPUs) < 4 {
+			s.addGPU("gtx1060", s.CurrentRoom, false)
+		}
 		count := 0
 		for i := 0; i < 100; i++ {
-			for _, g := range s.GPUs {
-				if g.Status == "stolen" {
-					count++
-					g.Status = "running"
-				}
-			}
+			before := len(s.GPUs)
 			s.applyEvent(stealEvent())
+			count += before - len(s.GPUs)
+			// Refill so the next round has something to steal.
+			for len(s.GPUs) < 4 {
+				s.addGPU("gtx1060", s.CurrentRoom, false)
+			}
 		}
 		return count
 	}

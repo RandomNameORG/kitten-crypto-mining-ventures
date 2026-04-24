@@ -61,6 +61,9 @@ type App struct {
 	// Retire confirmation — double-press [R] within a short window.
 	retireArmedUntil time.Time
 
+	// Buy rate-limit — prevents held-key auto-repeat from mass-buying.
+	lastBuyAt time.Time
+
 	status         string
 	statusExpires  time.Time
 	showEventPopup *data.EventDef

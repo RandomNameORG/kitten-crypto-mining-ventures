@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -10,6 +11,11 @@ import (
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/data"
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/internal/i18n"
 )
+
+// storeBuyCooldown stops auto-repeat on a held `b` key from buying dozens of
+// GPUs by accident. 400ms is long enough to block keyboard repeat (~20/s)
+// but short enough that intentional repeated presses still feel snappy.
+const storeBuyCooldown = 400 * time.Millisecond
 
 func storeCatalog(money float64) []data.GPUDef {
 	all := data.GPUs()
@@ -72,6 +78,10 @@ func (a App) handleStoreKey(key string) (tea.Model, tea.Cmd) {
 		}
 	case "b", "enter":
 		if a.storeCursor < len(cat) {
+			if time.Since(a.lastBuyAt) < storeBuyCooldown {
+				return a, nil
+			}
+			a.lastBuyAt = time.Now()
 			sel := cat[a.storeCursor]
 			if err := a.state.BuyGPU(sel.ID); err != nil {
 				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())

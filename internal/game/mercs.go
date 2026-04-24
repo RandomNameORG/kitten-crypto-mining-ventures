@@ -176,7 +176,7 @@ func (s *State) stealMostValuable() {
 		}
 	}
 	if best != nil {
-		best.Status = "stolen"
+		s.removeGPU(best.InstanceID)
 	}
 }
 

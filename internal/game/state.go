@@ -259,6 +259,18 @@ func (s *State) addGPU(defID, room string, shipping bool) *GPU {
 	return g
 }
 
+// removeGPU deletes a GPU instance from the list. Used for theft so stolen
+// cards don't clutter the dashboard or leak slot accounting.
+func (s *State) removeGPU(instanceID int) bool {
+	for i, g := range s.GPUs {
+		if g.InstanceID == instanceID {
+			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 // addMEOWCore creates a GPU instance from a player-researched Blueprint.
 func (s *State) addMEOWCore(bp *Blueprint, room string) *GPU {
 	g := &GPU{
@@ -504,4 +516,15 @@ func (s *State) ensureInit() {
 			delete(s.Rooms, id)
 		}
 	}
+	// Migration: drop any lingering `stolen` GPUs from older saves where
+	// theft marked-but-didn't-remove. Stolen cards leak into the dashboard
+	// slot counter and the GPUs list otherwise.
+	alive := s.GPUs[:0]
+	for _, g := range s.GPUs {
+		if g.Status == "stolen" {
+			continue
+		}
+		alive = append(alive, g)
+	}
+	s.GPUs = alive
 }
