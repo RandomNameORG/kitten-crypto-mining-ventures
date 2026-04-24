@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/data"
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // MaybeFireEvent rolls once to decide if an event should fire now, and if so
@@ -69,7 +70,7 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 
 	// Chain Ghost skill auto-handles threats rarely.
 	if chosen.Category == "threat" && s.HasSkill("chain_ghost") && rand.Float64() < 0.25 {
-		s.appendLog("opportunity", fmt.Sprintf("%s A threat was averted silently by Chain Ghost.", chosen.Emoji))
+		s.appendLog("opportunity", i18n.T("log.event.chain_ghost", chosen.Emoji))
 		s.EventCooldown[chosen.ID] = now
 		return nil
 	}
@@ -95,7 +96,7 @@ func (s *State) eventGatePasses(id string) bool {
 }
 
 func (s *State) applyEvent(e data.EventDef) {
-	s.appendLog(e.Category, fmt.Sprintf("%s %s — %s", e.Emoji, e.Name, e.Text))
+	s.appendLog(e.Category, fmt.Sprintf("%s %s — %s", e.Emoji, e.LocalName(), e.LocalText()))
 	now := time.Now().Unix()
 
 	for _, eff := range e.Effects {
@@ -120,7 +121,7 @@ func (s *State) applyEvent(e data.EventDef) {
 			s.Reputation += eff.Delta
 		case "tech_point":
 			s.TechPoint += eff.Delta
-			s.appendLog("opportunity", fmt.Sprintf("🧠 +%d TechPoint.", eff.Delta))
+			s.appendLog("opportunity", i18n.T("log.event.tp_gained", eff.Delta))
 		case "gift_gpu":
 			candidate := "gtx1060"
 			switch eff.Tier {
@@ -133,12 +134,12 @@ func (s *State) applyEvent(e data.EventDef) {
 			if s.RoomHasFreeSlot(s.CurrentRoom) {
 				s.addGPU(candidate, s.CurrentRoom, false)
 				if def, ok := data.GPUByID(candidate); ok {
-					s.appendLog("opportunity", fmt.Sprintf("🎁 Free %s installed.", def.Name))
+					s.appendLog("opportunity", i18n.T("log.event.gift.installed", def.LocalName()))
 				}
 			} else {
 				if def, ok := data.GPUByID(candidate); ok {
 					s.BTC += float64(def.ScrapValue) * s.ScrapValueMult()
-					s.appendLog("info", fmt.Sprintf("…but no room. Sold %s for scrap.", def.Name))
+					s.appendLog("info", i18n.T("log.event.gift.sold", def.LocalName()))
 				}
 			}
 		case "earn_multiplier":
@@ -167,11 +168,11 @@ func (s *State) applyEvent(e data.EventDef) {
 			if rand.Float64() < chance {
 				s.burnCurrentRoom()
 			} else {
-				s.appendLog("opportunity", "🛡 Armor held. Nothing caught fire.")
+				s.appendLog("opportunity", i18n.T("log.event.fire.averted"))
 			}
 		case "eviction_warning":
 			s.Reputation -= 5
-			s.appendLog("threat", "You've been warned. One more incident and the room is gone.")
+			s.appendLog("threat", i18n.T("log.event.fire.warning"))
 		case "money_loss":
 			frac := eff.Amount
 			if frac <= 0 {
@@ -182,7 +183,7 @@ func (s *State) applyEvent(e data.EventDef) {
 			if s.BTC < 0 {
 				s.BTC = 0
 			}
-			s.appendLog("threat", fmt.Sprintf("💸 Lost ₿%.0f (%.0f%% of balance).", loss, frac*100))
+			s.appendLog("threat", i18n.T("log.event.fire.money", loss, frac*100))
 		}
 	}
 }
@@ -211,20 +212,20 @@ func (s *State) tryStealGPUs(eff data.EventEffect) {
 		}
 	}
 	if len(candidates) == 0 {
-		s.appendLog("opportunity", "Thief found nothing worth taking. Huh.")
+		s.appendLog("opportunity", i18n.T("log.event.thief.empty"))
 		return
 	}
 	for i := 0; i < count && len(candidates) > 0; i++ {
 		if rand.Float64() > chance {
-			s.appendLog("opportunity", "🛡 Defense held. Nothing stolen.")
+			s.appendLog("opportunity", i18n.T("log.event.thief.defended"))
 			continue
 		}
 		idx := rand.Intn(len(candidates))
 		target := candidates[idx]
 		if def, ok := data.GPUByID(target.DefID); ok {
-			s.appendLog("threat", fmt.Sprintf("🐀 They took your %s. Gone.", def.LocalName()))
+			s.appendLog("threat", i18n.T("log.event.thief.took_gpu", def.LocalName()))
 		} else {
-			s.appendLog("threat", "🐀 They took one of your MEOWCores. Devastating.")
+			s.appendLog("threat", i18n.T("log.event.thief.took_bp"))
 		}
 		s.removeGPU(target.InstanceID)
 		candidates = append(candidates[:idx], candidates[idx+1:]...)
@@ -250,9 +251,9 @@ func (s *State) damageRandomGPU(amount float64) {
 	if victim.HoursLeft <= 0 {
 		victim.HoursLeft = 0
 		victim.Status = "broken"
-		s.appendLog("threat", "💥 A GPU took too much damage — broken.")
+		s.appendLog("threat", i18n.T("log.event.gpu.broken"))
 	} else {
-		s.appendLog("threat", "⚠️  A GPU is damaged.")
+		s.appendLog("threat", i18n.T("log.event.gpu.damaged"))
 	}
 }
 
@@ -265,7 +266,11 @@ func (s *State) burnCurrentRoom() {
 			destroyed++
 		}
 	}
-	s.appendLog("crisis", fmt.Sprintf("🔥 Fire! %d GPUs destroyed in %s.", destroyed, s.CurrentRoom))
+	roomName := s.CurrentRoom
+	if def, ok := data.RoomByID(s.CurrentRoom); ok {
+		roomName = def.LocalName()
+	}
+	s.appendLog("crisis", i18n.T("log.event.fire.destroyed", destroyed, roomName))
 }
 
 // RepairGPU repairs a broken GPU. Free if PCB Surgery is unlocked.
@@ -295,9 +300,9 @@ func (s *State) RepairGPU(instanceID int) error {
 		_, _, _, dur := s.GPUStats(g)
 		g.HoursLeft = dur * 0.6
 		if cost == 0 {
-			s.appendLog("info", "🔧 PCB surgery — free repair.")
+			s.appendLog("info", i18n.T("log.event.repair.free"))
 		} else {
-			s.appendLog("info", fmt.Sprintf("🔧 Repaired for ₿%d.", cost))
+			s.appendLog("info", i18n.T("log.event.repair.paid", cost))
 		}
 		return nil
 	}

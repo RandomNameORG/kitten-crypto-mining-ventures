@@ -1,6 +1,10 @@
 package ui
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"strings"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	BTCGreen    = lipgloss.Color("#7EE787")
@@ -44,6 +48,68 @@ var (
 
 	KeyHint = lipgloss.NewStyle().Foreground(AccentPurple).Bold(true)
 )
+
+// fitWidth clamps an ideal panel width to what the terminal can actually
+// show, with a sensible floor so we don't collapse past readability.
+// `availW` should be the current terminal width (App.w).
+func fitWidth(ideal, availW int) int {
+	max := availW - 2 // outer padding around panels
+	if max < 30 {
+		max = 30
+	}
+	if ideal < max {
+		return ideal
+	}
+	return max
+}
+
+// innerFromOuter converts an outer (bordered) panel height into the inner
+// content+padding height, which is what lipgloss's Style.Height expects.
+// Subtracts 2 for the top/bottom RoundedBorder rows. Clamped to 1.
+func innerFromOuter(outerH int) int {
+	n := outerH - 2
+	if n < 1 {
+		n = 1
+	}
+	return n
+}
+
+// renderHeatBar draws a zoned horizontal gauge for heat. Cells 0..80% of the
+// bar are tinted green, 80..95% orange, 95..100% red — so the danger zones
+// are visible even when the current fill is low. Filled cells use the zone
+// colour at full intensity; unfilled cells use a faint variant so the bar
+// still reads as "where could this go" rather than "where is it now only".
+func renderHeatBar(frac float64, width int) string {
+	if frac < 0 {
+		frac = 0
+	}
+	if frac > 1 {
+		frac = 1
+	}
+	if width < 4 {
+		width = 4
+	}
+	filled := int(frac*float64(width) + 0.5)
+	var b strings.Builder
+	for i := 0; i < width; i++ {
+		cellFrac := float64(i) / float64(width)
+		var col lipgloss.Color
+		switch {
+		case cellFrac < 0.80:
+			col = OppGreen
+		case cellFrac < 0.95:
+			col = ThreatOrange
+		default:
+			col = CrisisRed
+		}
+		if i < filled {
+			b.WriteString(lipgloss.NewStyle().Foreground(col).Render("█"))
+		} else {
+			b.WriteString(lipgloss.NewStyle().Foreground(col).Faint(true).Render("░"))
+		}
+	}
+	return b.String()
+}
 
 // CategoryStyle returns the log style for an event category.
 func CategoryStyle(category string) lipgloss.Style {

@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/lipgloss"
+
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
@@ -22,7 +24,7 @@ func (a App) renderLogView() string {
 		line := fmt.Sprintf("  %s  %s", DimStyle.Render(ts), CategoryStyle(e.Category).Render(e.Text))
 		lines = append(lines, line)
 	}
-	return PanelStyle.Width(100).Render(strings.Join(lines, "\n"))
+	return PanelStyle.Width(fitWidth(100, a.w)).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) renderHelpView() string {
@@ -51,8 +53,23 @@ func (a App) renderHelpView() string {
 		HeaderStyle.Render(i18n.T("help.defense")),
 		DimStyle.Render(i18n.T("help.defense_row")),
 		"",
+		HeaderStyle.Render(i18n.T("help.mechanics")),
+		lipgloss.NewStyle().Foreground(HeatRed).Render(i18n.T("help.mech.heat")),
+		lipgloss.NewStyle().Foreground(OppGreen).Render(i18n.T("help.mech.heat.z1")),
+		lipgloss.NewStyle().Foreground(ThreatOrange).Render(i18n.T("help.mech.heat.z2")),
+		lipgloss.NewStyle().Foreground(CrisisRed).Render(i18n.T("help.mech.heat.z3")),
+		DimStyle.Render(i18n.T("help.mech.heat.act")),
+		"",
+		VoltStyle.Render(i18n.T("help.mech.power")),
+		DimStyle.Render(i18n.T("help.mech.power.2")),
+		lipgloss.NewStyle().Foreground(CrisisRed).Render(i18n.T("help.mech.power.3")),
+		DimStyle.Render(i18n.T("help.mech.power.act")),
+		"",
+		lipgloss.NewStyle().Foreground(OppGreen).Render(i18n.T("help.mech.earn")),
+		DimStyle.Render(i18n.T("help.mech.earn.2")),
+		"",
 		DimStyle.Render(i18n.T("help.tip.idle")),
 		DimStyle.Render(i18n.T("help.tip.offline")),
 	}
-	return PanelStyle.Width(70).Render(strings.Join(lines, "\n"))
+	return PanelStyle.Width(fitWidth(70, a.w)).Render(strings.Join(lines, "\n"))
 }

@@ -79,7 +79,7 @@ func (a App) renderRoomsView() string {
 				d.Key, i18n.T(d.I18n), lvl, next)))
 		}
 	}
-	return PanelStyle.Width(100).Render(strings.Join(lines, "\n"))
+	return PanelStyle.Width(fitWidth(100, a.w)).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) handleRoomsKey(key string) (tea.Model, tea.Cmd) {

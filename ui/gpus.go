@@ -72,7 +72,7 @@ func (a App) renderGPUsView() string {
 		)
 		lines = append(lines, line)
 	}
-	return PanelStyle.Width(110).Render(strings.Join(lines, "\n"))
+	return PanelStyle.Width(fitWidth(110, a.w)).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {

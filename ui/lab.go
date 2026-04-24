@@ -71,9 +71,10 @@ func (a App) renderLabView() string {
 		bpLines = append(bpLines, DimStyle.Render(i18n.T("label.bp_line", eff, pow, heat, dur)))
 	}
 
-	panel1 := PanelStyle.Width(90).Render(strings.Join(active, "\n"))
-	panel2 := PanelStyle.Width(90).Render(strings.Join(plan, "\n"))
-	panel3 := PanelStyle.Width(90).Render(strings.Join(bpLines, "\n"))
+	lw := fitWidth(90, a.w)
+	panel1 := PanelStyle.Width(lw).Render(strings.Join(active, "\n"))
+	panel2 := PanelStyle.Width(lw).Render(strings.Join(plan, "\n"))
+	panel3 := PanelStyle.Width(lw).Render(strings.Join(bpLines, "\n"))
 
 	return strings.Join([]string{
 		header, help, "",

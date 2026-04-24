@@ -88,14 +88,7 @@ func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	if state == nil {
 		state = game.NewState(pickName(s))
 	} else {
-		// Offline catch-up.
-		now := time.Now().Unix()
-		if gap := now - state.LastTickUnix; gap > 8*3600 {
-			state.LastTickUnix = now - 8*3600
-			state.LastBillUnix = now - 8*3600
-			state.LastWagesUnix = now - 8*3600
-		}
-		state.Tick(now)
+		state.RunOfflineCatchup(time.Now().Unix())
 	}
 
 	return newSSHApp(state, savePath), []tea.ProgramOption{tea.WithAltScreen()}

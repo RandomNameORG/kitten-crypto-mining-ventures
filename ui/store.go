@@ -62,7 +62,7 @@ func (a App) renderStore() string {
 		sel := cat[a.storeCursor]
 		lines = append(lines, lipgloss.NewStyle().Foreground(AccentPurple).Italic(true).Render("  "+sel.LocalFlavor()))
 	}
-	return PanelStyle.Width(90).Render(strings.Join(lines, "\n"))
+	return PanelStyle.Width(fitWidth(90, a.w)).Render(strings.Join(lines, "\n"))
 }
 
 func (a App) handleStoreKey(key string) (tea.Model, tea.Cmd) {

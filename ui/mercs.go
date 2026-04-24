@@ -68,8 +68,9 @@ func (a App) renderMercsView() string {
 		hireLines = append(hireLines, DimStyle.Render("   "+d.LocalFlavor()))
 	}
 
-	left := PanelStyle.Width(70).Render(strings.Join(ownedLines, "\n"))
-	right := PanelStyle.Width(70).Render(strings.Join(hireLines, "\n"))
+	mw := fitWidth(70, a.w)
+	left := PanelStyle.Width(mw).Render(strings.Join(ownedLines, "\n"))
+	right := PanelStyle.Width(mw).Render(strings.Join(hireLines, "\n"))
 
 	var body string
 	if a.mercsTab == 0 {

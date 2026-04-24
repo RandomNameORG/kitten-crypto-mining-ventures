@@ -3,6 +3,8 @@ package game
 import (
 	"fmt"
 	"math"
+
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // PrestigeThreshold is the lifetime-earned cash needed before Retire unlocks.
@@ -75,7 +77,7 @@ func (s *State) Retire() (*State, int, error) {
 	_ = legacy.Save()
 
 	fresh := newStateWithLegacy(s.KittenName, legacy)
-	fresh.appendLog("opportunity", fmt.Sprintf("🐾 You retired rich. +%d LegacyPoints banked.", lp))
+	fresh.appendLog("opportunity", i18n.T("log.prestige.retired", lp))
 	return fresh, lp, nil
 }
 

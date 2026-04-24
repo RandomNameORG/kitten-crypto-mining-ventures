@@ -9,6 +9,37 @@ import (
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
+// OfflineCapSeconds is the maximum gap the offline catch-up will simulate.
+// Beyond this, we clamp the timestamps so bills/wages don't drain months of
+// accumulated costs in one blow.
+const OfflineCapSeconds int64 = 8 * 3600
+
+// RunOfflineCatchup advances the sim from the last tick to `now` in a single
+// catch-up pass and leaves an OfflineSummary on the state for the UI to
+// display on startup. Small gaps (< 60s) are skipped — no summary.
+func (s *State) RunOfflineCatchup(now int64) {
+	gap := now - s.LastTickUnix
+	if gap < 60 {
+		s.Tick(now)
+		return
+	}
+	capped := false
+	if gap > OfflineCapSeconds {
+		gap = OfflineCapSeconds
+		capped = true
+		s.LastTickUnix = now - gap
+		s.LastBillUnix = now - gap
+		s.LastWagesUnix = now - gap
+	}
+	btcBefore := s.BTC
+	s.Tick(now)
+	s.OfflineSummary = &OfflineSummary{
+		GapSeconds: gap,
+		BTCGained:  s.BTC - btcBefore,
+		Capped:     capped,
+	}
+}
+
 // Tick advances the simulation forward to `now`. It's safe to call every
 // frame — it only operates on the delta since LastTickUnix.
 func (s *State) Tick(now int64) {
@@ -39,7 +70,7 @@ func (s *State) advanceShipping(now int64) {
 		if g.Status == "shipping" && now >= g.ShipsAt {
 			g.Status = "running"
 			if def, ok := data.GPUByID(g.DefID); ok {
-				s.appendLog("info", fmt.Sprintf("📦 %s arrived and is online.", def.Name))
+				s.appendLog("info", i18n.T("log.gpu.arrived", def.LocalName()))
 			}
 		}
 	}
@@ -116,7 +147,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 					} else if g.BlueprintID != "" {
 						name = "MEOWCore"
 					}
-					s.appendLog("threat", fmt.Sprintf("💥 %s failed. It needs repair or scrapping.", name))
+					s.appendLog("threat", i18n.T("log.gpu.failed", name))
 				}
 			}
 		}
@@ -188,7 +219,7 @@ func (s *State) advanceBilling(now int64) {
 	s.BTC -= totalBill
 	s.BTC -= totalRent
 	if totalBill+totalRent > 0 {
-		s.appendLog("info", fmt.Sprintf("💸 Bills settled: ₿%.2f electricity, ₿%.2f rent.", totalBill, totalRent))
+		s.appendLog("info", i18n.T("log.bills.settled", totalBill, totalRent))
 	}
 	if s.BTC < 0 {
 		s.BTC = 0
@@ -196,7 +227,7 @@ func (s *State) advanceBilling(now int64) {
 			Kind:      "pause_mining",
 			ExpiresAt: now + 60,
 		})
-		s.appendLog("threat", "🔌 Couldn't pay the bill. Blackout for 60s.")
+		s.appendLog("threat", i18n.T("log.bills.blackout"))
 	}
 }
 
@@ -223,11 +254,11 @@ func (s *State) UpgradeGPU(instanceID int) error {
 		failChance := 0.05 + 0.05*float64(g.UpgradeLevel)
 		if rand.Float64() < failChance {
 			g.Status = "broken"
-			s.appendLog("threat", "🔥 Upgrade failed — GPU is bricked.")
+			s.appendLog("threat", i18n.T("log.gpu.upgrade.bricked"))
 			return nil
 		}
 		g.UpgradeLevel++
-		s.appendLog("info", fmt.Sprintf("⚙️  GPU upgraded to level %d.", g.UpgradeLevel))
+		s.appendLog("info", i18n.T("log.gpu.upgrade.success", g.UpgradeLevel))
 		return nil
 	}
 	return fmt.Errorf("no such GPU")
@@ -264,7 +295,7 @@ func (s *State) EmergencyVent() error {
 		Kind:      "pause_mining",
 		ExpiresAt: now + 30,
 	})
-	s.appendLog("info", fmt.Sprintf("🧊 Emergency vent — heat reset, 30s power cycle, -₿%d.", EmergencyVentCost))
+	s.appendLog("info", i18n.T("log.room.vent", EmergencyVentCost))
 	return nil
 }
 
@@ -298,7 +329,7 @@ func (s *State) TriggerPumpDump() error {
 		Factor:    1.5,
 		ExpiresAt: now + 300,
 	})
-	s.appendLog("opportunity", "📈 Pump & Dump — mining output ×1.5 for 5 minutes.")
+	s.appendLog("opportunity", i18n.T("log.pump.fired"))
 	return nil
 }
 
@@ -313,15 +344,15 @@ func (s *State) UpgradeDefense(dim string) error {
 	var label string
 	switch dim {
 	case "lock":
-		lvl, label = &room.LockLvl, "Lock"
+		lvl, label = &room.LockLvl, i18n.T("defense.lock")
 	case "cctv":
-		lvl, label = &room.CCTVLvl, "CCTV"
+		lvl, label = &room.CCTVLvl, i18n.T("defense.cctv")
 	case "wiring":
-		lvl, label = &room.WiringLvl, "Wiring"
+		lvl, label = &room.WiringLvl, i18n.T("defense.wiring")
 	case "cooling":
-		lvl, label = &room.CoolingLvl, "Cooling"
+		lvl, label = &room.CoolingLvl, i18n.T("defense.cooling")
 	case "armor":
-		lvl, label = &room.ArmorLvl, "Armor"
+		lvl, label = &room.ArmorLvl, i18n.T("defense.armor")
 	default:
 		return fmt.Errorf("bad dim %q", dim)
 	}
@@ -334,6 +365,6 @@ func (s *State) UpgradeDefense(dim string) error {
 	}
 	s.BTC -= float64(cost)
 	*lvl++
-	s.appendLog("info", fmt.Sprintf("🛡 %s upgraded to level %d.", label, *lvl))
+	s.appendLog("info", i18n.T("log.defense.upgraded", label, *lvl))
 	return nil
 }

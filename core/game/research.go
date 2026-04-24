@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
 // ResearchBoosts are the three axes players pick 2 of when starting a research.
@@ -67,7 +69,7 @@ func (s *State) StartResearch(tier int, boosts []string) error {
 		StartedAt:     time.Now().Unix(),
 		DurationSec:   info.Duration,
 	}
-	s.appendLog("info", fmt.Sprintf("🔬 Research started: %s (%ds).", info.Name, info.Duration))
+	s.appendLog("info", i18n.T("log.research.started", info.Name, info.Duration))
 	return nil
 }
 
@@ -110,14 +112,14 @@ func (s *State) advanceResearch(now int64) {
 			}
 			if !hit {
 				bp.Boosts = append(bp.Boosts, b)
-				s.appendLog("opportunity", "🎉 Research had a breakthrough — extra boost included.")
+				s.appendLog("opportunity", i18n.T("log.research.breakthrough"))
 				break
 			}
 		}
 	}
 	s.Blueprints = append(s.Blueprints, bp)
 	s.ActiveResearch = nil
-	s.appendLog("opportunity", fmt.Sprintf("✅ Research complete: %s blueprint [%s] ready.", bpName(bp.Tier), joinStrs(bp.Boosts)))
+	s.appendLog("opportunity", i18n.T("log.research.complete", bpName(bp.Tier), joinStrs(bp.Boosts)))
 }
 
 // PrintMEOWCore instantiates a MEOWCore GPU from a researched blueprint.
@@ -151,7 +153,7 @@ func (s *State) PrintMEOWCore(blueprintID string) error {
 	s.BTC -= float64(cost)
 	s.ResearchFrags -= frags
 	s.addMEOWCore(bp, s.CurrentRoom)
-	s.appendLog("opportunity", fmt.Sprintf("🛠 Printed a %s (%s).", bpName(bp.Tier), joinStrs(bp.Boosts)))
+	s.appendLog("opportunity", i18n.T("log.research.printed", bpName(bp.Tier), joinStrs(bp.Boosts)))
 	return nil
 }
 
