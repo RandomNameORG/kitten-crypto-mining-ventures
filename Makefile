@@ -31,5 +31,17 @@ vet: ## Static analysis
 
 lint: vet ## Alias for vet
 
+release: ## Cross-compile stripped release binaries for win/linux/macOS x64+arm64
+	@mkdir -p $(BIN_DIR)
+	@for target in "windows amd64 .exe" "linux amd64 " "darwin amd64 " "darwin arm64 "; do \
+		set -- $$target; os=$$1; arch=$$2; ext=$$3; \
+		for cmd in meowmine meowmine-ssh; do \
+			echo "  building $$cmd-$$os-$$arch$$ext"; \
+			GOOS=$$os GOARCH=$$arch go build -ldflags "-s -w" \
+				-o $(BIN_DIR)/$$cmd-$$os-$$arch$$ext ./cmd/$$cmd; \
+		done; \
+	done
+	@ls -lh $(BIN_DIR)
+
 clean: ## Remove build artefacts
 	rm -rf $(BIN_DIR)
