@@ -31,6 +31,7 @@ func (s *State) Tick(now int64) {
 	s.advanceBilling(now)
 	s.advanceResearch(now)
 	s.payWages(now)
+	s.CheckAchievements()
 }
 
 // advanceShipping transitions shipping GPUs to running when their ETA passes.
@@ -97,15 +98,24 @@ func (s *State) advanceMining(now int64, dt float64) {
 			}
 			heatDelta += hOut * dt
 
-			// Durability decay — GPUs wear out.
+			// Durability decay — GPUs wear out faster when the room is hot.
+			//   heat > 80% max: 3× normal wear
+			//   heat > 95% max: 8× wear (real danger zone)
 			if dur > 0 {
-				g.HoursLeft -= dt / 3600.0
+				wearMult := 1.0
+				switch {
+				case room.Heat > 0.95*room.MaxHeat:
+					wearMult = 8.0
+				case room.Heat > 0.80*room.MaxHeat:
+					wearMult = 3.0
+				}
+				g.HoursLeft -= (dt / 3600.0) * wearMult
 				if g.HoursLeft <= 0 {
 					g.Status = "broken"
 					g.HoursLeft = 0
 					name := g.DefID
 					if def, ok := data.GPUByID(g.DefID); ok {
-						name = def.Name
+						name = def.LocalName()
 					} else if g.BlueprintID != "" {
 						name = "MEOWCore"
 					}

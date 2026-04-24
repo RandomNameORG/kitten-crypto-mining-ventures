@@ -67,6 +67,7 @@ func (s *State) Retire() (*State, int, error) {
 	legacy := LoadLegacy()
 	legacy.TotalEarned += s.LifetimeEarned
 	legacy.TotalLP += lp
+	s.grantAchievement("first_retire")
 	// Carry blueprints.
 	for _, bp := range s.Blueprints {
 		legacy.Blueprints = append(legacy.Blueprints, bp)

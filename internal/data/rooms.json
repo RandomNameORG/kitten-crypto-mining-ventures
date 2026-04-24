@@ -73,5 +73,50 @@
     "threat_pool": ["pirates", "typhoon", "seagull"],
     "unlock_cost": 25000,
     "unlocked_by_default": false
+  },
+  {
+    "id": "arctic",
+    "name": "Arctic Research Station",
+    "name_zh": "北极科考站",
+    "flavor": "The ambient temperature is your cooling system. The satellite uplink works on and off.",
+    "flavor_zh": "环境温度就是你的散热系统。卫星信号时断时续。",
+    "slots": 16,
+    "base_cooling": 3.0,
+    "electric_cost_mult": 0.3,
+    "rent_per_hour": 50,
+    "threat_base": 0.05,
+    "threat_pool": ["power_outage", "polar_bear", "aurora_surge"],
+    "unlock_cost": 80000,
+    "unlocked_by_default": false
+  },
+  {
+    "id": "nuclear",
+    "name": "Abandoned Nuclear Plant",
+    "name_zh": "废弃核电站",
+    "flavor": "The grid never shut this wing down. The glow is almost cozy. The rads are not.",
+    "flavor_zh": "电网从没把这栋楼断电。那股微光还挺温馨，辐射就不太温馨了。",
+    "slots": 20,
+    "base_cooling": 2.5,
+    "electric_cost_mult": 0.0,
+    "rent_per_hour": 0,
+    "threat_base": 0.12,
+    "threat_pool": ["radiation_failure", "government_raid", "power_outage"],
+    "unlock_cost": 40000,
+    "unlocked_by_default": false
+  },
+  {
+    "id": "orbit",
+    "name": "Low-Earth Orbit Module",
+    "name_zh": "近地轨道舱段",
+    "flavor": "Vacuum cooling. Periodic visits from astronauts who pretend not to notice.",
+    "flavor_zh": "真空散热。偶尔有宇航员路过，装作没看见。",
+    "slots": 24,
+    "base_cooling": 4.0,
+    "electric_cost_mult": 0.1,
+    "rent_per_hour": 500,
+    "threat_base": 0.04,
+    "threat_pool": ["space_debris", "iss_visit", "power_outage"],
+    "unlock_cost": 1000000,
+    "unlocked_by_default": false
   }
 ]

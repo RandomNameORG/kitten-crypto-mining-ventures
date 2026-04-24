@@ -364,6 +364,7 @@ func (a App) renderHeader() string {
 		DimStyle.Render(i18n.T("hdr.tp", a.state.TechPoint)),
 		DimStyle.Render(i18n.T("hdr.rep", a.state.Reputation)),
 		DimStyle.Render(i18n.T("hdr.frags", a.state.ResearchFrags)),
+		DimStyle.Render(i18n.T("hdr.achievements", len(a.state.Achievements), len(data.Achievements()))),
 	}
 	if a.state.ActiveResearch != nil {
 		pct := int(a.state.ResearchProgress() * 100)

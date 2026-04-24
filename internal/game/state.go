@@ -125,6 +125,10 @@ type State struct {
 	// — the UI will prompt. Loaded saves that pre-date this field are
 	// migrated to "normal" by ensureInit.
 	Difficulty string `json:"difficulty,omitempty"`
+
+	// Achievements holds the IDs of every milestone earned so far. Checked
+	// at end of tick by CheckAchievements().
+	Achievements []string `json:"achievements,omitempty"`
 }
 
 // NewState returns a fresh game. An empty kittenName signals that the UI
@@ -476,6 +480,7 @@ func (s *State) CycleLang() string {
 	next := i18n.CycleLang()
 	s.Lang = next
 	s.appendLog("info", i18n.T("game.lang_switched", i18n.Label(next)))
+	s.grantAchievement("polyglot")
 	return next
 }
 

@@ -168,6 +168,141 @@
     "effects": [{"kind": "damage_gpu", "amount": 0.4}]
   },
   {
+    "id": "police_visit",
+    "name": "Police at the Door",
+    "name_zh": "警察上门",
+    "category": "crisis",
+    "emoji": "🚓",
+    "text": "A polite knock. Someone in a uniform wants to talk about the noise. And the power draw. And the cats.",
+    "text_zh": "礼貌的敲门声。有个穿制服的人想和你聊聊噪音。还有耗电。还有这堆猫。",
+    "weight": 2,
+    "cooldown_sec": 3600,
+    "effects": [
+      {"kind": "money_loss", "amount": 0.20},
+      {"kind": "rep_change", "delta": -10}
+    ]
+  },
+  {
+    "id": "group_chat_sos",
+    "name": "Group Chat SOS",
+    "name_zh": "群友求助",
+    "category": "social",
+    "emoji": "💬",
+    "text": "A kitten in the miners chat just got raided. Everyone's pitching in for legal fees.",
+    "text_zh": "群里一只小猫刚被查了。大家都在凑律师费。",
+    "weight": 5,
+    "cooldown_sec": 1800,
+    "effects": [
+      {"kind": "money_loss", "amount": 0.01},
+      {"kind": "rep_change", "delta": 5}
+    ]
+  },
+  {
+    "id": "celeb_interview",
+    "name": "Crypto Influencer Interview",
+    "name_zh": "加密圈网红采访",
+    "category": "social",
+    "emoji": "🎙",
+    "text": "Someone with a lot of followers wants a tour of your rack. The exposure could go either way.",
+    "text_zh": "一个粉丝很多的网红想拍你的机架。曝光可能好，可能不好。",
+    "weight": 2,
+    "cooldown_sec": 3000,
+    "effects": [
+      {"kind": "rep_change", "delta": 8},
+      {"kind": "earn_multiplier", "factor": 1.1, "seconds": 900}
+    ]
+  },
+  {
+    "id": "halving",
+    "name": "Halving Day",
+    "name_zh": "减半日",
+    "category": "opportunity",
+    "emoji": "₿",
+    "text": "The chain halves its reward. Short-term chaos, mid-term price bump.",
+    "text_zh": "链上奖励减半。短期混乱，中期拉盘。",
+    "weight": 1,
+    "cooldown_sec": 72000,
+    "effects": [
+      {"kind": "btc_multiplier", "factor": 1.4, "seconds": 1800},
+      {"kind": "earn_multiplier", "factor": 1.2, "seconds": 10800}
+    ]
+  },
+  {
+    "id": "polar_bear",
+    "name": "Polar Bear Audit",
+    "name_zh": "北极熊巡场",
+    "category": "threat",
+    "emoji": "🐻‍❄️",
+    "text": "A curious bear wandered in and sat on a rack. It eventually left. The rack didn't survive.",
+    "text_zh": "一只好奇的熊晃进来，坐上了机架。它最后离开了。机架没挺过来。",
+    "weight": 3,
+    "cooldown_sec": 1800,
+    "effects": [{"kind": "damage_gpu", "amount": 0.4}]
+  },
+  {
+    "id": "aurora_surge",
+    "name": "Aurora Surge",
+    "name_zh": "极光涌动",
+    "category": "opportunity",
+    "emoji": "🌌",
+    "text": "The aurora lights the whole sky. Something about the ionosphere boosts your signal.",
+    "text_zh": "极光点亮了整片天空。电离层的某些变化让你的信号变强。",
+    "weight": 4,
+    "cooldown_sec": 2400,
+    "effects": [{"kind": "earn_multiplier", "factor": 1.3, "seconds": 600}]
+  },
+  {
+    "id": "radiation_failure",
+    "name": "Radiation Glitch",
+    "name_zh": "辐射故障",
+    "category": "threat",
+    "emoji": "☢",
+    "text": "A single cosmic-ray flipped the wrong bit. One GPU is behaving… strangely.",
+    "text_zh": "一粒宇宙射线翻错了一个比特位。有张显卡开始表现得……有点怪。",
+    "weight": 4,
+    "cooldown_sec": 1200,
+    "effects": [{"kind": "damage_gpu", "amount": 0.25}]
+  },
+  {
+    "id": "government_raid",
+    "name": "Government Raid",
+    "name_zh": "政府突击检查",
+    "category": "crisis",
+    "emoji": "🚨",
+    "text": "Black vans outside. Someone files a report about unauthorised use of a decommissioned facility.",
+    "text_zh": "门口停着黑色的车。有人在举报你擅自使用已退役的设施。",
+    "weight": 2,
+    "cooldown_sec": 3600,
+    "effects": [
+      {"kind": "steal_gpu", "chance_if_no_defense": 0.7, "count": 3},
+      {"kind": "money_loss", "amount": 0.15}
+    ]
+  },
+  {
+    "id": "space_debris",
+    "name": "Space Debris",
+    "name_zh": "太空垃圾",
+    "category": "threat",
+    "emoji": "☄",
+    "text": "A micro-meteor pinged the hull. Pressure held. One GPU did not.",
+    "text_zh": "一块微流星打中了舱壁。气压保住了。但一张显卡没保住。",
+    "weight": 2,
+    "cooldown_sec": 2400,
+    "effects": [{"kind": "damage_gpu", "amount": 0.6}]
+  },
+  {
+    "id": "iss_visit",
+    "name": "ISS Astronaut Visit",
+    "name_zh": "国际空间站访客",
+    "category": "social",
+    "emoji": "👩‍🚀",
+    "text": "An astronaut floats over, admires the rig, and pretends they didn't see it.",
+    "text_zh": "一位宇航员飘过来，欣赏了一下你的矿机，然后装作没看见。",
+    "weight": 3,
+    "cooldown_sec": 1800,
+    "effects": [{"kind": "rep_change", "delta": 3}]
+  },
+  {
     "id": "seagull",
     "name": "Seagull Theft",
     "name_zh": "海鸥偷零件",

@@ -43,6 +43,8 @@ var enStrings = map[string]string{
 	"dash.line.heat":  "🌡 %.0f°C / %.0f max  ·  trend %+.1f/s",
 	"dash.line.cash":  "📈 earn +$%.3f/s  ·  net %+.3f/s",
 	"dash.slots_of":   "slots %d/%d",
+	"dash.heat.warning":  "⚠ HOT — efficiency ½ · wear 3×",
+	"dash.heat.critical": "🔥 CRITICAL — wear 8× · GPU failure imminent",
 	"dash.rack":       "GPU Rack",
 	"dash.empty_hint": "  (empty — press [2] to go to the store)",
 	"dash.slot_empty": "  %d. (empty)",
@@ -186,6 +188,8 @@ var enStrings = map[string]string{
 	"game.resumed":       "▶️  Resumed.",
 	"game.lang_switched": "🌐 Language set to %s.",
 	"game.difficulty_set": "Difficulty locked: %s.",
+	"game.achievement":    "🏆 Achievement unlocked — %s",
+	"hdr.achievements":    "🏆 %d/%d",
 
 	// Minimum terminal size warning.
 	"warn.terminal_too_small": "Please widen your terminal to at least 80x22.",

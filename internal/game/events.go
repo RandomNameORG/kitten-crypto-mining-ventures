@@ -17,7 +17,10 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 		return nil
 	}
 	pool := roomDef.ThreatPool
-	globalPool := []string{"tech_share", "extra_delivery", "btc_pump", "lucky_fish"}
+	globalPool := []string{
+		"tech_share", "extra_delivery", "btc_pump", "lucky_fish",
+		"group_chat_sos", "celeb_interview", "halving", "police_visit",
+	}
 	all := append([]string{}, pool...)
 	all = append(all, globalPool...)
 
@@ -32,6 +35,9 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 		if now-last < int64(def.CooldownSec) {
 			continue
 		}
+		if !s.eventGatePasses(id) {
+			continue
+		}
 		eligible = append(eligible, def)
 		totalWeight += def.Weight
 	}
@@ -44,6 +50,8 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 		baseFire = 0.12
 	}
 	baseFire *= s.DifficultyThreatMult()
+	// Rich-cat tax: flush players attract more attention.
+	baseFire *= 1.0 + s.GreedScore()
 	if rand.Float64() > baseFire {
 		return nil
 	}
@@ -68,6 +76,21 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 	s.EventCooldown[chosen.ID] = now
 	s.applyEvent(chosen)
 	return &chosen
+}
+
+// eventGatePasses returns false when the event should NOT fire under the
+// current state (e.g. Police only shows up when Karma/Rep are low, Celeb
+// interviews only happen once you have some assets to show off).
+func (s *State) eventGatePasses(id string) bool {
+	switch id {
+	case "police_visit":
+		return s.Karma < -30 || s.Reputation < -50
+	case "celeb_interview":
+		return s.LifetimeEarned > 50_000
+	case "group_chat_sos":
+		return s.Reputation >= 0
+	}
+	return true
 }
 
 func (s *State) applyEvent(e data.EventDef) {
@@ -153,6 +176,17 @@ func (s *State) applyEvent(e data.EventDef) {
 		case "eviction_warning":
 			s.Reputation -= 5
 			s.appendLog("threat", "You've been warned. One more incident and the room is gone.")
+		case "money_loss":
+			frac := eff.Amount
+			if frac <= 0 {
+				frac = 0.1
+			}
+			loss := s.Money * frac
+			s.Money -= loss
+			if s.Money < 0 {
+				s.Money = 0
+			}
+			s.appendLog("threat", fmt.Sprintf("💸 Lost $%.0f (%.0f%% of cash).", loss, frac*100))
 		}
 	}
 }
