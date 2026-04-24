@@ -116,6 +116,9 @@ func (s *State) applyEvent(e data.EventDef) {
 		s.EventsByCategory = map[string]int{}
 	}
 	s.EventsByCategory[e.Category]++
+	if e.ID == "market_crash" {
+		s.MarketCrashCount++
+	}
 	now := time.Now().Unix()
 
 	for _, eff := range e.Effects {
@@ -207,6 +210,7 @@ func (s *State) applyEvent(e data.EventDef) {
 			threshold := eff.ReserveFactor * s.LifetimeEarned
 			if s.BTC >= threshold {
 				s.appendLog("info", i18n.T("log.event.tax.clean"))
+				s.grantAchievement("tax_survivor")
 			} else {
 				frac := eff.Amount
 				if frac <= 0 {
