@@ -362,19 +362,20 @@ func upgradeHeatMult(level int) float64 {
 
 // UpgradeFragsForLevel returns the research-fragment cost to advance FROM
 // the given level (i.e. to reach level+1). Levels 1-5 are free (money
-// only); 6-10 ramp 5/10/20/40/80 frags.
+// only); L5→L10 ramp 3/5/8/12/20 — softer than first draft so frags
+// remain a consistent earn rather than a grind gate.
 func UpgradeFragsForLevel(currentLevel int) int {
 	switch currentLevel {
 	case 5:
-		return 5
+		return 3
 	case 6:
-		return 10
+		return 5
 	case 7:
-		return 20
+		return 8
 	case 8:
-		return 40
+		return 12
 	case 9:
-		return 80
+		return 20
 	}
 	return 0
 }
@@ -480,15 +481,20 @@ func (s *State) TogglePause() {
 	}
 }
 
-// TriggerPumpDump invokes the Hacker "Pump & Dump" ability; 30min cooldown.
+// TriggerPumpDump invokes the Hacker "Pump & Dump" ability. Default 30-min
+// cooldown; Pump & Dump II cuts that in half.
 func (s *State) TriggerPumpDump() error {
 	if !s.HasUnlock("pump_dump_action") {
 		return fmt.Errorf("requires Pump & Dump skill")
 	}
+	cooldown := int64(1800)
+	if s.HasSkill("pump_dump_ii") {
+		cooldown = 900
+	}
 	last := s.EventCooldown["pump_dump"]
 	now := time.Now().Unix()
-	if now-last < 1800 {
-		return fmt.Errorf("on cooldown for %d more minutes", (1800-(now-last))/60)
+	if now-last < cooldown {
+		return fmt.Errorf("on cooldown for %d more minutes", (cooldown-(now-last))/60)
 	}
 	s.EventCooldown["pump_dump"] = now
 	s.Modifiers = append(s.Modifiers, Modifier{
