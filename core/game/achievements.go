@@ -17,7 +17,10 @@ func (s *State) HasAchievement(id string) bool {
 	return false
 }
 
-// grantAchievement idempotently unlocks an achievement and logs it.
+// grantAchievement idempotently unlocks an achievement and logs it. If the
+// def carries a TPReward, the bonus is credited and a second log line
+// appears so the player sees the income explicitly. TPReward==0 stays
+// silent so cosmetic-only or yet-to-be-tuned achievements behave as before.
 func (s *State) grantAchievement(id string) {
 	if s.HasAchievement(id) {
 		return
@@ -29,6 +32,11 @@ func (s *State) grantAchievement(id string) {
 	s.Achievements = append(s.Achievements, id)
 	s.appendLog("opportunity", i18n.T("game.achievement",
 		fmt.Sprintf("%s %s — %s", def.Emoji, def.LocalName(), def.LocalDesc())))
+	if def.TPReward > 0 {
+		s.TechPoint += def.TPReward
+		s.appendLog("opportunity", i18n.T("log.achievement.tp_bonus",
+			def.TPReward, def.LocalName()))
+	}
 }
 
 // CheckAchievements evaluates every achievement and grants any that have
@@ -110,5 +118,48 @@ func (s *State) CheckAchievements() {
 	// "crisis_manager": three market crashes on this save.
 	if s.MarketCrashCount >= 3 {
 		s.grantAchievement("crisis_manager")
+	}
+	// Lifetime-earned milestones — the primary endgame TP faucet. Sits next
+	// to the achievement checks so all per-tick TP bookkeeping lives in one
+	// file.
+	s.checkLifetimeMilestones()
+}
+
+// lifetimeMilestone is one rung on the lifetime-earned ladder. Pays the
+// listed TP exactly once when LifetimeEarned crosses LE.
+type lifetimeMilestone struct {
+	LE float64
+	TP int
+}
+
+// lifetimeMilestones is an ordered ladder of (LE threshold, TP reward)
+// pairs. Total payout across the full ladder is ~1980 TP — enough to make
+// the 13,100-TP mastery ceiling reachable across a few prestige cycles
+// without trivialising it. The table grows roughly geometrically so each
+// tier feels like a real milestone rather than a steady drip.
+var lifetimeMilestones = []lifetimeMilestone{
+	{LE: 1e4, TP: 5},
+	{LE: 1e5, TP: 15},
+	{LE: 1e6, TP: 30},
+	{LE: 1e7, TP: 60},
+	{LE: 1e8, TP: 120},
+	{LE: 1e9, TP: 250},
+	{LE: 1e10, TP: 500},
+	{LE: 1e11, TP: 1000},
+}
+
+// checkLifetimeMilestones pays out every unawarded tier the player has
+// crossed on this save. Idempotent via LifetimeMilestonesPaid, which acts
+// as a high-water mark index into lifetimeMilestones.
+func (s *State) checkLifetimeMilestones() {
+	for s.LifetimeMilestonesPaid < len(lifetimeMilestones) {
+		next := lifetimeMilestones[s.LifetimeMilestonesPaid]
+		if s.LifetimeEarned < next.LE {
+			return
+		}
+		s.TechPoint += next.TP
+		s.LifetimeMilestonesPaid++
+		s.appendLog("opportunity", i18n.T("log.milestone.tp",
+			next.TP, FmtBTC(next.LE)))
 	}
 }

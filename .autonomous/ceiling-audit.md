@@ -1,5 +1,80 @@
 # Late-Game Ceiling Audit
 
+> ## Sprint 2 update — 2026-04-25
+>
+> The "tech_share is the only TP source" bottleneck called out below has
+> been addressed by adding **four new TP faucets**. The audit body that
+> follows is from sprint 1 and reflects the pre-faucet state; this section
+> overlays the revised numbers.
+>
+> ### New TP sources (all in `core/game/`)
+>
+> 1. **Achievement TPRewards** — every achievement now carries a one-shot
+>    `TPReward` (1 / 3 / 5 / 10 by tier). Catalog total: **≈ 87 TP** across
+>    18 achievements. Fired by `grantAchievement`
+>    (`core/game/achievements.go`).
+> 2. **Lifetime-earned milestones** — eight tiers from LE=10K (5 TP) up
+>    to LE=100B (1000 TP). Catalog total: **≈ 1,980 TP** across the full
+>    arc. Each tier pays exactly once via `LifetimeMilestonesPaid`
+>    high-water counter; new method `checkLifetimeMilestones` runs
+>    inside `CheckAchievements`.
+> 3. **Syndicate dividend bonus** — every non-zero weekly payout now
+>    grants **+5 TP** alongside the BTC dividend
+>    (`SyndicateDividendTPBonus`). At ~52 payouts/virtual-year that's
+>    ~260 TP/year of dedicated late-game play.
+> 4. **Prestige TP carryover** — Retire banks **25%** of unspent TP
+>    (floor) into the legacy store, **capped at 200 TP**, surfaced into
+>    the next run via a new `LegacyStore.CarriedTP` field consumed once
+>    by `newStateWithLegacy`.
+>
+> ### Revised TP/h ballpark
+>
+> Sprint-1 estimate was a flat ~10–12 TP/h endgame, dominated by
+> `tech_share` events. With the new faucets layered in:
+>
+> | Source | Sustained late-game TP rate |
+> |---|---|
+> | `tech_share` events (unchanged) | ~10–12 TP/h |
+> | Lifetime milestones | bursty: tiers 5–8 alone deliver 1,870 TP, paid in chunks as LE crosses 100M / 1B / 10B / 100B (one tier per ~tens of hours at high earn rates) |
+> | Syndicate dividend | ~5 TP per virtual week ≈ 0.7 TP/h sustained |
+> | Achievement bursts | ~87 TP one-shot, mostly front-loaded |
+> | Prestige carry | up to +200 TP at every prestige boundary |
+>
+> Effective endgame TP/h on a sustained farm with milestone tiers still
+> ahead lands roughly **30–60 TP/h** (event income + amortised milestone
+> bursts), spiking to multi-hundred TP-per-tier when crossing the higher
+> LE thresholds — a 3–5× improvement over the pre-sprint baseline.
+>
+> ### Mastery reachability
+>
+> Mastery's full 13,100-TP ladder still isn't single-run territory, but
+> it is now **reachable across a realistic multi-prestige campaign**:
+>
+> - One full LE arc to 100B yields ~1,980 milestone TP + ~87 achievement
+>   TP + ~200 prestige carry = ~2,270 TP/run, plus ongoing event +
+>   syndicate income.
+> - Five to seven prestige cycles, plus continuous event farming, lands
+>   in the 13K range. That's a credible long-tail goal for the
+>   ~50-hour-plus engaged player rather than the 1,300-hour wall the
+>   sprint-1 audit projected.
+>
+> ### What's still pending
+>
+> - LP ceiling (2,150 LP total to max every prestige perk) — sprint 1's
+>   second bottleneck — is **untouched** by this sprint. Adding more
+>   perks or higher tiers is the natural next sprint.
+> - Hardware ceiling (T3 Purrfect / 24-slot orbit) is also untouched.
+>
+> Verification: `go test ./core/game/` passes; new tests
+> `TestAchievementTPReward`, `TestLifetimeMilestonePaysOnce`,
+> `TestSyndicateDividendAwardsTP`, `TestRetireCarriesTP`, and
+> `TestSimTPScalesWithProgression` lock the faucets in. Three-seed sim
+> runs (`./bin/meowmine-sim --ticks=3600 --seed={1,2,3}`) confirm fresh
+> starter state still produces only 2–7 TP/h — the new faucets only
+> reward actual progression.
+>
+> ---
+
 Snapshot date: 2026-04-25. All numbers extracted from the source on
 `auto/session-1777134405-sprint-1` and corroborated by `bin/meowmine-sim`
 runs (seeds 1/2/3, 24h each). Audit-only — no game code modified.

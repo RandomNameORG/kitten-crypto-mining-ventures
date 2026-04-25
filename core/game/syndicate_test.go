@@ -155,6 +155,42 @@ func TestSyndicateMultiWeekCatchup(t *testing.T) {
 	}
 }
 
+// TestSyndicateDividendAwardsTP — a non-zero dividend pays the flat TP
+// bonus on top of the BTC; a zero-contribution payout window pays nothing.
+// Guards the late-game TP faucet from regressing into either a silent drop
+// or a free TP printer for empty pools.
+func TestSyndicateDividendAwardsTP(t *testing.T) {
+	withTempHome(t)
+	// Non-zero contribution → TP awarded.
+	s := NewState("DivTP")
+	s.TechPoint = 0
+	now := simTestBaseUnix + SyndicatePayoutIntervalSec + 1
+	s.SyndicateJoined = true
+	s.SyndicateContribution = 1000
+	s.SyndicateLastPayoutUnix = now - (SyndicatePayoutIntervalSec + 1)
+
+	s.advanceSyndicate(now)
+	if s.TechPoint != SyndicateDividendTPBonus {
+		t.Errorf("TP after non-zero dividend = %d, want %d",
+			s.TechPoint, SyndicateDividendTPBonus)
+	}
+
+	// Zero contribution → no TP. Reuse the same state: the next interval
+	// fires with an empty bucket because the prior payout drained it.
+	s2 := NewState("ZeroDiv")
+	s2.TechPoint = 7
+	now2 := simTestBaseUnix + SyndicatePayoutIntervalSec + 1
+	s2.SyndicateJoined = true
+	s2.SyndicateContribution = 0
+	s2.SyndicateLastPayoutUnix = now2 - (SyndicatePayoutIntervalSec + 1)
+
+	s2.advanceSyndicate(now2)
+	if s2.TechPoint != 7 {
+		t.Errorf("TP must not move on zero-dividend payout; got %d (was 7)",
+			s2.TechPoint)
+	}
+}
+
 // TestSyndicateUnjoinedAdvanceNoop — advanceSyndicate on a not-joined state
 // must be inert. Guards against a refactor that accidentally credits
 // dividends to someone who never joined.
