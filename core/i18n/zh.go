@@ -78,6 +78,8 @@ var zhStrings = map[string]string{
 	"status.order":        "📦 已下单 %s",
 	"status.upgrade":      "⚙️  升级尝试中",
 	"status.repaired":     "🔧 已修好",
+	"status.repair_all":   "🔧 维修 %d 张显卡（花费 %s）",
+	"status.repair_all_none": "没有要修的坏卡",
 	"status.sold":         "💵 已出售",
 	"status.unlocked":     "🔓 %s 已解锁",
 	"status.now_in":       "📍 当前在 %s",
@@ -101,7 +103,7 @@ var zhStrings = map[string]string{
 
 	// GPUs view.
 	"gpus.title":        "🖥  我的显卡",
-	"gpus.help":         "↑/↓ 选择   [u] 升级   [o] 超频   [r] 维修   [s] 拆解   [b] 排序   [esc]/[1] 返回",
+	"gpus.help":         "↑/↓ 选  ←/→ 翻页  [u] 升级  [o] 超频  [r] 修  [R] 全修  [s] 拆  [b] 排序  [esc]/[1] 返回",
 	"gpus.empty":        "  （还没有显卡，去商店看看）",
 	"gpus.oc_mark":      " 超频+%d%%",
 	"gpus.sort_label":   "排序：%s",
@@ -153,6 +155,11 @@ var zhStrings = map[string]string{
 	"log.title": "📜 完整事件日志",
 	"log.help":  "[esc]/[1] 返回",
 	"log.empty": "  （空）",
+	"log.older": "  … 另有 %d 条更早的（存档里还在）",
+
+	// Paging.
+	"paging.hint": "  ← 第 %d/%d 页 →  ·  共 %d 条  ·  ↑↓ 页内移动",
+	"paging.clip": "  … 还有 %d 行隐藏 — 拉大终端或滚动",
 
 	// Help.
 	"help.title":       "🐾 帮助",

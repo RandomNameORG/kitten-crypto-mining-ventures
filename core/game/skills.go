@@ -108,14 +108,21 @@ func (s *State) HeatMult() float64 {
 	return mult
 }
 
-// RepairFree reports whether repairs cost nothing.
-func (s *State) RepairFree() bool {
+// RepairCostMult is the multiplier applied to a repair's base cost. PCB
+// Surgery now stacks as a 50% discount instead of zeroing the cost.
+// Multiple discount-kind skills (if added later) compound multiplicatively.
+func (s *State) RepairCostMult() float64 {
+	mult := 1.0
 	for id := range s.UnlockedSkills {
-		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "repair_free" {
-			return true
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "repair_discount" {
+			v := def.Effect.Value
+			if v <= 0 || v >= 1 {
+				v = 0.5 // sane default for misconfigured catalogs
+			}
+			mult *= v
 		}
 	}
-	return false
+	return mult
 }
 
 // MercLoyaltyFloor is a flat loyalty bonus from skills.

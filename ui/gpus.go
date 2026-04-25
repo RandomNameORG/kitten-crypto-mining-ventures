@@ -62,7 +62,10 @@ func (a App) renderGPUsView() string {
 	if len(gpus) == 0 {
 		lines = append(lines, DimStyle.Render(i18n.T("gpus.empty")))
 	}
-	for i, g := range gpus {
+	pageSize := a.listPageSize()
+	start, end := pageWindow(len(gpus), a.gpusCursor, pageSize)
+	for i := start; i < end; i++ {
+		g := gpus[i]
 		marker := "  "
 		if i == a.gpusCursor {
 			marker = TitleStyle.Render("▶ ")
@@ -115,6 +118,9 @@ func (a App) renderGPUsView() string {
 		)
 		lines = append(lines, line)
 	}
+	if hint := pagingHint(len(gpus), a.gpusCursor, pageSize); hint != "" {
+		lines = append(lines, "", hint)
+	}
 	return PanelStyle.Width(fitWidth(110, a.w)).Render(strings.Join(lines, "\n"))
 }
 
@@ -151,6 +157,40 @@ func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {
 				a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
 			} else {
 				a = a.withStatus(i18n.T("status.repaired"))
+			}
+		}
+	case "R":
+		fixed, cost := a.state.RepairAllBroken()
+		if fixed == 0 {
+			a = a.withStatus(i18n.T("status.repair_all_none"))
+		} else {
+			a = a.withStatus(i18n.T("status.repair_all", fixed, game.FmtBTCInt(cost)))
+		}
+	case "left", "h", "[", "pgup":
+		// Jump to the same relative slot on the previous page. If we're
+		// already on page 1, snap to item 0.
+		size := a.listPageSize()
+		curPage := a.gpusCursor / size
+		if curPage == 0 {
+			a.gpusCursor = 0
+		} else {
+			rel := a.gpusCursor % size
+			a.gpusCursor = (curPage-1)*size + rel
+		}
+	case "right", "l", "]", "pgdown":
+		size := a.listPageSize()
+		totalPages := (len(gpus) + size - 1) / size
+		curPage := a.gpusCursor / size
+		if curPage >= totalPages-1 {
+			a.gpusCursor = len(gpus) - 1
+			if a.gpusCursor < 0 {
+				a.gpusCursor = 0
+			}
+		} else {
+			rel := a.gpusCursor % size
+			a.gpusCursor = (curPage+1)*size + rel
+			if a.gpusCursor > len(gpus)-1 {
+				a.gpusCursor = len(gpus) - 1
 			}
 		}
 	case "s":

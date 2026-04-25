@@ -19,11 +19,21 @@ func (a App) renderLogView() string {
 	if len(log) == 0 {
 		lines = append(lines, DimStyle.Render(i18n.T("log.empty")))
 	}
-	for i := len(log) - 1; i >= 0 && i > len(log)-50; i-- {
-		e := log[i]
+	// Show the most recent N entries that can fit. The body-clip in
+	// View() handles terminal height; here we just cap the visible window
+	// well above the GPU page size so the log feels chronological.
+	limit := 30
+	if limit > len(log) {
+		limit = len(log)
+	}
+	for n := 0; n < limit; n++ {
+		e := log[len(log)-1-n]
 		ts := time.Unix(e.Time, 0).Format("15:04:05")
 		line := fmt.Sprintf("  %s  %s", DimStyle.Render(ts), CategoryStyle(e.Category).Render(e.Text))
 		lines = append(lines, line)
+	}
+	if len(log) > limit {
+		lines = append(lines, "", DimStyle.Render(fmt.Sprintf(i18n.T("log.older"), len(log)-limit)))
 	}
 	return PanelStyle.Width(fitWidth(100, a.w)).Render(strings.Join(lines, "\n"))
 }
