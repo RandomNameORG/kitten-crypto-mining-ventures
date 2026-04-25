@@ -61,22 +61,66 @@ func (a App) bodyMaxRows() int {
 	return a.h - reserved
 }
 
-// clipBody truncates `body` to at most maxRows visible lines. If trimming
-// happened, replaces the last line with a hint that more content was hidden.
-// Lipgloss-rendered borders count as lines too — this is a coarse but
-// reliable safety net.
-func clipBody(body string, maxRows int) string {
+// bodyPagePerPage is how many body lines fit per page once the paging hint
+// is reserved. Always at least 1 so a tiny terminal still shows something.
+func bodyPagePerPage(maxRows int) int {
+	per := maxRows - 1 // reserve one row for the page hint
+	if per < 1 {
+		per = 1
+	}
+	return per
+}
+
+// bodyTotalPages reports how many pages `body` would split into at this
+// terminal height. 1 when everything fits.
+func bodyTotalPages(body string, maxRows int) int {
 	if maxRows <= 0 {
-		return body
+		return 1
 	}
 	lines := splitLines(body)
 	if len(lines) <= maxRows {
-		return body
+		return 1
 	}
-	keep := lines[:maxRows-1]
-	hidden := len(lines) - (maxRows - 1)
-	keep = append(keep, DimStyle.Render(fmt.Sprintf(i18n.T("paging.clip"), hidden)))
-	return joinLines(keep)
+	per := bodyPagePerPage(maxRows)
+	return (len(lines) + per - 1) / per
+}
+
+// paginateBody slices `body` into the page indexed by `page` (0-based) at
+// the current terminal height. When body fits in one screen, returns it
+// unchanged with totalPages=1. Otherwise reserves the bottom row for a
+// "← page X/Y →" hint, which the caller appends.
+func paginateBody(body string, maxRows, page int) (slice string, totalPages, currentPage int) {
+	if maxRows <= 0 {
+		return body, 1, 0
+	}
+	lines := splitLines(body)
+	if len(lines) <= maxRows {
+		return body, 1, 0
+	}
+	per := bodyPagePerPage(maxRows)
+	totalPages = (len(lines) + per - 1) / per
+	currentPage = page
+	if currentPage >= totalPages {
+		currentPage = totalPages - 1
+	}
+	if currentPage < 0 {
+		currentPage = 0
+	}
+	start := currentPage * per
+	end := start + per
+	if end > len(lines) {
+		end = len(lines)
+	}
+	return joinLines(lines[start:end]), totalPages, currentPage
+}
+
+// bodyPagingHint renders the "← page X/Y →" indicator shown at the bottom
+// of a paginated body. Mirrors pagingHint's styling.
+func bodyPagingHint(totalPages, page int) string {
+	if totalPages <= 1 {
+		return ""
+	}
+	return DimStyle.Render(fmt.Sprintf(i18n.T("paging.body_hint"), page+1, totalPages))
 }
 
 // splitLines walks body once, faster than strings.Split which allocates a

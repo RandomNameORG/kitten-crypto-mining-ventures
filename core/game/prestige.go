@@ -13,6 +13,15 @@ import (
 // for the genre.
 const PrestigeThreshold = 250_000.0
 
+// PrestigeTPCarryFraction is the slice of unspent TP banked into the
+// fresh run on Retire (floor-rounded). 0.25 keeps prestige worth doing
+// without making it a TP printer.
+const PrestigeTPCarryFraction = 0.25
+
+// PrestigeTPCarryCap clamps the carryover so a player who hoards TP for a
+// dozen runs can't enter the next one with a four-digit head start.
+const PrestigeTPCarryCap = 200
+
 // LegacyPerk defines a purchasable prestige bonus.
 type LegacyPerk struct {
 	ID          string
@@ -74,6 +83,14 @@ func (s *State) Retire() (*State, int, error) {
 	for _, bp := range s.Blueprints {
 		legacy.Blueprints = append(legacy.Blueprints, bp)
 	}
+	carry := int(math.Floor(float64(s.TechPoint) * PrestigeTPCarryFraction))
+	if carry > PrestigeTPCarryCap {
+		carry = PrestigeTPCarryCap
+	}
+	if carry < 0 {
+		carry = 0
+	}
+	legacy.CarriedTP = carry
 	_ = legacy.Save()
 
 	fresh := newStateWithLegacy(s.KittenName, legacy)

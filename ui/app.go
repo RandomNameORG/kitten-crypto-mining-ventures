@@ -73,6 +73,12 @@ type App struct {
 	prestigeCursor int
 	masteryCursor  int
 
+	// bodyPage is the current page within whichever view the player is on,
+	// when the rendered body exceeds bodyMaxRows. Reset to 0 on every view
+	// switch (see Update). Clamped on each render so growing/shrinking
+	// content never strands the user past the last page.
+	bodyPage int
+
 	// Splash overlay phases — name first, then difficulty. Sim is frozen
 	// while a splash phase is active so the starter GPU doesn't tick down.
 	splashPhase    splashPhase
@@ -202,9 +208,65 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			a.showOfflineSummary = nil
 			return a, nil
 		}
-		return a.handleKey(m)
+		oldView := a.view
+		model, cmd := a.handleKey(m)
+		if next, ok := model.(App); ok {
+			if next.view != oldView {
+				next.bodyPage = 0
+			}
+			next.bodyPage = next.clampBodyPage(next.bodyPage)
+			return next, cmd
+		}
+		return model, cmd
 	}
 	return a, nil
+}
+
+// clampBodyPage forces page into [0, totalPages-1] for the current view's
+// body. Used after key handling so an over-incremented bodyPage settles
+// onto the last page instead of running off into space.
+func (a App) clampBodyPage(page int) int {
+	body := a.renderCurrentBody()
+	totalPages := bodyTotalPages(body, a.bodyMaxRows())
+	if page >= totalPages {
+		page = totalPages - 1
+	}
+	if page < 0 {
+		page = 0
+	}
+	return page
+}
+
+// renderCurrentBody mirrors the body switch in View() so handleKey/Update
+// can ask "how tall is this view right now?" without rendering chrome.
+func (a App) renderCurrentBody() string {
+	switch a.view {
+	case viewDashboard:
+		return a.renderDashboard()
+	case viewStore:
+		return a.renderStore()
+	case viewGPUs:
+		return a.renderGPUsView()
+	case viewRooms:
+		return a.renderRoomsView()
+	case viewSkills:
+		return a.renderSkillsView()
+	case viewLog:
+		return a.renderLogView()
+	case viewMercs:
+		return a.renderMercsView()
+	case viewLab:
+		return a.renderLabView()
+	case viewPrestige:
+		return a.renderPrestigeView()
+	case viewStats:
+		return a.renderStatsView()
+	case viewMastery:
+		return a.renderMasteryView()
+	case viewHelp:
+		return a.renderHelpView()
+	}
+	return ""
 }
 
 func (a App) handleNameEntry(k tea.KeyMsg) (tea.Model, tea.Cmd) {
@@ -334,6 +396,21 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 			a = a.withStatus(i18n.T("status.saved"))
 		}
 		return a, nil
+	case "left", "right":
+		// Body paging: replaces the old "widen terminal" hint when the
+		// rendered body overflows bodyMaxRows. GPU view keeps ←/→ for its
+		// own data-level paging — its body is bounded by listPageSize so
+		// body paging is moot there anyway.
+		if a.view != viewGPUs {
+			if key == "left" {
+				if a.bodyPage > 0 {
+					a.bodyPage--
+				}
+			} else {
+				a.bodyPage++ // Update clamps after dispatch
+			}
+			return a, nil
+		}
 	}
 
 	// View-specific.
@@ -384,7 +461,10 @@ func (a App) saveNow() error {
 
 // View renders the full screen.
 func (a App) View() string {
-	if a.w < 40 || a.h < 14 {
+	// Width is a hard floor — at <40 cols even a paginated body's status
+	// chrome can't fit. Height is paged via bodyPage, so the only h floor
+	// left is "can we draw header+nav+footer at all".
+	if a.w < 40 || a.h < 8 {
 		return i18n.T("warn.terminal_too_small")
 	}
 	switch a.splashPhase {
@@ -429,12 +509,15 @@ func (a App) View() string {
 
 	footer := a.renderFooter()
 
-	// Clip the body to whatever rows are left after the chrome — guarantees
-	// the header never scrolls offscreen on tiny terminals, even if a view
-	// generates more lines than fit.
-	body = clipBody(body, a.bodyMaxRows())
+	// Paginate the body so the header never scrolls offscreen and the
+	// player can still reach all of it via ←/→ on tight terminals — same
+	// model as the GPU view's data paging, just applied to rendered rows.
+	body, totalPages, currentPage := paginateBody(body, a.bodyMaxRows(), a.bodyPage)
 
 	parts := []string{header, nav, body}
+	if hint := bodyPagingHint(totalPages, currentPage); hint != "" {
+		parts = append(parts, lipgloss.NewStyle().Padding(0, 1).Render(hint))
+	}
 	if hint := a.renderViewHint(); hint != "" {
 		parts = append(parts, lipgloss.NewStyle().Padding(0, 1).Render(hint))
 	}

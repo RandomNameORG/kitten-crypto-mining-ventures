@@ -250,6 +250,48 @@ func TestSimSyndicateDividendsAccrue(t *testing.T) {
 	}
 }
 
+// TestSimTPScalesWithProgression — sprint-2 invariant: late-game TP income
+// must outpace early-game once the new faucets (lifetime milestones,
+// achievement bonuses) are wired. Compares a baseline 1h sim to a
+// pre-progressed run where LifetimeEarned starts above several milestone
+// tiers; the progressed run should end with materially more TP without
+// any change to the tick loop's RNG seed.
+func TestSimTPScalesWithProgression(t *testing.T) {
+	withTempHome(t)
+	baseline := runSim(t, 1, 3600)
+
+	// Progressed run: same seed, but the probe pre-loads LifetimeEarned to
+	// 50M on tick 1, which should trigger milestone tiers 1 (10K), 2 (100K),
+	// 3 (1M) and 4 (10M) — totalling 5+15+30+60 = 110 TP from milestones
+	// alone. We pre-load via the probe rather than mutating before the loop
+	// because some milestone logic assumes the value moved during play.
+	withTempHome(t)
+	preloaded := false
+	progressed := runSimWithProbe(t, 1, 3600, func(i int, s *State) {
+		if !preloaded {
+			s.LifetimeEarned = 50_000_000
+			preloaded = true
+		}
+	})
+
+	if baseline.TechPoint >= 50 {
+		t.Errorf("baseline starter run produced %d TP — fresh state shouldn't dump hundreds of TP per hour",
+			baseline.TechPoint)
+	}
+	gain := progressed.TechPoint - baseline.TechPoint
+	// Expect at least the 110 TP from milestone tiers 1–4. Allow some
+	// slack for unrelated grant paths but anchor against the new faucets
+	// so a regression that disables them shows up as a near-zero gain.
+	if gain < 100 {
+		t.Errorf("progressed run gained only %d TP over baseline (baseline=%d, progressed=%d) — milestone faucet not firing?",
+			gain, baseline.TechPoint, progressed.TechPoint)
+	}
+	if progressed.LifetimeMilestonesPaid < 4 {
+		t.Errorf("progressed run only crossed %d milestone tiers, expected ≥4 by LE=50M",
+			progressed.LifetimeMilestonesPaid)
+	}
+}
+
 // TestSimMarketPriceInvariants runs a full virtual day through the sim and
 // asserts the market price stays finite + clamped every tick, and that it
 // actually moves off 1.0 across the run. This catches a drift path that's
