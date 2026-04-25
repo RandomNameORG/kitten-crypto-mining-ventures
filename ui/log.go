@@ -19,14 +19,10 @@ func (a App) renderLogView() string {
 	if len(log) == 0 {
 		lines = append(lines, DimStyle.Render(i18n.T("log.empty")))
 	}
-	// Only show as many entries as fit — newest first. Older entries roll
-	// off the bottom; the full backlog is still in s.Log for save-state
-	// continuity.
-	pageSize := a.listPageSize()
-	if pageSize < 1 {
-		pageSize = 1
-	}
-	limit := pageSize
+	// Show the most recent N entries that can fit. The body-clip in
+	// View() handles terminal height; here we just cap the visible window
+	// well above the GPU page size so the log feels chronological.
+	limit := 30
 	if limit > len(log) {
 		limit = len(log)
 	}

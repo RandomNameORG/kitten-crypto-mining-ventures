@@ -6,23 +6,14 @@ import (
 	"github.com/RandomNameORG/kitten-crypto-mining-ventures/core/i18n"
 )
 
-// listPageSize returns how many list rows the current view can show without
-// pushing the header/footer offscreen. Conservative: subtracts a fixed
-// amount of chrome (header, nav, view title, view help, sort label, blank
-// spacer, footer, hint, padding) plus a safety margin.
-func (a App) listPageSize() int {
-	const chrome = 12
-	const minRows = 5
-	if a.h <= 0 {
-		// Pre-WindowSizeMsg fallback. Pick a roomy default so the first
-		// frame doesn't render a stub.
-		return 30
-	}
-	if a.h <= chrome+minRows {
-		return minRows
-	}
-	return a.h - chrome
-}
+// listPageSize is the FIXED rows-per-page for cursor-driven list views.
+// Intentionally NOT terminal-height-aware: the player wants pages to mean
+// "groups of N", not "however many fit on screen", so the indicator and
+// arrow-key flips behave predictably even on tall terminals.
+//
+// Per-view overrides exist in renderXxxView when a different chunk size
+// makes more sense (e.g. mercs has bounded hireable count).
+func (a App) listPageSize() int { return 10 }
 
 // pageWindow returns [start, end) — the slice of items visible on the
 // current page. STRICT pagination: items are partitioned into fixed
