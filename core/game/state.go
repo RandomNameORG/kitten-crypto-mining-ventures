@@ -132,6 +132,12 @@ type State struct {
 	// LegacyPoints spent / available this run. True cross-run LP lives in legacy.json.
 	LegacyAvailable int `json:"legacy_available"`
 
+	// LifetimeMilestonesPaid is the high-water mark into lifetimeMilestones
+	// (achievements.go). Each elapsed tier pays a one-shot TP bounty; the
+	// counter advances strictly forward so a player crossing 10K then later
+	// dropping below it can't double-claim.
+	LifetimeMilestonesPaid int `json:"lifetime_milestones_paid,omitempty"`
+
 	// Syndicate: late-game cooperative pool. When Joined, advanceMining
 	// diverts SyndicateCutRate of each GPU's earn into SyndicateContribution
 	// before crediting BTC / LifetimeEarned. Every
@@ -269,6 +275,17 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 		}
 		if len(legacy.Blueprints) > 0 {
 			s.appendLog("opportunity", i18n.T("log.legacy.blueprints", len(legacy.Blueprints)))
+		}
+		// Apply prestige TP carry-over (banked at Retire). Drained to zero
+		// after consumption so a save/load cycle can't re-credit it. Save
+		// failure is silent — the carry is still applied in-memory; worst
+		// case a re-prestige before next save would re-bank a smaller
+		// fraction of the same pot.
+		if legacy.CarriedTP > 0 {
+			s.TechPoint = legacy.CarriedTP
+			s.appendLog("opportunity", i18n.T("log.prestige.tp_carry", legacy.CarriedTP))
+			legacy.CarriedTP = 0
+			_ = legacy.Save()
 		}
 	}
 	return s

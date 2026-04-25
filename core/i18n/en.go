@@ -383,9 +383,13 @@ var enStrings = map[string]string{
 	"log.pump.fired": "\uf201 Pump & Dump — BTC price ×1.5 for 5 minutes.",
 
 	"log.prestige.retired":  "\uf1b0 You retired rich. +%d LegacyPoints banked.",
+	"log.prestige.tp_carry": "\uf0eb Carried over %d TechPoint from your previous run.",
 	"log.legacy.cash":       "Legacy bonus: +%s starter balance.",
 	"log.legacy.room":       "Legacy bonus: University Server Room pre-unlocked.",
 	"log.legacy.blueprints": "Legacy bonus: %d blueprints carried over.",
+	"log.achievement.tp_bonus": "\uf0eb +%d TechPoint for unlocking %s.",
+	"log.milestone.tp":         "\uf0eb Lifetime milestone: +%d TechPoint at %s lifetime earned.",
+	"log.syndicate.tp_bonus":   "\uf0eb Syndicate research dividend: +%d TechPoint.",
 	"hdr.achievements":    "🏆 %d/%d",
 
 	// Minimum terminal size warning.

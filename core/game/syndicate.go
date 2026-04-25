@@ -35,6 +35,11 @@ const (
 	// SyndicateLeaveFee is the flat BTC cost to leave the syndicate. The
 	// fee is deducted from BTC; any unpaid contribution is forfeited.
 	SyndicateLeaveFee = 2500.0
+
+	// SyndicateDividendTPBonus is the flat TP awarded each time the pool
+	// pays a non-zero dividend. Weekly cadence keeps it modest (~5 TP per
+	// virtual week) while still tying TP income to the late-game co-op.
+	SyndicateDividendTPBonus = 5
 )
 
 // CanJoinSyndicate reports whether the player meets the threshold. It's
@@ -105,6 +110,9 @@ func (s *State) advanceSyndicate(now int64) {
 			s.LifetimeEarned += dividend
 			s.SyndicateTotalDividends += dividend
 			s.appendLog("opportunity", i18n.T("log.syndicate.payout", FmtBTC(dividend)))
+			s.TechPoint += SyndicateDividendTPBonus
+			s.appendLog("opportunity", i18n.T("log.syndicate.tp_bonus",
+				SyndicateDividendTPBonus))
 		}
 	}
 }

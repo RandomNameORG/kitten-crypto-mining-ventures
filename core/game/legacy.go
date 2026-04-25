@@ -21,6 +21,12 @@ type LegacyStore struct {
 
 	// Carried-over blueprints.
 	Blueprints []*Blueprint `json:"blueprints"`
+
+	// CarriedTP banks the slice of unspent TP retained at Retire. Consumed
+	// by newStateWithLegacy: read into the fresh state's TechPoint, then
+	// zeroed and persisted so a single retire can't re-credit on a later
+	// load. Capped at PrestigeTPCarryCap when produced.
+	CarriedTP int `json:"carried_tp,omitempty"`
 }
 
 func legacyPath() string {
