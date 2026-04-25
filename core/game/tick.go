@@ -86,7 +86,31 @@ func (s *State) Tick(now int64) {
 	s.advanceSyndicate(now)
 	s.advanceResearch(now)
 	s.payWages(now)
+	s.advanceAutoRepair(now)
 	s.CheckAchievements()
+}
+
+// advanceAutoRepair handles the Auto-Repair Loop skill: one broken GPU
+// fixed per 60 sim-seconds, free of charge (the skill chain gates this
+// behind PCB Surgery so it always inherits the repair_free effect).
+func (s *State) advanceAutoRepair(now int64) {
+	if !s.HasSkill("auto_repair") {
+		return
+	}
+	if s.LastAutoRepairUnix == 0 {
+		s.LastAutoRepairUnix = now
+		return
+	}
+	if now-s.LastAutoRepairUnix < 60 {
+		return
+	}
+	s.LastAutoRepairUnix = now
+	for _, g := range s.GPUs {
+		if g.Status == "broken" {
+			_ = s.RepairGPU(g.InstanceID)
+			return
+		}
+	}
 }
 
 // advanceShipping transitions shipping GPUs to running when their ETA passes.

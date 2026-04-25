@@ -102,9 +102,10 @@ type State struct {
 	NextGPUID     int                   `json:"next_gpu_id"`
 	Modifiers     []Modifier            `json:"modifiers"`
 	EventCooldown EventCooldowns        `json:"event_cooldown"`
-	LastTickUnix  int64                 `json:"last_tick_unix"`
-	LastBillUnix  int64                 `json:"last_bill_unix"`
-	LastWagesUnix int64                 `json:"last_wages_unix"`
+	LastTickUnix       int64            `json:"last_tick_unix"`
+	LastBillUnix       int64            `json:"last_bill_unix"`
+	LastWagesUnix      int64            `json:"last_wages_unix"`
+	LastAutoRepairUnix int64            `json:"last_auto_repair_unix,omitempty"`
 	Log           []LogEntry            `json:"log"`
 	Paused        bool                  `json:"paused"`
 	StartedUnix   int64                 `json:"started_unix"`

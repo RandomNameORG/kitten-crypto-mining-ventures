@@ -153,6 +153,11 @@ var enStrings = map[string]string{
 	"log.title": "📜 Full Event Log",
 	"log.help":  "[esc]/[1] back",
 	"log.empty": "  (empty)",
+	"log.older": "  … %d older entries (still in save)",
+
+	// Paging.
+	"paging.hint": "  page %d/%d  ·  %d total  ·  ↑↓ to scroll",
+	"paging.clip": "  … %d more lines hidden — widen terminal or scroll",
 
 	// Help.
 	"help.title":      "🐾 Help",

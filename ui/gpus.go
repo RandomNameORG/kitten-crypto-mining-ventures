@@ -62,7 +62,10 @@ func (a App) renderGPUsView() string {
 	if len(gpus) == 0 {
 		lines = append(lines, DimStyle.Render(i18n.T("gpus.empty")))
 	}
-	for i, g := range gpus {
+	pageSize := a.listPageSize()
+	start, end := pageWindow(len(gpus), a.gpusCursor, pageSize)
+	for i := start; i < end; i++ {
+		g := gpus[i]
 		marker := "  "
 		if i == a.gpusCursor {
 			marker = TitleStyle.Render("▶ ")
@@ -114,6 +117,9 @@ func (a App) renderGPUsView() string {
 			effCell,
 		)
 		lines = append(lines, line)
+	}
+	if hint := pagingHint(len(gpus), a.gpusCursor, pageSize); hint != "" {
+		lines = append(lines, "", hint)
 	}
 	return PanelStyle.Width(fitWidth(110, a.w)).Render(strings.Join(lines, "\n"))
 }

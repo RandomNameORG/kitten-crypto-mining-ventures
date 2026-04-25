@@ -153,6 +153,11 @@ var zhStrings = map[string]string{
 	"log.title": "📜 完整事件日志",
 	"log.help":  "[esc]/[1] 返回",
 	"log.empty": "  （空）",
+	"log.older": "  … 另有 %d 条更早的（存档里还在）",
+
+	// Paging.
+	"paging.hint": "  第 %d/%d 页  ·  共 %d 条  ·  ↑↓ 滚动",
+	"paging.clip": "  … 还有 %d 行隐藏 — 拉大终端或滚动",
 
 	// Help.
 	"help.title":       "🐾 帮助",

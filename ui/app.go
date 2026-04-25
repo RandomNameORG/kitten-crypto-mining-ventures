@@ -420,6 +420,11 @@ func (a App) View() string {
 
 	footer := a.renderFooter()
 
+	// Clip the body to whatever rows are left after the chrome — guarantees
+	// the header never scrolls offscreen on tiny terminals, even if a view
+	// generates more lines than fit.
+	body = clipBody(body, a.bodyMaxRows())
+
 	parts := []string{header, nav, body}
 	if hint := a.renderViewHint(); hint != "" {
 		parts = append(parts, lipgloss.NewStyle().Padding(0, 1).Render(hint))
