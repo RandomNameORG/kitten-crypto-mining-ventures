@@ -177,8 +177,8 @@ var zhStrings = map[string]string{
 	"log.older": "  … 另有 %d 条更早的（存档里还在）",
 
 	// Paging.
-	"paging.hint": "  ← 第 %d/%d 页 →  ·  共 %d 条  ·  ↑↓ 页内移动",
-	"paging.clip": "  … 还有 %d 行隐藏 — 拉大终端或滚动",
+	"paging.hint":      "  ← 第 %d/%d 页 →  ·  共 %d 条  ·  ↑↓ 页内移动",
+	"paging.body_hint": "  ← 第 %d/%d 页 →  ·  ←/→ 翻页",
 
 	// Help.
 	"help.title":       "🐾 帮助",
@@ -386,7 +386,7 @@ var zhStrings = map[string]string{
 	"log.legacy.blueprints": "Legacy 奖励：继承了 %d 份蓝图。",
 	"hdr.achievements":    "🏆 %d/%d",
 
-	"warn.terminal_too_small": "终端太小了，请至少调到 80x22。",
+	"warn.terminal_too_small": "终端太小（至少 40x8）。推荐 80x22。",
 
 	// 启动时的新版本提示弹窗。参数顺序必须与 en.go 保持一致。
 	"update.title":     "🆕 发现新版本",

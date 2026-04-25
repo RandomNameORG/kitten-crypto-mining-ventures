@@ -177,8 +177,8 @@ var enStrings = map[string]string{
 	"log.older": "  … %d older entries (still in save)",
 
 	// Paging.
-	"paging.hint": "  ← page %d/%d →  ·  %d total  ·  ↑↓ within page",
-	"paging.clip": "  … %d more lines hidden — widen terminal or scroll",
+	"paging.hint":      "  ← page %d/%d →  ·  %d total  ·  ↑↓ within page",
+	"paging.body_hint": "  ← page %d/%d →  ·  flip pages with ←/→",
 
 	// Help.
 	"help.title":      "🐾 Help",
@@ -389,7 +389,7 @@ var enStrings = map[string]string{
 	"hdr.achievements":    "🏆 %d/%d",
 
 	// Minimum terminal size warning.
-	"warn.terminal_too_small": "Please widen your terminal to at least 80x22.",
+	"warn.terminal_too_small": "Terminal too small (need at least 40x8). 80x22 recommended.",
 
 	// Update-available splash — shown on startup when GitHub reports a
 	// newer release than the running binary. See core/update and
