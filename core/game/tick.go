@@ -90,8 +90,9 @@ func (s *State) Tick(now int64) {
 	s.CheckAchievements()
 }
 
-// advanceAutoRepair handles the Auto-Repair Loop skill chain. Free of
-// charge (gated behind PCB Surgery, which inherits repair_free).
+// advanceAutoRepair handles the Auto-Repair Loop skill chain. Costs run
+// through RepairGPU which honours PCB Surgery's 50% discount — the player
+// still pays for cycles, just cheaply when the chain is fully built.
 //
 //	auto_repair      — 1 broken GPU / 60s
 //	auto_repair_ii   — 1 broken GPU / 30s
@@ -171,9 +172,9 @@ func (s *State) GPUStats(g *GPU) (eff, pow, heat, dur float64) {
 		}
 		eff, pow, heat, dur = def.Efficiency, def.PowerDraw, def.HeatOutput, float64(def.DurabilityHours)
 	}
-	upBonus := 1.0 + 0.15*float64(g.UpgradeLevel)
-	upPow := 1.0 + 0.10*float64(g.UpgradeLevel)
-	upHeat := 1.0 + 0.20*float64(g.UpgradeLevel)
+	upBonus := upgradeEffMult(g.UpgradeLevel)
+	upPow := upgradePowerMult(g.UpgradeLevel)
+	upHeat := upgradeHeatMult(g.UpgradeLevel)
 	eff *= upBonus * s.EfficiencyMult()
 	pow *= upPow * s.PowerDrawMult()
 	heat *= upHeat * s.HeatMult()
@@ -328,13 +329,74 @@ func (s *State) advanceBilling(now int64) {
 	}
 }
 
-// UpgradeGPU upgrades a GPU instance one level. 10% chance to brick per level.
+// MaxGPUUpgradeLevel caps the per-card upgrade ladder. Levels 1-5 are
+// money-only; levels 6-10 also burn research fragments (a sink for the
+// frag economy that otherwise hits ceiling fast).
+const MaxGPUUpgradeLevel = 10
+
+// upgradeEffMult: +15%/level for L1-5, +10%/level for L6-10.
+// At L5 = 1.75 (unchanged). At L10 = 2.25.
+func upgradeEffMult(level int) float64 {
+	if level <= 5 {
+		return 1.0 + 0.15*float64(level)
+	}
+	return 1.75 + 0.10*float64(level-5)
+}
+
+// upgradePowerMult: +10%/level for L1-5, +5%/level for L6-10.
+// Late levels hurt less so high-tier upgrades aren't pure power-scaling.
+func upgradePowerMult(level int) float64 {
+	if level <= 5 {
+		return 1.0 + 0.10*float64(level)
+	}
+	return 1.50 + 0.05*float64(level-5)
+}
+
+// upgradeHeatMult: +20%/level for L1-5, +10%/level for L6-10. Same idea.
+func upgradeHeatMult(level int) float64 {
+	if level <= 5 {
+		return 1.0 + 0.20*float64(level)
+	}
+	return 2.00 + 0.10*float64(level-5)
+}
+
+// UpgradeFragsForLevel returns the research-fragment cost to advance FROM
+// the given level (i.e. to reach level+1). Levels 1-5 are free (money
+// only); 6-10 ramp 5/10/20/40/80 frags.
+func UpgradeFragsForLevel(currentLevel int) int {
+	switch currentLevel {
+	case 5:
+		return 5
+	case 6:
+		return 10
+	case 7:
+		return 20
+	case 8:
+		return 40
+	case 9:
+		return 80
+	}
+	return 0
+}
+
+// UpgradeMoneyMult bumps the money cost for high-level upgrades — late
+// levels are a serious investment.
+func UpgradeMoneyMult(currentLevel int) float64 {
+	if currentLevel <= 4 {
+		return 1.0
+	}
+	// L5→6 = 1.3x, L6→7 = 1.6x, ..., L9→10 = 2.5x base
+	return 1.0 + 0.30*float64(currentLevel-4)
+}
+
+// UpgradeGPU upgrades a GPU instance one level. Levels 1-5 cost money only;
+// levels 6-10 also consume research fragments. Fail chance ramps with level.
 func (s *State) UpgradeGPU(instanceID int) error {
 	for _, g := range s.GPUs {
 		if g.InstanceID != instanceID {
 			continue
 		}
-		if g.UpgradeLevel >= 5 {
+		if g.UpgradeLevel >= MaxGPUUpgradeLevel {
 			return fmt.Errorf("already at max level")
 		}
 		var price int
@@ -343,12 +405,20 @@ func (s *State) UpgradeGPU(instanceID int) error {
 		} else {
 			price = 3000 // MEOWCore default upgrade base
 		}
-		cost := price / 3
+		cost := int(float64(price) / 3.0 * UpgradeMoneyMult(g.UpgradeLevel))
+		fragsNeeded := UpgradeFragsForLevel(g.UpgradeLevel)
 		if s.BTC < float64(cost) {
 			return fmt.Errorf("need %s, have %s", FmtBTCInt(cost), FmtBTC(s.BTC))
 		}
+		if fragsNeeded > 0 && s.ResearchFrags < fragsNeeded {
+			return fmt.Errorf("need %d research fragments, have %d", fragsNeeded, s.ResearchFrags)
+		}
 		s.BTC -= float64(cost)
+		s.ResearchFrags -= fragsNeeded
 		failChance := 0.05 + 0.05*float64(g.UpgradeLevel)
+		if failChance > 0.45 {
+			failChance = 0.45 // cap at 45% so L9→10 isn't a coin flip
+		}
 		if rand.Float64() < failChance {
 			g.Status = "broken"
 			s.appendLog("threat", i18n.T("log.gpu.upgrade.bricked"))
@@ -430,6 +500,19 @@ func (s *State) TriggerPumpDump() error {
 	return nil
 }
 
+// MaxDefenseLevel is the cap for any defense dimension. Levels 1-3 are
+// money-only; levels 4-8 also burn research fragments.
+const MaxDefenseLevel = 8
+
+// DefenseFragsForLevel returns how many fragments are needed to advance
+// FROM the given level. 0 for L1-3, then ramps 2/4/6/8/10 for L4-8.
+func DefenseFragsForLevel(currentLevel int) int {
+	if currentLevel < 3 {
+		return 0
+	}
+	return (currentLevel - 2) * 2
+}
+
 // UpgradeDefense bumps a single defense dimension on the current room.
 // dim: "lock" | "cctv" | "wiring" | "cooling" | "armor"
 func (s *State) UpgradeDefense(dim string) error {
@@ -453,14 +536,19 @@ func (s *State) UpgradeDefense(dim string) error {
 	default:
 		return fmt.Errorf("bad dim %q", dim)
 	}
-	if *lvl >= 5 {
+	if *lvl >= MaxDefenseLevel {
 		return fmt.Errorf("%s already maxed", label)
 	}
 	cost := (*lvl + 1) * 250
+	fragsNeeded := DefenseFragsForLevel(*lvl)
 	if s.BTC < float64(cost) {
 		return fmt.Errorf("need %s, have %s", FmtBTCInt(cost), FmtBTC(s.BTC))
 	}
+	if fragsNeeded > 0 && s.ResearchFrags < fragsNeeded {
+		return fmt.Errorf("need %d research fragments, have %d", fragsNeeded, s.ResearchFrags)
+	}
 	s.BTC -= float64(cost)
+	s.ResearchFrags -= fragsNeeded
 	*lvl++
 	s.appendLog("info", i18n.T("log.defense.upgraded", label, *lvl))
 	return nil

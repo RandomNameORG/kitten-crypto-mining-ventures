@@ -72,12 +72,17 @@ func (a App) renderRoomsView() string {
 		for _, d := range defenseDims {
 			lvl := levels[d.Dim]
 			next := (lvl + 1) * 250
+			frags := game.DefenseFragsForLevel(lvl)
 			style := DimStyle
-			if lvl >= 5 {
+			if lvl >= game.MaxDefenseLevel {
 				style = lipgloss.NewStyle().Foreground(OppGreen)
 			}
-			lines = append(lines, style.Render(fmt.Sprintf("  [%s] %-8s  lv %d/5   next %s",
-				d.Key, i18n.T(d.I18n), lvl, game.FmtBTCInt(next))))
+			fragSuffix := ""
+			if frags > 0 {
+				fragSuffix = fmt.Sprintf(" + %d frags", frags)
+			}
+			lines = append(lines, style.Render(fmt.Sprintf("  [%s] %-8s  lv %d/%d   next %s%s",
+				d.Key, i18n.T(d.I18n), lvl, game.MaxDefenseLevel, game.FmtBTCInt(next), fragSuffix)))
 		}
 	}
 	return PanelStyle.Width(fitWidth(100, a.w)).Render(strings.Join(lines, "\n"))

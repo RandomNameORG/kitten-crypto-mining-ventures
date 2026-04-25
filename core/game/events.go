@@ -373,10 +373,8 @@ func (s *State) RepairAllBroken() (int, int) {
 		if def, ok := data.GPUByID(g.DefID); ok {
 			price = def.Price
 		}
-		cost := price * 3 / 10
-		if s.RepairFree() {
-			cost = 0
-		}
+		baseCost := price * 3 / 10
+		cost := int(float64(baseCost) * s.RepairCostMult())
 		cands = append(cands, candidate{id: g.InstanceID, cost: cost})
 	}
 	if len(cands) == 0 {
@@ -402,7 +400,7 @@ func (s *State) RepairAllBroken() (int, int) {
 	return repaired, totalCost
 }
 
-// RepairGPU repairs a broken GPU. Free if PCB Surgery is unlocked.
+// RepairGPU repairs a broken GPU. PCB Surgery cuts the cost in half.
 func (s *State) RepairGPU(instanceID int) error {
 	for _, g := range s.GPUs {
 		if g.InstanceID != instanceID {
@@ -417,10 +415,8 @@ func (s *State) RepairGPU(instanceID int) error {
 		} else {
 			price = 3000
 		}
-		cost := price * 3 / 10
-		if s.RepairFree() {
-			cost = 0
-		}
+		baseCost := price * 3 / 10
+		cost := int(float64(baseCost) * s.RepairCostMult())
 		if s.BTC < float64(cost) {
 			return fmt.Errorf("need %s to repair", FmtBTCInt(cost))
 		}
