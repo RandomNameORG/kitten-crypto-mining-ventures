@@ -90,9 +90,13 @@ func (s *State) Tick(now int64) {
 	s.CheckAchievements()
 }
 
-// advanceAutoRepair handles the Auto-Repair Loop skill: one broken GPU
-// fixed per 60 sim-seconds, free of charge (the skill chain gates this
-// behind PCB Surgery so it always inherits the repair_free effect).
+// advanceAutoRepair handles the Auto-Repair Loop skill chain. Free of
+// charge (gated behind PCB Surgery, which inherits repair_free).
+//
+//	auto_repair      — 1 broken GPU / 60s
+//	auto_repair_ii   — 1 broken GPU / 30s
+//	auto_repair_iii  — all broken GPUs each cycle (still 30s with II,
+//	                   60s without)
 func (s *State) advanceAutoRepair(now int64) {
 	if !s.HasSkill("auto_repair") {
 		return
@@ -101,13 +105,21 @@ func (s *State) advanceAutoRepair(now int64) {
 		s.LastAutoRepairUnix = now
 		return
 	}
-	if now-s.LastAutoRepairUnix < 60 {
+	interval := int64(60)
+	if s.HasSkill("auto_repair_ii") {
+		interval = 30
+	}
+	if now-s.LastAutoRepairUnix < interval {
 		return
 	}
 	s.LastAutoRepairUnix = now
+	burst := s.HasSkill("auto_repair_iii")
 	for _, g := range s.GPUs {
-		if g.Status == "broken" {
-			_ = s.RepairGPU(g.InstanceID)
+		if g.Status != "broken" {
+			continue
+		}
+		_ = s.RepairGPU(g.InstanceID)
+		if !burst {
 			return
 		}
 	}

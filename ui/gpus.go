@@ -159,6 +159,28 @@ func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {
 				a = a.withStatus(i18n.T("status.repaired"))
 			}
 		}
+	case "R":
+		fixed, cost := a.state.RepairAllBroken()
+		if fixed == 0 {
+			a = a.withStatus(i18n.T("status.repair_all_none"))
+		} else {
+			a = a.withStatus(i18n.T("status.repair_all", fixed, game.FmtBTCInt(cost)))
+		}
+	case "[", "pgup":
+		size := a.listPageSize()
+		a.gpusCursor -= size
+		if a.gpusCursor < 0 {
+			a.gpusCursor = 0
+		}
+	case "]", "pgdown":
+		size := a.listPageSize()
+		a.gpusCursor += size
+		if a.gpusCursor > len(gpus)-1 {
+			a.gpusCursor = len(gpus) - 1
+		}
+		if a.gpusCursor < 0 {
+			a.gpusCursor = 0
+		}
 	case "s":
 		if a.gpusCursor < len(gpus) {
 			if err := a.state.SellGPU(gpus[a.gpusCursor].InstanceID); err != nil {

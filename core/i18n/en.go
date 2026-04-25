@@ -78,6 +78,8 @@ var enStrings = map[string]string{
 	"status.order":        "📦 Ordered %s",
 	"status.upgrade":      "⚙️  upgrade attempted",
 	"status.repaired":     "🔧 repaired",
+	"status.repair_all":   "🔧 repaired %d GPUs (cost %s)",
+	"status.repair_all_none": "no broken GPUs to repair",
 	"status.sold":         "💵 sold",
 	"status.unlocked":     "🔓 %s unlocked",
 	"status.now_in":       "📍 now in %s",
@@ -101,7 +103,7 @@ var enStrings = map[string]string{
 
 	// GPUs view.
 	"gpus.title":        "🖥  Your GPUs",
-	"gpus.help":         "↑/↓ select   [u] upgrade   [o] overclock   [r] repair   [s] scrap   [b] sort   [esc]/[1] back",
+	"gpus.help":         "↑/↓ select  [/]/[]] page  [u] upgrade  [o] OC  [r] repair  [R] repair all  [s] scrap  [b] sort  [esc]/[1] back",
 	"gpus.empty":        "  (no GPUs yet — visit the store)",
 	"gpus.oc_mark":      " OC+%d%%",
 	"gpus.sort_label":   "sort: %s",

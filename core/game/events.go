@@ -355,6 +355,53 @@ func (s *State) burnCurrentRoom() {
 	s.appendLog("crisis", i18n.T("log.event.fire.destroyed", destroyed, roomName))
 }
 
+// RepairAllBroken repairs every broken GPU the player can afford in cost
+// order (cheapest first), so a partial budget at least gets some cards
+// back online. Returns the number of GPUs repaired and the total cost.
+// Honors the PCB Surgery free-repair effect.
+func (s *State) RepairAllBroken() (int, int) {
+	type candidate struct {
+		id   int
+		cost int
+	}
+	cands := []candidate{}
+	for _, g := range s.GPUs {
+		if g.Status != "broken" {
+			continue
+		}
+		price := 3000
+		if def, ok := data.GPUByID(g.DefID); ok {
+			price = def.Price
+		}
+		cost := price * 3 / 10
+		if s.RepairFree() {
+			cost = 0
+		}
+		cands = append(cands, candidate{id: g.InstanceID, cost: cost})
+	}
+	if len(cands) == 0 {
+		return 0, 0
+	}
+	// Sort cheapest first so a constrained budget covers as many as possible.
+	for i := range cands {
+		for j := i + 1; j < len(cands); j++ {
+			if cands[j].cost < cands[i].cost {
+				cands[i], cands[j] = cands[j], cands[i]
+			}
+		}
+	}
+	repaired := 0
+	totalCost := 0
+	for _, c := range cands {
+		if err := s.RepairGPU(c.id); err != nil {
+			break // out of money mid-loop — stop cleanly
+		}
+		repaired++
+		totalCost += c.cost
+	}
+	return repaired, totalCost
+}
+
 // RepairGPU repairs a broken GPU. Free if PCB Surgery is unlocked.
 func (s *State) RepairGPU(instanceID int) error {
 	for _, g := range s.GPUs {
