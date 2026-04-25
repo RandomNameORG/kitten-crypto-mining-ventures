@@ -1,0 +1,1 @@
+4x4 idle sprite sheet for cat CEO player character based on character_design.png; rows down,left,right,up; columns subtle idle frames; solid #FF00FF background; no text; same scale across all cells.
