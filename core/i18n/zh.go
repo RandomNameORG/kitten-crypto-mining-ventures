@@ -103,7 +103,7 @@ var zhStrings = map[string]string{
 
 	// GPUs view.
 	"gpus.title":        "🖥  我的显卡",
-	"gpus.help":         "↑/↓ 选  [/]/[]] 翻页  [u] 升级  [o] 超频  [r] 修  [R] 全修  [s] 拆  [b] 排序  [esc]/[1] 返回",
+	"gpus.help":         "↑/↓ 选  ←/→ 翻页  [u] 升级  [o] 超频  [r] 修  [R] 全修  [s] 拆  [b] 排序  [esc]/[1] 返回",
 	"gpus.empty":        "  （还没有显卡，去商店看看）",
 	"gpus.oc_mark":      " 超频+%d%%",
 	"gpus.sort_label":   "排序：%s",
@@ -158,7 +158,7 @@ var zhStrings = map[string]string{
 	"log.older": "  … 另有 %d 条更早的（存档里还在）",
 
 	// Paging.
-	"paging.hint": "  第 %d/%d 页  ·  共 %d 条  ·  ↑↓ 滚动",
+	"paging.hint": "  ← 第 %d/%d 页 →  ·  共 %d 条  ·  ↑↓ 页内移动",
 	"paging.clip": "  … 还有 %d 行隐藏 — 拉大终端或滚动",
 
 	// Help.

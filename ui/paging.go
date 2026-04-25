@@ -25,9 +25,11 @@ func (a App) listPageSize() int {
 }
 
 // pageWindow returns [start, end) — the slice of items visible on the
-// current page given total items, the cursor position, and a target page
-// size. The cursor is kept centred when possible; clamps at the edges so
-// no out-of-bounds slicing is needed at the call site.
+// current page. STRICT pagination: items are partitioned into fixed
+// non-overlapping groups of `size` each, and the page is determined by
+// floor(cursor / size). Use ←/→ keys (or [/]) to jump full pages; ↑/↓
+// glides one item at a time, naturally crossing into the adjacent page
+// when the cursor steps over the boundary.
 func pageWindow(total, cursor, size int) (start, end int) {
 	if total <= 0 || size <= 0 {
 		return 0, 0
@@ -35,17 +37,8 @@ func pageWindow(total, cursor, size int) (start, end int) {
 	if total <= size {
 		return 0, total
 	}
-	half := size / 2
-	start = cursor - half
-	if start < 0 {
-		start = 0
-	}
-	if start+size > total {
-		start = total - size
-	}
-	if start < 0 {
-		start = 0
-	}
+	page := cursor / size
+	start = page * size
 	end = start + size
 	if end > total {
 		end = total
@@ -53,14 +46,13 @@ func pageWindow(total, cursor, size int) (start, end int) {
 	return start, end
 }
 
-// pagingHint renders a single-line "page X/Y · ↑↓ to scroll" indicator,
-// or empty string when the whole list fits on one page.
+// pagingHint renders the "← page X/Y → · N total" indicator. Empty when
+// everything fits on one page.
 func pagingHint(total, cursor, size int) string {
 	if total == 0 || size <= 0 || total <= size {
 		return ""
 	}
-	start, _ := pageWindow(total, cursor, size)
-	page := start/size + 1
+	page := cursor/size + 1
 	totalPages := (total + size - 1) / size
 	return DimStyle.Render(fmt.Sprintf(i18n.T("paging.hint"), page, totalPages, total))
 }

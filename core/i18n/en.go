@@ -103,7 +103,7 @@ var enStrings = map[string]string{
 
 	// GPUs view.
 	"gpus.title":        "🖥  Your GPUs",
-	"gpus.help":         "↑/↓ select  [/]/[]] page  [u] upgrade  [o] OC  [r] repair  [R] repair all  [s] scrap  [b] sort  [esc]/[1] back",
+	"gpus.help":         "↑/↓ select  ←/→ page  [u] upgrade  [o] OC  [r] repair  [R] repair all  [s] scrap  [b] sort  [esc]/[1] back",
 	"gpus.empty":        "  (no GPUs yet — visit the store)",
 	"gpus.oc_mark":      " OC+%d%%",
 	"gpus.sort_label":   "sort: %s",
@@ -158,7 +158,7 @@ var enStrings = map[string]string{
 	"log.older": "  … %d older entries (still in save)",
 
 	// Paging.
-	"paging.hint": "  page %d/%d  ·  %d total  ·  ↑↓ to scroll",
+	"paging.hint": "  ← page %d/%d →  ·  %d total  ·  ↑↓ within page",
 	"paging.clip": "  … %d more lines hidden — widen terminal or scroll",
 
 	// Help.

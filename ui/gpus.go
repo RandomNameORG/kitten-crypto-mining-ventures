@@ -166,20 +166,32 @@ func (a App) handleGPUsKey(key string) (tea.Model, tea.Cmd) {
 		} else {
 			a = a.withStatus(i18n.T("status.repair_all", fixed, game.FmtBTCInt(cost)))
 		}
-	case "[", "pgup":
+	case "left", "h", "[", "pgup":
+		// Jump to the same relative slot on the previous page. If we're
+		// already on page 1, snap to item 0.
 		size := a.listPageSize()
-		a.gpusCursor -= size
-		if a.gpusCursor < 0 {
+		curPage := a.gpusCursor / size
+		if curPage == 0 {
 			a.gpusCursor = 0
+		} else {
+			rel := a.gpusCursor % size
+			a.gpusCursor = (curPage-1)*size + rel
 		}
-	case "]", "pgdown":
+	case "right", "l", "]", "pgdown":
 		size := a.listPageSize()
-		a.gpusCursor += size
-		if a.gpusCursor > len(gpus)-1 {
+		totalPages := (len(gpus) + size - 1) / size
+		curPage := a.gpusCursor / size
+		if curPage >= totalPages-1 {
 			a.gpusCursor = len(gpus) - 1
-		}
-		if a.gpusCursor < 0 {
-			a.gpusCursor = 0
+			if a.gpusCursor < 0 {
+				a.gpusCursor = 0
+			}
+		} else {
+			rel := a.gpusCursor % size
+			a.gpusCursor = (curPage+1)*size + rel
+			if a.gpusCursor > len(gpus)-1 {
+				a.gpusCursor = len(gpus) - 1
+			}
 		}
 	case "s":
 		if a.gpusCursor < len(gpus) {
