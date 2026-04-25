@@ -26,6 +26,7 @@ const (
 	viewLab
 	viewPrestige
 	viewStats
+	viewMastery
 	viewHelp
 )
 
@@ -70,6 +71,7 @@ type App struct {
 	labBoost2      int // reserved
 	labTier        int // 1..3
 	prestigeCursor int
+	masteryCursor  int
 
 	// Splash overlay phases — name first, then difficulty. Sim is frozen
 	// while a splash phase is active so the starter GPU doesn't tick down.
@@ -308,6 +310,9 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "?":
 		a.view = viewHelp
 		return a, nil
+	case "m":
+		a.view = viewMastery
+		return a, nil
 	case " ":
 		a.state.TogglePause()
 		return a, nil
@@ -347,6 +352,8 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a.handleLabKey(key)
 	case viewPrestige:
 		return a.handlePrestigeKey(key)
+	case viewMastery:
+		return a.handleMasteryKey(key)
 	}
 
 	// Dashboard-only fallbacks.
@@ -414,6 +421,8 @@ func (a App) View() string {
 		body = a.renderPrestigeView()
 	case viewStats:
 		body = a.renderStatsView()
+	case viewMastery:
+		body = a.renderMasteryView()
 	case viewHelp:
 		body = a.renderHelpView()
 	}

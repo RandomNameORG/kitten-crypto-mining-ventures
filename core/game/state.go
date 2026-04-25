@@ -159,6 +159,11 @@ type State struct {
 	// at end of tick by CheckAchievements().
 	Achievements []string `json:"achievements,omitempty"`
 
+	// MasteryLevels tracks the per-track count of mastery levels unlocked.
+	// Late-game TP sink — see core/data/mastery.go for tracks. Multipliers
+	// stack multiplicatively via MasteryEarnMult / MasteryBillMult / etc.
+	MasteryLevels map[string]int `json:"mastery_levels,omitempty"`
+
 	// Lifetime counters powering the Stats view ([0]). Incremented in their
 	// respective systems (Tick, addGPU, SellGPU, payWages, applyEvent,
 	// advanceMarket). MarketPriceHistory is bounded to MarketHistoryCap
@@ -395,9 +400,13 @@ func (s *State) SellGPU(instanceID int) error {
 				base = def.ScrapValue
 				name = def.LocalName()
 			}
-			value := float64(base) * s.ScrapValueMult()
-			// Also grant 1-3 research fragments.
-			frags := 1 + rand.Intn(3)
+			value := float64(base) * s.ScrapValueMult() * s.MasteryScrapMult()
+			// Also grant 1-3 research fragments. Mastery scales the yield.
+			rawFrags := 1 + rand.Intn(3)
+			frags := int(float64(rawFrags) * s.MasteryFragMult())
+			if frags < rawFrags {
+				frags = rawFrags
+			}
 			s.BTC += value
 			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)

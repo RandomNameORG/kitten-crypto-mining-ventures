@@ -195,7 +195,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 		if !ok {
 			continue
 		}
-		coolingBonus := 1.0 + 0.25*float64(room.CoolingLvl)
+		coolingBonus := (1.0 + 0.25*float64(room.CoolingLvl)) * s.MasteryCoolingMult()
 
 		for _, g := range s.GPUs {
 			if g.Room != roomID || g.Status != "running" {
@@ -207,7 +207,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 				efficiencyFactor = 0.5
 			}
 			if !miningPaused {
-				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale
+				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult()
 				// Syndicate cut: divert the agreed fraction into the
 				// contribution pool before crediting BTC so the player
 				// only sees (1-cut) of each GPU's raw earn. Proportional
@@ -295,7 +295,7 @@ func (s *State) advanceBilling(now int64) {
 	minutes := float64(now-s.LastBillUnix) / 60.0
 	s.LastBillUnix = now
 
-	billMult := s.BillMult() * s.DifficultyBillMult()
+	billMult := s.BillMult() * s.DifficultyBillMult() * s.MasteryBillMult()
 	totalBill := 0.0
 	totalRent := 0.0
 	for roomID := range s.Rooms {

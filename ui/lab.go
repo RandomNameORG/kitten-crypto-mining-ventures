@@ -112,6 +112,20 @@ func (a App) handleLabKey(key string) (tea.Model, tea.Cmd) {
 				a = a.withStatus(i18n.T("status.printed"))
 			}
 		}
+	case "x":
+		// Frag → BTC alchemy. Trade 10 frags at a time at the lossy rate
+		// from State.ConvertFragsToBTC. Bounded to whatever the player has.
+		batch := 10
+		if a.state.ResearchFrags < batch {
+			batch = a.state.ResearchFrags
+		}
+		if batch <= 0 {
+			a = a.withStatus(i18n.T("status.error_prefix") + i18n.T("alchemy.no_frags"))
+		} else if got, err := a.state.ConvertFragsToBTC(batch); err != nil {
+			a = a.withStatus(i18n.T("status.error_prefix") + err.Error())
+		} else {
+			a = a.withStatus(i18n.T("status.alchemy", batch, game.FmtBTC(got)))
+		}
 	case "esc":
 		a.view = viewDashboard
 	}
