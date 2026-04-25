@@ -23,6 +23,8 @@ func (a App) renderViewHint() string {
 		key = "hint.prestige"
 	case viewStats:
 		key = "hint.stats"
+	case viewMastery:
+		key = "hint.mastery"
 	default:
 		return ""
 	}

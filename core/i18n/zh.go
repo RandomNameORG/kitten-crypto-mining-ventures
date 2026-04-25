@@ -18,6 +18,25 @@ var zhStrings = map[string]string{
 	"nav.lab":         "实验室",
 	"nav.prestige":    "转生",
 	"nav.stats":       "统计",
+	"nav.mastery":     "精通",
+
+	// Mastery view.
+	"mastery.title":          "🌟 精通",
+	"mastery.help":           "↑/↓ 选择   [u]/[enter] 升级   [esc]/[1] 返回",
+	"mastery.next_cost":      "下一级 = %d TP",
+	"mastery.maxed":          "已满级",
+	"mastery.alchemy_note":   "  提示：在 [8] 实验室按 [x] 把 10 碎片换成 ₿（有损耗）。",
+
+	// Status.
+	"status.mastery_up":      "🌟 %s 升级了",
+	"status.alchemy":         "🔬 兑换 %d 碎片 → %s",
+
+	// Alchemy.
+	"alchemy.no_frags":       "没有碎片可兑换",
+
+	// Logs.
+	"log.mastery.leveled":    "🌟 %s 到达 %d 级。",
+	"log.alchemy.frags":      "🔬 炼金：%d 碎片 → %s。",
 
 	"hdr.tp":    "TP %d",
 	"hdr.rep":   "声望 %+d",
@@ -187,7 +206,8 @@ var zhStrings = map[string]string{
 	"hint.rooms":     "[u] 解锁  [enter] 切换  [l/c/w/o/a] 防御",
 	"hint.skills":    "[u] 解锁  [esc] 返回",
 	"hint.mercs":     "[tab] 切换  [h] 雇佣  [f] 解雇  [b] 贿赂",
-	"hint.lab":       "[t] 档位  [b] 加成  [r] 研究  [p] 打印",
+	"hint.lab":       "[t] 档位  [b] 加成  [r] 研究  [p] 打印  [x] 碎片→₿",
+	"hint.mastery":   "↑/↓ 选择  [u] 升级  [esc] 返回",
 	"hint.prestige":  "[p] 特权  [R R] 退休  [y]/[n] 加盟/退盟",
 	"hint.stats":     "[esc] 返回",
 

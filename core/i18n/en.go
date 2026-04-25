@@ -18,6 +18,25 @@ var enStrings = map[string]string{
 	"nav.lab":         "lab",
 	"nav.prestige":    "prestige",
 	"nav.stats":       "stats",
+	"nav.mastery":     "mastery",
+
+	// Mastery view.
+	"mastery.title":         "🌟 Mastery",
+	"mastery.help":           "↑/↓ select   [u]/[enter] level up   [esc]/[1] back",
+	"mastery.next_cost":      "next +1 = %d TP",
+	"mastery.maxed":          "MAX",
+	"mastery.alchemy_note":   "  Tip: in [8] Lab press [x] to convert 10 frags → ₿ (lossy).",
+
+	// Status.
+	"status.mastery_up":      "🌟 %s leveled up",
+	"status.alchemy":         "🔬 converted %d frags → %s",
+
+	// Alchemy.
+	"alchemy.no_frags":       "no frags to convert",
+
+	// Logs.
+	"log.mastery.leveled":    "🌟 %s reached level %d.",
+	"log.alchemy.frags":      "🔬 Alchemy: %d frags → %s.",
 
 	"hdr.tp":    "TP %d",
 	"hdr.rep":   "Rep %+d",
@@ -188,7 +207,8 @@ var enStrings = map[string]string{
 	"hint.rooms":     "[u] unlock  [enter] switch  [l/c/w/o/a] defense",
 	"hint.skills":    "[u] unlock  [esc] back",
 	"hint.mercs":     "[tab] switch  [h] hire  [f] fire  [b] bribe",
-	"hint.lab":       "[t] tier  [b] boosts  [r] research  [p] print",
+	"hint.lab":       "[t] tier  [b] boosts  [r] research  [p] print  [x] frag→₿",
+	"hint.mastery":   "↑/↓ select  [u] level up  [esc] back",
 	"hint.prestige":  "[p] perk  [R R] retire  [y]/[n] syndicate",
 	"hint.stats":     "[esc] back",
 
