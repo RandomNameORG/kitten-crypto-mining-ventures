@@ -14,7 +14,7 @@ import { RoomsPanel } from "./panels/RoomsPanel";
 import { SkillsPanel } from "./panels/SkillsPanel";
 import { StatsPanel } from "./panels/StatsPanel";
 import { StorePanel } from "./panels/StorePanel";
-import type { TabId } from "./types";
+import type { Snapshot, TabId } from "./types";
 
 export function App() {
   const { snapshot, message, dispatch } = useSnapshot();
@@ -86,6 +86,9 @@ export function App() {
 
         <aside className="side">
           <Tabs active={tab} onSelect={setTab} />
+          {snapshot && (
+            <PanelHeader tab={tab} snapshot={snapshot} />
+          )}
           <section className="panel">
             {!snapshot ? (
               <p>{message}</p>
@@ -113,5 +116,31 @@ export function App() {
         </aside>
       </section>
     </main>
+  );
+}
+
+function PanelHeader({ tab, snapshot }: { tab: TabId; snapshot: Snapshot }) {
+  const room = snapshot.rooms.find((r) => r.id === snapshot.state.current_room);
+  const ownedGpus = snapshot.gpus.filter((g) => g.room === snapshot.state.current_room);
+  const broken = ownedGpus.filter((g) => g.status === "broken").length;
+  const learnedSkills = snapshot.skills.filter((s) => s.unlocked).length;
+
+  const heading: Record<TabId, { title: string; meta: string }> = {
+    store: { title: "显卡商店", meta: `${snapshot.gpu_defs.length} 款 · 余额 ${snapshot.state.btc_fmt}` },
+    rooms: { title: "房间矩阵", meta: `${snapshot.rooms.filter((r) => r.unlocked).length}/${snapshot.rooms.length} 已解锁` },
+    gpus: { title: "当前房间机架", meta: room ? `${room.gpu_count}/${room.slots} 槽位${broken ? ` · ${broken} 损坏` : ""}` : "" },
+    defense: { title: "防御与维护", meta: room ? `${room.name} · ${room.heat.toFixed(0)}°/${room.max_heat.toFixed(0)}°` : "" },
+    skills: { title: "技能树", meta: `${learnedSkills}/${snapshot.skills.length} 已学 · TP ${snapshot.state.tech_point}` },
+    mercs: { title: "雇佣猫", meta: `${snapshot.mercs.length} 人在职 · ${snapshot.merc_defs.length} 类可雇` },
+    log: { title: "日志", meta: `${snapshot.log.length} 条记录` },
+    stats: { title: "运营状态", meta: `累计收益 ${snapshot.state.lifetime_earned_fmt}` },
+  };
+  const h = heading[tab];
+
+  return (
+    <div className="panel-header">
+      <span className="panel-title">{h.title}</span>
+      <span className="panel-meta">{h.meta}</span>
+    </div>
   );
 }

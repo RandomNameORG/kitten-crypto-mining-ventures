@@ -125,7 +125,10 @@
   .log-text { @apply flex-1 truncate; }
 
   /* side panel */
-  .side { @apply grid grid-rows-[auto_1fr] min-h-0 overflow-hidden; height: var(--stage-height, auto); max-height: var(--stage-height, none); }
+  .side { @apply grid grid-rows-[auto_auto_1fr] min-h-0 overflow-hidden; height: var(--stage-height, auto); max-height: var(--stage-height, none); }
+  .panel-header { @apply flex items-baseline justify-between gap-3 px-3 py-2 border-b border-line/30 bg-panel-2/20; }
+  .panel-title { @apply text-gold text-[13px] font-semibold tracking-tight; }
+  .panel-meta { @apply text-muted/80 text-[10px] uppercase tracking-wider tabular-nums truncate font-mono; }
   .tabs { @apply grid grid-cols-4 gap-1.5 p-2 border-b border-line/40 bg-panel-2/40; }
   .tabs button { @apply relative flex items-center justify-center gap-1.5 min-w-0 min-h-[34px] px-1.5 py-1 text-xs text-muted bg-transparent border border-line/40 rounded-md hover:text-ink hover:border-line hover:bg-panel-2/60; }
   .tabs button.active { @apply text-mint border-mint/50 bg-mint/8 font-semibold; }
