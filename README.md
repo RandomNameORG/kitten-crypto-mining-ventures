@@ -56,8 +56,9 @@ With the bundled Makefile:
 
 ```bash
 make run        # go run ./cmd/meowmine
-make build      # compile both binaries into bin/
-make release    # cross-compile all 8 release binaries (win/linux/mac × ssh)
+make run-web    # go run ./cmd/meowmine-web, then open http://localhost:8080
+make build      # compile all local binaries into bin/
+make release    # cross-compile release binaries (win/linux/mac)
 make test       # go test ./...
 ```
 
@@ -125,6 +126,7 @@ core/
   game/                  state · economy · tick · events · skills · mercs · research · prestige · save/load
   i18n/                  English / 中文 string tables + active-language switch
 ui/                      Bubbletea views — dashboard, store, gpus, rooms, skills, log, mercs, lab, prestige
+ui2d/                    Browser 2D canvas UI, backed by the same core game package
 assets/ascii/            ASCII art placeholders (see docs/ASSETS.md)
 docs/                    design + asset docs
 ```
