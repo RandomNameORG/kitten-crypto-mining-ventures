@@ -20,14 +20,14 @@ const FRAME_COUNT = 4;
 const ARRIVAL_DISTANCE = 6;
 const CHARACTER_ROOT = "/assets/2d/spritesheet/characters";
 const tabs = [
-  ["store", "商店"],
-  ["rooms", "房间"],
-  ["gpus", "显卡"],
-  ["defense", "防御"],
-  ["skills", "技能"],
-  ["mercs", "雇佣"],
-  ["log", "日志"],
-  ["stats", "状态"],
+  ["store", "商店", "S"],
+  ["rooms", "房间", "R"],
+  ["gpus", "显卡", "G"],
+  ["defense", "防御", "D"],
+  ["skills", "技能", "T"],
+  ["mercs", "雇佣", "H"],
+  ["log", "日志", "L"],
+  ["stats", "状态", "I"],
 ];
 
 let model = null;
@@ -270,8 +270,11 @@ async function action(payload) {
 }
 
 function initTabs() {
-  tabsEl.innerHTML = tabs.map(([id, label]) => (
-    `<button type="button" class="${id === activeTab ? "active" : ""}" data-tab="${id}">${label}</button>`
+  tabsEl.innerHTML = tabs.map(([id, label, icon]) => (
+    `<button type="button" class="${id === activeTab ? "active" : ""}" data-tab="${id}" title="${label}">
+      <span class="tab-icon" aria-hidden="true">${icon}</span>
+      <span class="tab-label">${label}</span>
+    </button>`
   )).join("");
   tabsEl.querySelectorAll("button").forEach((button) => {
     button.addEventListener("click", () => {
@@ -336,6 +339,36 @@ function bar(label, value, amount, cls = "") {
   </div>`;
 }
 
+function actionButton({ action, label, id = "", dim = "", instance = "", disabled = false, intent = "default", icon = "" }) {
+  const attrs = [
+    `type="button"`,
+    `class="action-btn ${intent}"`,
+    `data-action="${action}"`,
+  ];
+  if (id) attrs.push(`data-id="${escapeHtml(id)}"`);
+  if (dim) attrs.push(`data-dim="${escapeHtml(dim)}"`);
+  if (instance) attrs.push(`data-instance="${instance}"`);
+  if (disabled) attrs.push("disabled");
+  return `<button ${attrs.join(" ")}>
+    <span class="action-icon" aria-hidden="true">${escapeHtml(icon || label.slice(0, 1))}</span>
+    <span>${escapeHtml(label)}</span>
+  </button>`;
+}
+
+function actionBar(buttons) {
+  return `<div class="actions">${buttons.join("")}</div>`;
+}
+
+function panelSummary(items) {
+  return `<div class="panel-summary">${items.map(([label, value, cls = ""]) => (
+    `<div class="summary-chip ${cls}"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`
+  )).join("")}</div>`;
+}
+
+function statusText(ok, yes, no) {
+  return ok ? yes : no;
+}
+
 function renderPanel() {
   if (!model) return;
   const renderers = {
@@ -361,26 +394,36 @@ function renderPanel() {
 }
 
 function renderStore() {
-  return `<h2>显卡商店</h2><div class="list">${model.gpu_defs.map((def) => {
+  const room = currentRoom();
+  return `<h2>显卡商店</h2>${panelSummary([
+    ["余额", model.state.btc_fmt],
+    ["当前房间", room?.name || "-"],
+    ["槽位", room ? `${room.gpu_count}/${room.slots}` : "-"],
+  ])}<div class="list">${model.gpu_defs.map((def) => {
     const canBuy = model.state.btc >= def.price;
     return `<article class="row">
       <div class="row-head"><span class="row-title">${escapeHtml(def.name)}</span><span class="tag">${escapeHtml(def.tier)}</span></div>
       <div class="copy">${escapeHtml(def.flavor)}</div>
       <div class="facts">
-        <span class="fact">${def.price_fmt}</span>
+        <span class="fact price">${def.price_fmt}</span>
         <span class="fact">eff ${def.efficiency.toFixed(4)}</span>
         <span class="fact">heat ${def.heat_output.toFixed(2)}</span>
       </div>
-      <div class="actions"><button type="button" data-action="buy_gpu" data-id="${def.id}" ${canBuy ? "" : "disabled"}>购买</button></div>
+      ${actionBar([
+        actionButton({ action: "buy_gpu", id: def.id, label: canBuy ? "购买" : "余额不足", disabled: !canBuy, intent: "primary", icon: "买" }),
+      ])}
     </article>`;
   }).join("")}</div>`;
 }
 
 function renderRooms() {
-  return `<h2>房间</h2><div class="list">${model.rooms.map((room) => {
+  return `<h2>房间</h2>${panelSummary([
+    ["当前", currentRoom()?.name || "-"],
+    ["余额", model.state.btc_fmt],
+  ])}<div class="list">${model.rooms.map((room) => {
     const actionButton = room.unlocked
-      ? `<button type="button" data-action="switch_room" data-id="${room.id}" ${room.current ? "disabled" : ""}>进入</button>`
-      : `<button type="button" data-action="unlock_room" data-id="${room.id}" ${model.state.btc >= room.unlock_cost ? "" : "disabled"}>解锁</button>`;
+      ? actionButtonMarkup("switch_room", room.id, room.current ? "已在此处" : "进入", room.current, "primary", "入")
+      : actionButtonMarkup("unlock_room", room.id, model.state.btc >= room.unlock_cost ? "解锁" : "余额不足", model.state.btc < room.unlock_cost, "primary", "解");
     return `<article class="row">
       <div class="row-head"><span class="row-title">${escapeHtml(room.name)}</span><span class="tag">${room.unlocked ? `${room.gpu_count}/${room.slots}` : room.unlock_cost_fmt}</span></div>
       <div class="copy">${escapeHtml(room.flavor)}</div>
@@ -389,15 +432,23 @@ function renderRooms() {
         <span class="fact">heat ${room.heat ? room.heat.toFixed(0) : 0}°</span>
         <span class="fact">tick ${room.heat_tick_in || 0}s</span>
       </div>
-      <div class="actions">${actionButton}</div>
+      ${actionBar([actionButton])}
     </article>`;
   }).join("")}</div>`;
 }
 
+function actionButtonMarkup(action, id, label, disabled, intent, icon) {
+  return actionButton({ action, id, label, disabled, intent, icon });
+}
+
 function renderGPUs() {
   const gpus = model.gpus.filter((gpu) => gpu.room === model.state.current_room);
-  if (!gpus.length) return `<h2>当前房间显卡</h2><div class="empty">空槽位</div>`;
-  return `<h2>当前房间显卡</h2><div class="list">${gpus.map((gpu) => `<article class="row">
+  const room = currentRoom();
+  if (!gpus.length) return `<h2>当前房间显卡</h2>${panelSummary([["槽位", room ? `0/${room.slots}` : "0"], ["提示", "去商店购买"]])}<div class="empty">空槽位</div>`;
+  return `<h2>当前房间显卡</h2>${panelSummary([
+    ["槽位", room ? `${room.gpu_count}/${room.slots}` : `${gpus.length}`],
+    ["损坏", `${gpus.filter((gpu) => gpu.status === "broken").length}`],
+  ])}<div class="list">${gpus.map((gpu) => `<article class="row">
     <div class="row-head"><span class="row-title">#${gpu.instance_id} ${escapeHtml(gpu.name)}</span><span class="tag">${escapeHtml(gpu.status)}</span></div>
     <div class="facts">
       <span class="fact">L${gpu.upgrade}</span>
@@ -405,12 +456,12 @@ function renderGPUs() {
       <span class="fact">${gpu.earn_fmt}</span>
       <span class="fact">${gpu.hours_left.toFixed(1)}h</span>
     </div>
-    <div class="actions">
-      <button type="button" data-action="upgrade_gpu" data-instance="${gpu.instance_id}">升级</button>
-      <button type="button" data-action="cycle_oc" data-instance="${gpu.instance_id}">超频</button>
-      <button type="button" data-action="repair_gpu" data-instance="${gpu.instance_id}" ${gpu.repairable ? "" : "disabled"}>维修</button>
-      <button type="button" data-action="scrap_gpu" data-instance="${gpu.instance_id}">拆解</button>
-    </div>
+    ${actionBar([
+      actionButton({ action: "upgrade_gpu", instance: gpu.instance_id, label: "升级", intent: "primary", icon: "升" }),
+      actionButton({ action: "cycle_oc", instance: gpu.instance_id, label: "超频", intent: "accent", icon: "频" }),
+      actionButton({ action: "repair_gpu", instance: gpu.instance_id, label: gpu.repairable ? "维修" : "正常", disabled: !gpu.repairable, intent: "warn", icon: "修" }),
+      actionButton({ action: "scrap_gpu", instance: gpu.instance_id, label: "拆解", intent: "danger", icon: "拆" }),
+    ])}
   </article>`).join("")}</div>`;
 }
 
@@ -424,23 +475,33 @@ function renderDefense() {
     ["cooling", "散热", d.cooling || 0],
     ["armor", "装甲", d.armor || 0],
   ];
-  return `<h2>防御与维护</h2><div class="list">${dims.map(([id, label, level]) => `<article class="row">
+  return `<h2>防御与维护</h2>${panelSummary([
+    ["温度", room ? `${room.heat.toFixed(0)}°/${room.max_heat.toFixed(0)}°` : "-"],
+    ["余额", model.state.btc_fmt],
+  ])}<div class="list">${dims.map(([id, label, level]) => `<article class="row">
     <div class="row-head"><span class="row-title">${label}</span><span class="tag">L${level}</span></div>
     <div class="facts"><span class="fact">cost ${(level + 1) * 250}</span><span class="fact">max 8</span></div>
-    <div class="actions"><button type="button" data-action="upgrade_defense" data-dim="${id}">升级</button></div>
+    ${actionBar([
+      actionButton({ action: "upgrade_defense", dim: id, label: level >= 8 ? "已满级" : "升级", disabled: level >= 8, intent: "primary", icon: "升" }),
+    ])}
   </article>`).join("")}</div>`;
 }
 
 function renderSkills() {
   const visible = model.skills.slice(0, 18);
-  return `<h2>技能</h2><div class="list">${visible.map((skill) => {
+  return `<h2>技能</h2>${panelSummary([
+    ["TP", `${model.state.tech_point}`],
+    ["碎片", `${model.state.research_frags}`],
+  ])}<div class="list">${visible.map((skill) => {
     const prereqOk = !skill.prereq || model.skills.find((item) => item.id === skill.prereq)?.unlocked;
     const canBuy = !skill.unlocked && prereqOk && model.state.tech_point >= skill.cost;
     return `<article class="row">
       <div class="row-head"><span class="row-title">${escapeHtml(skill.name)}</span><span class="tag">${skill.cost} TP</span></div>
       <div class="copy">${escapeHtml(skill.desc)}</div>
-      <div class="facts"><span class="fact">${escapeHtml(skill.lane)}</span><span class="fact">${skill.unlocked ? "已学会" : prereqOk ? "可研究" : "前置未解"}</span></div>
-      <div class="actions"><button type="button" data-action="unlock_skill" data-id="${skill.id}" ${canBuy ? "" : "disabled"}>研究</button></div>
+      <div class="facts"><span class="fact">${escapeHtml(skill.lane)}</span><span class="fact">${statusText(skill.unlocked, "已学会", prereqOk ? "可研究" : "前置未解")}</span></div>
+      ${actionBar([
+        actionButton({ action: "unlock_skill", id: skill.id, label: skill.unlocked ? "已研究" : "研究", disabled: !canBuy, intent: "primary", icon: "研" }),
+      ])}
     </article>`;
   }).join("")}</div>`;
 }
@@ -449,18 +510,20 @@ function renderMercs() {
   const owned = model.mercs.map((merc) => `<article class="row">
     <div class="row-head"><span class="row-title">#${merc.instance_id} ${escapeHtml(merc.name)}</span><span class="tag">${merc.loyalty}</span></div>
     <div class="facts"><span class="fact">${escapeHtml(roomById(merc.room_id)?.name || merc.room_id)}</span></div>
-    <div class="actions">
-      <button type="button" data-action="bribe_merc" data-instance="${merc.instance_id}">打赏</button>
-      <button type="button" data-action="fire_merc" data-instance="${merc.instance_id}">解雇</button>
-    </div>
+    ${actionBar([
+      actionButton({ action: "bribe_merc", instance: merc.instance_id, label: "打赏", intent: "accent", icon: "赏" }),
+      actionButton({ action: "fire_merc", instance: merc.instance_id, label: "解雇", intent: "danger", icon: "离" }),
+    ])}
   </article>`).join("");
   const hire = model.merc_defs.map((merc) => `<article class="row">
     <div class="row-head"><span class="row-title">${escapeHtml(merc.name)}</span><span class="tag">${merc.hire_cost_fmt}</span></div>
     <div class="copy">${escapeHtml(merc.flavor)}</div>
     <div class="facts"><span class="fact">${escapeHtml(merc.specialty)}</span><span class="fact">wage ${merc.wage_fmt}</span></div>
-    <div class="actions"><button type="button" data-action="hire_merc" data-id="${merc.id}">雇佣</button></div>
+    ${actionBar([
+      actionButton({ action: "hire_merc", id: merc.id, label: "雇佣", intent: "primary", icon: "雇" }),
+    ])}
   </article>`).join("");
-  return `<h2>雇佣猫</h2><div class="list">${owned || "<div class=\"empty\">暂无雇佣</div>"}${hire}</div>`;
+  return `<h2>雇佣猫</h2>${panelSummary([["已雇佣", `${model.mercs.length}`], ["当前房间", currentRoom()?.name || "-"]])}<div class="list">${owned || "<div class=\"empty\">暂无雇佣</div>"}${hire}</div>`;
 }
 
 function renderLog() {
