@@ -23,3 +23,6 @@ Thumbs.db
 .autonomous/
 .claude/*
 !.claude/skills/
+
+.env
+.claude/skills/gen-image/scripts/__pycache__
