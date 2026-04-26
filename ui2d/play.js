@@ -19,6 +19,7 @@ const DIRECTIONS = ["down", "left", "right", "up"];
 const FRAME_COUNT = 4;
 const ARRIVAL_DISTANCE = 6;
 const CHARACTER_ROOT = "/assets/2d/spritesheet/characters";
+const GPU_ICON_ROOT = "/assets/2d/items/gpu_cards";
 const tabs = [
   ["store", "商店", "S"],
   ["rooms", "房间", "R"],
@@ -369,6 +370,10 @@ function statusText(ok, yes, no) {
   return ok ? yes : no;
 }
 
+function gpuIconSrc(id) {
+  return `${GPU_ICON_ROOT}/${encodeURIComponent(id || "scrap")}.png`;
+}
+
 function renderPanel() {
   if (!model) return;
   const renderers = {
@@ -401,17 +406,20 @@ function renderStore() {
     ["槽位", room ? `${room.gpu_count}/${room.slots}` : "-"],
   ])}<div class="list">${model.gpu_defs.map((def) => {
     const canBuy = model.state.btc >= def.price;
-    return `<article class="row">
-      <div class="row-head"><span class="row-title">${escapeHtml(def.name)}</span><span class="tag">${escapeHtml(def.tier)}</span></div>
-      <div class="copy">${escapeHtml(def.flavor)}</div>
-      <div class="facts">
-        <span class="fact price">${def.price_fmt}</span>
-        <span class="fact">eff ${def.efficiency.toFixed(4)}</span>
-        <span class="fact">heat ${def.heat_output.toFixed(2)}</span>
+    return `<article class="row item-row">
+      <img class="item-icon gpu-icon" src="${gpuIconSrc(def.id)}" alt="" loading="lazy">
+      <div class="item-content">
+        <div class="row-head"><span class="row-title">${escapeHtml(def.name)}</span><span class="tag">${escapeHtml(def.tier)}</span></div>
+        <div class="copy">${escapeHtml(def.flavor)}</div>
+        <div class="facts">
+          <span class="fact price">${def.price_fmt}</span>
+          <span class="fact">eff ${def.efficiency.toFixed(4)}</span>
+          <span class="fact">heat ${def.heat_output.toFixed(2)}</span>
+        </div>
+        ${actionBar([
+          actionButton({ action: "buy_gpu", id: def.id, label: canBuy ? "购买" : "余额不足", disabled: !canBuy, intent: "primary", icon: "买" }),
+        ])}
       </div>
-      ${actionBar([
-        actionButton({ action: "buy_gpu", id: def.id, label: canBuy ? "购买" : "余额不足", disabled: !canBuy, intent: "primary", icon: "买" }),
-      ])}
     </article>`;
   }).join("")}</div>`;
 }
@@ -448,20 +456,23 @@ function renderGPUs() {
   return `<h2>当前房间显卡</h2>${panelSummary([
     ["槽位", room ? `${room.gpu_count}/${room.slots}` : `${gpus.length}`],
     ["损坏", `${gpus.filter((gpu) => gpu.status === "broken").length}`],
-  ])}<div class="list">${gpus.map((gpu) => `<article class="row">
-    <div class="row-head"><span class="row-title">#${gpu.instance_id} ${escapeHtml(gpu.name)}</span><span class="tag">${escapeHtml(gpu.status)}</span></div>
-    <div class="facts">
-      <span class="fact">L${gpu.upgrade}</span>
-      <span class="fact">OC ${gpu.oc_level}</span>
-      <span class="fact">${gpu.earn_fmt}</span>
-      <span class="fact">${gpu.hours_left.toFixed(1)}h</span>
+  ])}<div class="list">${gpus.map((gpu) => `<article class="row item-row">
+    <img class="item-icon gpu-icon" src="${gpuIconSrc(gpu.def_id || "scrap")}" alt="" loading="lazy">
+    <div class="item-content">
+      <div class="row-head"><span class="row-title">#${gpu.instance_id} ${escapeHtml(gpu.name)}</span><span class="tag">${escapeHtml(gpu.status)}</span></div>
+      <div class="facts">
+        <span class="fact">L${gpu.upgrade}</span>
+        <span class="fact">OC ${gpu.oc_level}</span>
+        <span class="fact">${gpu.earn_fmt}</span>
+        <span class="fact">${gpu.hours_left.toFixed(1)}h</span>
+      </div>
+      ${actionBar([
+        actionButton({ action: "upgrade_gpu", instance: gpu.instance_id, label: "升级", intent: "primary", icon: "升" }),
+        actionButton({ action: "cycle_oc", instance: gpu.instance_id, label: "超频", intent: "accent", icon: "频" }),
+        actionButton({ action: "repair_gpu", instance: gpu.instance_id, label: gpu.repairable ? "维修" : "正常", disabled: !gpu.repairable, intent: "warn", icon: "修" }),
+        actionButton({ action: "scrap_gpu", instance: gpu.instance_id, label: "拆解", intent: "danger", icon: "拆" }),
+      ])}
     </div>
-    ${actionBar([
-      actionButton({ action: "upgrade_gpu", instance: gpu.instance_id, label: "升级", intent: "primary", icon: "升" }),
-      actionButton({ action: "cycle_oc", instance: gpu.instance_id, label: "超频", intent: "accent", icon: "频" }),
-      actionButton({ action: "repair_gpu", instance: gpu.instance_id, label: gpu.repairable ? "维修" : "正常", disabled: !gpu.repairable, intent: "warn", icon: "修" }),
-      actionButton({ action: "scrap_gpu", instance: gpu.instance_id, label: "拆解", intent: "danger", icon: "拆" }),
-    ])}
   </article>`).join("")}</div>`;
 }
 
