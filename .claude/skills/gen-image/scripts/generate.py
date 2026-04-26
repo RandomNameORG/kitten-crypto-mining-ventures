@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import mimetypes
 import os
 import re
 import sys
@@ -26,10 +27,41 @@ def slugify(text: str, max_len: int = 40) -> str:
     return (s[:max_len] or "image").rstrip("-")
 
 
-def build_payload(model: str, prompt: str, size: str | None, quality: str | None) -> dict:
+def is_url(value: str) -> bool:
+    return value.startswith(("http://", "https://", "data:"))
+
+
+def image_file_to_data_url(path: Path) -> str:
+    if not path.is_file():
+        raise SystemExit(f"Reference image not found: {path}")
+    mime, _ = mimetypes.guess_type(path.name)
+    if not mime or not mime.startswith("image/"):
+        raise SystemExit(f"Reference image must be an image file: {path}")
+    data = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:{mime};base64,{data}"
+
+
+def build_message_content(prompt: str, reference_images: list[str] | None) -> str | list[dict]:
+    if not reference_images:
+        return prompt
+
+    content: list[dict] = [{"type": "text", "text": prompt}]
+    for ref in reference_images:
+        url = ref if is_url(ref) else image_file_to_data_url(Path(ref))
+        content.append({"type": "image_url", "image_url": {"url": url}})
+    return content
+
+
+def build_payload(
+    model: str,
+    prompt: str,
+    size: str | None,
+    quality: str | None,
+    reference_images: list[str] | None = None,
+) -> dict:
     payload = {
         "model": model,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": [{"role": "user", "content": build_message_content(prompt, reference_images)}],
         "modalities": ["image", "text"],
     }
     if size or quality:
@@ -40,6 +72,23 @@ def build_payload(model: str, prompt: str, size: str | None, quality: str | None
             img_opts["quality"] = quality
         payload["image"] = img_opts
     return payload
+
+
+def redact_payload_for_print(payload: dict) -> dict:
+    redacted = json.loads(json.dumps(payload))
+    for message in redacted.get("messages", []):
+        content = message.get("content")
+        if not isinstance(content, list):
+            continue
+        for part in content:
+            image_url = part.get("image_url") if isinstance(part, dict) else None
+            if not isinstance(image_url, dict):
+                continue
+            url = image_url.get("url")
+            if isinstance(url, str) and url.startswith("data:"):
+                header, _, _ = url.partition(",")
+                image_url["url"] = f"{header},<base64 redacted>"
+    return redacted
 
 
 def call_api(payload: dict, api_key: str, timeout: int = 180) -> dict:
@@ -124,6 +173,13 @@ def main() -> int:
     p.add_argument("--size", default=None, help="Image size, e.g. 1024x1024")
     p.add_argument("--quality", default=None, help="Image quality: low | medium | high")
     p.add_argument("--model", default=DEFAULT_MODEL, help="OpenRouter model id")
+    p.add_argument(
+        "-r",
+        "--reference-image",
+        action="append",
+        default=[],
+        help="Reference image path, URL, or data URL. Repeat for multiple references.",
+    )
     p.add_argument("--dry-run", action="store_true", help="Print payload and exit")
     args = p.parse_args()
 
@@ -137,9 +193,9 @@ def main() -> int:
     base_name = args.name or slugify(args.prompt)
     ts = time.strftime("%Y%m%d-%H%M%S")
 
-    payload = build_payload(args.model, args.prompt, args.size, args.quality)
+    payload = build_payload(args.model, args.prompt, args.size, args.quality, args.reference_image)
     if args.dry_run:
-        print(json.dumps(payload, indent=2))
+        print(json.dumps(redact_payload_for_print(payload), indent=2))
         return 0
 
     saved: list[str] = []

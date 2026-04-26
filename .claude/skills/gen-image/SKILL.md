@@ -4,7 +4,8 @@ description: |
   Generate asset/texture images for this project via OpenRouter's
   openai/gpt-5.4-image-2 model. Use when the user asks to generate, create,
   draft, or regenerate art, sprites, icons, textures, UI assets, or any
-  image from a text prompt. Saves files into the project's assets directory.
+  image from a text prompt, optionally with one or more reference images.
+  Saves files into the project's assets directory.
 allowed-tools:
   - Bash
   - Read
@@ -15,6 +16,7 @@ allowed-tools:
 
 Calls `openai/gpt-5.4-image-2` via OpenRouter using the local
 `OPENROUTER_API_KEY`. Saves PNGs into `assets/generated/` by default.
+Supports text-only generation and image-referenced generation.
 
 ## Preflight
 
@@ -39,6 +41,18 @@ python3 .claude/skills/gen-image/scripts/generate.py \
   --output-dir assets/generated/kitten-miner
 ```
 
+With reference images:
+
+```bash
+python3 .claude/skills/gen-image/scripts/generate.py \
+  --prompt "redraw this kitten miner as a 32x32 pixel-art idle sprite, transparent bg" \
+  --reference-image assets/2d/spritesheet/characters/player/idle/down-1.png \
+  --reference-image assets/2d/spritesheet/characters/player/idle/right-1.png \
+  -n 2 \
+  --size 1024x1024 \
+  --output-dir assets/generated/kitten-miner
+```
+
 Flags:
 
 | Flag | Default | Notes |
@@ -50,6 +64,7 @@ Flags:
 | `--size` | model default | e.g. `512x512`, `1024x1024`, `1536x1024` |
 | `--quality` | model default | `low` / `medium` / `high` |
 | `--model` | `openai/gpt-5.4-image-2` | Override model id |
+| `-r, --reference-image` | none | Reference image path, URL, or data URL. Repeat for multiple images |
 | `--dry-run` | off | Print request payload without calling API |
 
 Files are named `<base>-<timestamp>-<NN>.<ext>`. If the model returns
@@ -67,6 +82,7 @@ Each image is a separate API call, so cost scales linearly with `n`.
 ## Output conventions
 
 - Project-root-relative output paths only (stay inside `assets/`).
+- Prefer project-root-relative reference image paths when using local assets.
 - Do not commit generated images unless the user asks.
 - If the response contains no image (content policy, rate limit, etc.),
   the raw JSON is saved next to the expected filename for debugging.
@@ -87,9 +103,10 @@ Show all generated files this way before reporting `DONE`.
 - "draft some concept art for the mine background"
 - "make 4 icon variants for the upgrade button"
 - "regenerate the title screen art"
+- "use this image as reference and make it match the game style"
 
 ## When NOT to use
 
-- Editing/compositing existing images (this skill only generates from prompts).
+- Precise editing/compositing existing images where pixel-accurate preservation is required.
 - Vector / SVG output (model returns raster).
-- Anything requiring reference images — current script is text-prompt only.
+- Reference-image workflows that require masking, inpainting, or control over exact regions.
