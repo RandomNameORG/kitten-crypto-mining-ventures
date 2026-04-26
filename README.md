@@ -49,14 +49,14 @@ Requires **Go 1.22+**.
 git clone https://github.com/RandomNameORG/kitten-crypto-mining-ventures
 cd kitten-crypto-mining-ventures
 go mod tidy     # first clone only; populates go.sum
-go run ./cmd/meowmine
+go run ./packages/cli/cmd/meowmine
 ```
 
 With the bundled Makefile:
 
 ```bash
-make run        # go run ./cmd/meowmine
-make run-web    # go run ./cmd/meowmine-web, then open http://localhost:8080
+make run        # go run ./packages/cli/cmd/meowmine
+make run-web    # go run ./packages/web/cmd/meowmine-web, then open http://localhost:8080
 make build      # compile all local binaries into bin/
 make release    # cross-compile release binaries (win/linux/mac)
 make test       # go test ./...
@@ -118,15 +118,22 @@ Each client gets their own save keyed by SHA-256 of their SSH public key, stored
 ## 🗂 Layout
 
 ```
-cmd/
-  meowmine/              local TUI entry point
-  meowmine-ssh/          Wish-based SSH server
-core/
-  data/                  GPU · room · event · skill · merc catalogs
-  game/                  state · economy · tick · events · skills · mercs · research · prestige · save/load
-  i18n/                  English / 中文 string tables + active-language switch
-ui/                      Bubbletea views — dashboard, store, gpus, rooms, skills, log, mercs, lab, prestige
-ui2d/                    Browser 2D canvas UI, backed by the same core game package
+packages/
+  core/
+    data/                GPU · room · event · skill · merc catalogs
+    game/                state · economy · tick · events · skills · mercs · research · prestige · save/load
+    i18n/                English / 中文 string tables + active-language switch
+    update/              Self-update channel
+  cli/
+    cmd/
+      meowmine/          local TUI entry point
+      meowmine-ssh/      Wish-based SSH server
+      meowmine-sim/      headless simulator (dev)
+    ui/                  Bubbletea views — dashboard, store, gpus, rooms, skills, log, mercs, lab, prestige
+  web/
+    cmd/
+      meowmine-web/      HTTP server for the browser frontend
+    ui/                  Browser 2D canvas UI (HTML/CSS/JS today; React migration planned)
 assets/ascii/            ASCII art placeholders (see docs/ASSETS.md)
 docs/                    design + asset docs
 ```

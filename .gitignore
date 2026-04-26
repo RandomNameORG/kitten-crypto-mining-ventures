@@ -13,6 +13,7 @@
 # Editor / IDE
 /.vscode/
 /.idea/
+/.godot/
 
 # OS
 .DS_Store
