@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { GameStage } from "./components/GameStage";
 import { Hud } from "./components/Hud";
 import { StageFoot } from "./components/StageFoot";
 import { Tabs } from "./components/Tabs";
@@ -63,7 +64,7 @@ export function App() {
             </div>
           </div>
           <div className="canvas-wrap">
-            <canvas id="stage" width={512} height={288} aria-label="2D game stage" />
+            <GameStage snapshot={snapshot} />
             <div className="toast">{toast}</div>
           </div>
           <StageFoot room={room} />
