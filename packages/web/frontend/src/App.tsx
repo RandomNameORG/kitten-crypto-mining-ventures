@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EventBanner } from "./components/EventBanner";
 import { GameStage } from "./components/GameStage";
 import { Hud } from "./components/Hud";
@@ -19,6 +19,22 @@ import type { Snapshot, TabId } from "./types";
 export function App() {
   const { snapshot, message, dispatch } = useSnapshot();
   const [tab, setTab] = useState<TabId>("store");
+  const stageRef = useRef<HTMLElement>(null);
+  const [stageHeight, setStageHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const update = () => setStageHeight(Math.round(el.getBoundingClientRect().height));
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, []);
 
   const room = useMemo(
     () => snapshot?.rooms.find((r) => r.id === snapshot.state.current_room) ?? null,
@@ -57,7 +73,7 @@ export function App() {
       </header>
 
       <section className="layout">
-        <section className="stage-shell">
+        <section className="stage-shell" ref={stageRef}>
           <div className="stage-head">
             <div className="room-title">
               <strong>{roomName}</strong>
@@ -84,7 +100,10 @@ export function App() {
           <LogStrip log={snapshot?.log ?? []} />
         </section>
 
-        <aside className="side">
+        <aside
+          className="side"
+          style={stageHeight ? { height: `${stageHeight}px`, maxHeight: `${stageHeight}px` } : undefined}
+        >
           <Tabs active={tab} onSelect={setTab} />
           {snapshot && (
             <PanelHeader tab={tab} snapshot={snapshot} />

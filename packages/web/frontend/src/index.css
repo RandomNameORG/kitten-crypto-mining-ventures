@@ -124,8 +124,8 @@
   .log-cat.opportunity { @apply text-mint; }
   .log-text { @apply flex-1 truncate; }
 
-  /* side panel — viewport-bounded so the inner .panel scrolls instead of stretching the whole page */
-  .side { @apply grid grid-rows-[auto_auto_1fr] min-h-0 overflow-hidden sticky; top: 96px; max-height: calc(100vh - 120px); }
+  /* side panel — height is set inline by App.tsx to match the stage shell, so the inner .panel scrolls */
+  .side { @apply grid grid-rows-[auto_auto_1fr] min-h-0 overflow-hidden; }
   .panel-header { @apply flex items-baseline justify-between gap-3 px-3 py-2 border-b border-line/30 bg-panel-2/20; }
   .panel-title { @apply text-gold text-[13px] font-semibold tracking-tight; }
   .panel-meta { @apply text-muted/80 text-[10px] uppercase tracking-wider tabular-nums truncate font-mono; }
