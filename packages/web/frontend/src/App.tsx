@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
+import { EventBanner } from "./components/EventBanner";
 import { GameStage } from "./components/GameStage";
 import { Hud } from "./components/Hud";
+import { LogStrip } from "./components/LogStrip";
 import { StageFoot } from "./components/StageFoot";
 import { Tabs } from "./components/Tabs";
 import { useSnapshot } from "./hooks/useSnapshot";
@@ -68,6 +70,8 @@ export function App() {
             <div className="toast">{toast}</div>
           </div>
           <StageFoot room={room} />
+          <EventBanner event={snapshot?.last_event} />
+          <LogStrip log={snapshot?.log ?? []} />
         </section>
 
         <aside className="side">
@@ -78,11 +82,10 @@ export function App() {
             ) : tab === "store" ? (
               <StorePanel
                 snapshot={snapshot}
-                currentRoomName={roomName}
                 dispatch={(id) => dispatch({ action: "buy_gpu", id })}
               />
             ) : tab === "rooms" ? (
-              <RoomsPanel snapshot={snapshot} currentRoomName={roomName} dispatch={dispatch} />
+              <RoomsPanel snapshot={snapshot} dispatch={dispatch} />
             ) : tab === "gpus" ? (
               <GPUsPanel snapshot={snapshot} dispatch={dispatch} />
             ) : tab === "defense" ? (
@@ -90,7 +93,7 @@ export function App() {
             ) : tab === "skills" ? (
               <SkillsPanel snapshot={snapshot} dispatch={dispatch} />
             ) : tab === "mercs" ? (
-              <MercsPanel snapshot={snapshot} currentRoomName={roomName} dispatch={dispatch} />
+              <MercsPanel snapshot={snapshot} dispatch={dispatch} />
             ) : tab === "log" ? (
               <LogPanel snapshot={snapshot} />
             ) : (

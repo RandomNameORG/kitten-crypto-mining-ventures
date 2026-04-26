@@ -1,23 +1,14 @@
 import { ActionBar, ActionButton } from "../components/ActionButton";
-import { PanelSummary } from "../components/PanelSummary";
 import type { ActionRequest, Snapshot } from "../types";
 
 interface Props {
   snapshot: Snapshot;
-  currentRoomName: string;
   dispatch: (payload: ActionRequest) => void;
 }
 
-export function RoomsPanel({ snapshot, currentRoomName, dispatch }: Props) {
+export function RoomsPanel({ snapshot, dispatch }: Props) {
   return (
     <>
-      <h2>房间</h2>
-      <PanelSummary
-        items={[
-          ["当前", currentRoomName],
-          ["余额", snapshot.state.btc_fmt],
-        ]}
-      />
       <div className="list">
         {snapshot.rooms.map((room) => {
           const canAfford = snapshot.state.btc >= room.unlock_cost;

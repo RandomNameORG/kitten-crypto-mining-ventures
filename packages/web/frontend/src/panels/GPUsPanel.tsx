@@ -1,5 +1,4 @@
 import { ActionBar, ActionButton } from "../components/ActionButton";
-import { PanelSummary } from "../components/PanelSummary";
 import type { ActionRequest, Snapshot } from "../types";
 import { gpuIconSrc } from "../util";
 
@@ -9,32 +8,12 @@ interface Props {
 }
 
 export function GPUsPanel({ snapshot, dispatch }: Props) {
-  const room = snapshot.rooms.find((r) => r.id === snapshot.state.current_room) || null;
   const gpus = snapshot.gpus.filter((g) => g.room === snapshot.state.current_room);
   if (!gpus.length) {
-    return (
-      <>
-        <h2>当前房间显卡</h2>
-        <PanelSummary
-          items={[
-            ["槽位", room ? `0/${room.slots}` : "0"],
-            ["提示", "去商店购买"],
-          ]}
-        />
-        <div className="empty">空槽位</div>
-      </>
-    );
+    return <div className="empty">空槽位 · 去商店买一张</div>;
   }
-  const broken = gpus.filter((g) => g.status === "broken").length;
   return (
     <>
-      <h2>当前房间显卡</h2>
-      <PanelSummary
-        items={[
-          ["槽位", room ? `${room.gpu_count}/${room.slots}` : `${gpus.length}`],
-          ["损坏", `${broken}`],
-        ]}
-      />
       <div className="list">
         {gpus.map((gpu) => (
           <article key={gpu.instance_id} className="row item-row">

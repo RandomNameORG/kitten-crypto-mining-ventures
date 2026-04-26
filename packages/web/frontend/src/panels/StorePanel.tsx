@@ -1,26 +1,15 @@
 import { ActionBar, ActionButton } from "../components/ActionButton";
-import { PanelSummary } from "../components/PanelSummary";
 import type { Snapshot } from "../types";
 import { gpuIconSrc } from "../util";
 
 interface Props {
   snapshot: Snapshot;
-  currentRoomName: string;
   dispatch: (id: string) => void;
 }
 
-export function StorePanel({ snapshot, currentRoomName, dispatch }: Props) {
-  const room = snapshot.rooms.find((r) => r.id === snapshot.state.current_room);
+export function StorePanel({ snapshot, dispatch }: Props) {
   return (
     <>
-      <h2>显卡商店</h2>
-      <PanelSummary
-        items={[
-          ["余额", snapshot.state.btc_fmt],
-          ["当前房间", currentRoomName],
-          ["槽位", room ? `${room.gpu_count}/${room.slots}` : "-"],
-        ]}
-      />
       <div className="list">
         {snapshot.gpu_defs.map((def) => {
           const canBuy = snapshot.state.btc >= def.price;

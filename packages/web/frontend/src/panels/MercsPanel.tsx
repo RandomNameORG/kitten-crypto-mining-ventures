@@ -1,26 +1,17 @@
 import { ActionBar, ActionButton } from "../components/ActionButton";
-import { PanelSummary } from "../components/PanelSummary";
 import type { ActionRequest, Snapshot } from "../types";
 
 interface Props {
   snapshot: Snapshot;
-  currentRoomName: string;
   dispatch: (payload: ActionRequest) => void;
 }
 
-export function MercsPanel({ snapshot, currentRoomName, dispatch }: Props) {
+export function MercsPanel({ snapshot, dispatch }: Props) {
   const roomName = (id: string) =>
     snapshot.rooms.find((r) => r.id === id)?.name ?? id;
 
   return (
     <>
-      <h2>雇佣猫</h2>
-      <PanelSummary
-        items={[
-          ["已雇佣", `${snapshot.mercs.length}`],
-          ["当前房间", currentRoomName],
-        ]}
-      />
       <div className="list">
         {snapshot.mercs.length === 0 ? (
           <div className="empty">暂无雇佣</div>

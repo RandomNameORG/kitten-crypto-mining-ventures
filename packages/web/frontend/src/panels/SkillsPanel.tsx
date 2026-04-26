@@ -1,5 +1,4 @@
 import { ActionBar, ActionButton } from "../components/ActionButton";
-import { PanelSummary } from "../components/PanelSummary";
 import type { ActionRequest, Snapshot } from "../types";
 
 interface Props {
@@ -11,13 +10,10 @@ export function SkillsPanel({ snapshot, dispatch }: Props) {
   const visible = snapshot.skills.slice(0, 18);
   return (
     <>
-      <h2>技能</h2>
-      <PanelSummary
-        items={[
-          ["TP", `${snapshot.state.tech_point}`],
-          ["碎片", `${snapshot.state.research_frags}`],
-        ]}
-      />
+      <div className="flex gap-2 mb-2 text-[11px] text-muted">
+        <span><span className="text-gold">TP</span> {snapshot.state.tech_point}</span>
+        <span><span className="text-gold">碎片</span> {snapshot.state.research_frags}</span>
+      </div>
       <div className="list">
         {visible.map((skill) => {
           const prereqOk =

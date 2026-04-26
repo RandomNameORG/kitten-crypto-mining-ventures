@@ -10,7 +10,6 @@ export function StatsPanel({ snapshot }: Props) {
   const broken = snapshot.gpus.filter((g) => g.status === "broken").length;
   return (
     <>
-      <h2>状态</h2>
       <div className="list">
         <article className="row">
           <div className="row-head">

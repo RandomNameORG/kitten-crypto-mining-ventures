@@ -1,5 +1,4 @@
 import { ActionBar, ActionButton } from "../components/ActionButton";
-import { PanelSummary } from "../components/PanelSummary";
 import type { ActionRequest, Snapshot } from "../types";
 
 interface Props {
@@ -21,13 +20,6 @@ export function DefensePanel({ snapshot, dispatch }: Props) {
   const d = room.defense || { lock: 0, cctv: 0, wiring: 0, cooling: 0, armor: 0 };
   return (
     <>
-      <h2>防御与维护</h2>
-      <PanelSummary
-        items={[
-          ["温度", `${room.heat.toFixed(0)}°/${room.max_heat.toFixed(0)}°`],
-          ["余额", snapshot.state.btc_fmt],
-        ]}
-      />
       <div className="list">
         {DIMS.map(([id, label]) => {
           const level = d[id] || 0;
