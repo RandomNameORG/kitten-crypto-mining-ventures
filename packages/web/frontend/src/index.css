@@ -152,6 +152,17 @@
   .copy { @apply text-muted text-[11px] leading-snug line-clamp-2; }
   .tag { @apply flex-none px-1.5 py-0.5 text-[10px] text-muted bg-bg/40 border border-line/40 rounded-sm uppercase tracking-wider; font-family: var(--font-mono); }
   .tag.broken { @apply text-red border-red/40 bg-red/10; animation: pulseGlow 1.6s var(--ease-out) infinite; }
+  .tag.tier-trash { @apply text-muted border-muted/30 bg-muted/5; }
+  .tag.tier-common { @apply text-mint border-mint/40 bg-mint/10; }
+  .tag.tier-rare { @apply text-blue border-blue/40 bg-blue/10; }
+  .tag.tier-epic { @apply text-gold border-gold/45 bg-gold/10; }
+  .tag.tier-legendary { @apply text-orange border-orange/45 bg-orange/12; }
+  .row.item-row.tier-trash { border-left: 3px solid oklch(70% 0.018 175 / 0.4); }
+  .row.item-row.tier-common { border-left: 3px solid var(--color-mint); }
+  .row.item-row.tier-rare { border-left: 3px solid var(--color-blue); }
+  .row.item-row.tier-epic { border-left: 3px solid var(--color-gold); }
+  .row.item-row.tier-legendary { border-left: 3px solid var(--color-orange); }
+  .fact.owned { @apply text-mint border-mint/30 bg-mint/8; }
   .facts { @apply flex flex-wrap gap-1; }
   .fact { @apply px-1.5 py-0.5 text-[10px] text-muted bg-bg/40 border border-line/40 rounded-sm; font-family: var(--font-mono); }
   .fact.price { @apply text-gold font-semibold; }
