@@ -56,7 +56,8 @@ With the bundled Makefile:
 
 ```bash
 make run        # go run ./packages/cli/cmd/meowmine
-make run-web    # go run ./packages/web/cmd/meowmine-web, then open http://localhost:8080
+make run-web    # builds React frontend (first run installs node deps), then serves on http://localhost:8080
+make run-web-dev # Vite dev server on :5173 with /api proxied to Go on :8080 (run `make run-web` in another shell)
 make build      # compile all local binaries into bin/
 make release    # cross-compile release binaries (win/linux/mac)
 make test       # go test ./...
@@ -133,7 +134,8 @@ packages/
   web/
     cmd/
       meowmine-web/      HTTP server for the browser frontend
-    ui/                  Browser 2D canvas UI (HTML/CSS/JS today; React migration planned)
+    frontend/            Vite + React 18 + TS source — components/, panels/, hooks/
+      dist/              Built bundle, served by meowmine-web (gitignored)
 assets/ascii/            ASCII art placeholders (see docs/ASSETS.md)
 docs/                    design + asset docs
 ```

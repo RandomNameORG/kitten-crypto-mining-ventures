@@ -23,7 +23,7 @@ Apply the workspace-level Ralph-loop rules the same way you would elsewhere: sea
 - Bubble Tea TUI game. Entry: `packages/cli/cmd/meowmine` (local), `packages/cli/cmd/meowmine-ssh` (remote), `packages/cli/cmd/meowmine-sim` (headless simulator).
 - Game engine is pure Go under `packages/core/game/` — no UI dependencies. `State.Tick(now int64)` is the single step function; `now` is virtual unix-seconds.
 - TUI lives under `packages/cli/ui/`. The tea loop in `packages/cli/ui/app.go` calls `state.Tick(time.Now().Unix())` once per second.
-- Browser frontend lives under `packages/web/ui/` (HTML/CSS/JS, currently vanilla; React migration is planned but not yet scaffolded). Served by `packages/web/cmd/meowmine-web`.
+- Browser frontend lives under `packages/web/frontend/` (Vite + React 18 + TypeScript). Served by `packages/web/cmd/meowmine-web` from `packages/web/frontend/dist/` after `make frontend-build`. Dev workflow: `make run-web` (Go on :8080 serving last build) plus `make run-web-dev` in another shell (Vite on :5173 with `/api`+`/assets` proxied to :8080).
 - RNG is the global `math/rand`. Seed via `game.SeedRNG(seed int64)` before touching state if you want reproducibility.
 
 ## How to debug & verify game logic
