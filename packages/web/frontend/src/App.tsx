@@ -26,9 +26,13 @@ export function App() {
   );
   const roomName = room?.name ?? "loading";
   const roomFlavor = room?.flavor ?? "loading";
-  const subtitle = snapshot
-    ? `${snapshot.state.kitten_name} · ${snapshot.state.paused ? "paused" : "mining"}`
-    : "connecting";
+  const status = !snapshot
+    ? { tone: "warn", label: "CONNECTING" }
+    : snapshot.state.paused
+      ? { tone: "warn", label: "PAUSED" }
+      : snapshot.state.mining_paused
+        ? { tone: "warn", label: "REBOOTING" }
+        : { tone: "live", label: "MINING" };
   const toast = snapshot?.last_event
     ? `${snapshot.last_event.name}: ${snapshot.last_event.text}`
     : message;
@@ -40,7 +44,13 @@ export function App() {
           <div className="catmark">M</div>
           <div>
             <h1>矿业大亨喵</h1>
-            <div className="subtitle">{subtitle}</div>
+            <div className="subtitle">
+              <span className={`status-pill ${status.tone}`}>
+                <span className={`status-dot ${status.tone === "warn" ? "warn" : ""}`} />
+                {status.label}
+              </span>
+              <span>· {snapshot?.state.kitten_name ?? "—"}</span>
+            </div>
           </div>
         </div>
         {snapshot && <Hud state={snapshot.state} room={room} />}

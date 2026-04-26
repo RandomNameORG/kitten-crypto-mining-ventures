@@ -28,7 +28,7 @@ export function GPUsPanel({ snapshot, dispatch }: Props) {
                 <span className="row-title">
                   #{gpu.instance_id} {gpu.name}
                 </span>
-                <span className="tag">{gpu.status}</span>
+                <span className={`tag ${gpu.status === "broken" ? "broken" : ""}`}>{gpu.status}</span>
               </div>
               <div className="facts">
                 <span className="fact">L{gpu.upgrade}</span>
