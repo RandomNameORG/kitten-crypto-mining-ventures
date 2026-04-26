@@ -20,11 +20,166 @@ from pathlib import Path
 
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 DEFAULT_MODEL = "openai/gpt-5.4-image-2"
+MODE_ALIASES = {
+    "1": "character",
+    "char": "character",
+    "character": "character",
+    "npc": "character",
+    "monster": "character",
+    "cat": "character",
+    "2": "map",
+    "map": "map",
+    "scene": "map",
+    "room": "map",
+    "biome": "map",
+    "background": "map",
+    "3": "item_gpu",
+    "item": "item_gpu",
+    "item_gpu": "item_gpu",
+    "gpu": "item_gpu",
+    "device": "item_gpu",
+    "machine": "item_gpu",
+    "prop": "item_gpu",
+    "props": "item_gpu",
+    "4": "ui",
+    "ui": "ui",
+    "5": "fx",
+    "fx": "fx",
+    "effect": "fx",
+    "effects": "fx",
+}
+UI_SUBTYPES = {
+    "icon_small": {"size": "16x16", "frames": "1", "background": "#FF00FF"},
+    "icon": {"size": "32x32", "frames": "1", "background": "#FF00FF"},
+    "icon_large": {"size": "64x64", "frames": "1", "background": "#FF00FF"},
+    "button": {"size": "160x48", "frames": "1", "background": "transparent-ready / #FF00FF"},
+    "panel": {"size": "320x180", "frames": "1", "background": "transparent-ready / #FF00FF"},
+    "card": {"size": "180x240", "frames": "1", "background": "transparent-ready / #FF00FF"},
+    "popup": {"size": "360x200", "frames": "1", "background": "transparent-ready / #FF00FF"},
+}
 
 
 def slugify(text: str, max_len: int = 40) -> str:
     s = re.sub(r"[^a-zA-Z0-9]+", "-", text.strip().lower()).strip("-")
     return (s[:max_len] or "image").rstrip("-")
+
+
+def normalize_mode(mode: str | None) -> str | None:
+    if mode is None:
+        return None
+    key = mode.strip().lower().replace("-", "_")
+    if key not in MODE_ALIASES:
+        valid = ", ".join(sorted(set(MODE_ALIASES.values())))
+        raise SystemExit(f"Unknown mode: {mode}. Valid modes: {valid}")
+    return MODE_ALIASES[key]
+
+
+def prompt_mentions_walk(prompt: str) -> bool:
+    return bool(re.search(r"\b(walk|walking|move|moving)\b|移动|行走", prompt, re.IGNORECASE))
+
+
+def build_mode_prompt(user_prompt: str, mode: str | None, ui_subtype: str, fx_size: str) -> tuple[str, str | None]:
+    if mode is None:
+        return user_prompt, None
+
+    if mode == "character":
+        if prompt_mentions_walk(user_prompt):
+            target_size = "256x256"
+            rules = [
+                "Mode: character walk sheet.",
+                "Use for a character, NPC, monster, or cat protagonist.",
+                "Style: 2D pixel art.",
+                "Background: solid #FF00FF chroma key on every empty pixel.",
+                "Generate all four directions in one sheet: down, left, right, up.",
+                "Each direction has exactly 4 frames.",
+                "Layout: 4 columns x 4 rows.",
+                "Rows, top to bottom: down, left, right, up.",
+                "Frame size: 64x64 pixels.",
+                "Final canvas size: 256x256 pixels.",
+            ]
+        else:
+            target_size = "256x64"
+            rules = [
+                "Mode: character sprite sheet.",
+                "Use for a character, NPC, monster, or cat protagonist.",
+                "Style: 2D pixel art.",
+                "Background: solid #FF00FF chroma key on every empty pixel.",
+                "Default action frames: exactly 4 frames.",
+                "Layout: 1 row x 4 columns.",
+                "Frame size: 64x64 pixels.",
+                "Final canvas size: 256x64 pixels.",
+            ]
+    elif mode == "map":
+        target_size = "640x360"
+        rules = [
+            "Mode: map.",
+            "Use for a scene, room, biome, or room background.",
+            "Style: 2D top-down / 3/4 pixel art.",
+            "Resolution: 640x360 pixels.",
+            "Full scene image; do not use a magenta background.",
+            "Single image only; no frame slicing or sprite sheet.",
+            "No UI and no text.",
+            "Do not include characters unless the prompt explicitly asks for them.",
+        ]
+    elif mode == "item_gpu":
+        target_size = "256x64"
+        rules = [
+            "Mode: item_gpu.",
+            "Use for an item, GPU, device, machine, or prop.",
+            "Style: 2D pixel art.",
+            "Background: solid #FF00FF chroma key on every empty pixel.",
+            "Action: exactly 4 frames.",
+            "Layout: 1 row x 4 columns.",
+            "Frame size: 64x64 pixels.",
+            "Final canvas size: 256x64 pixels.",
+        ]
+    elif mode == "ui":
+        if ui_subtype not in UI_SUBTYPES:
+            valid = ", ".join(UI_SUBTYPES)
+            raise SystemExit(f"Unknown UI subtype: {ui_subtype}. Valid UI subtypes: {valid}")
+        spec = UI_SUBTYPES[ui_subtype]
+        target_size = spec["size"]
+        rules = [
+            f"Mode: ui, subtype: {ui_subtype}.",
+            "Use for a game UI asset.",
+            "Style: 2D pixel art UI.",
+            f"Canvas size: {spec['size']} pixels.",
+            f"Frames: {spec['frames']}.",
+            f"Background: {spec['background']}.",
+            "No extra labels or text unless the prompt explicitly asks for readable text.",
+        ]
+    elif mode == "fx":
+        large = fx_size == "large"
+        target_size = "384x96" if large else "256x64"
+        frame_size = "96x96" if large else "64x64"
+        rules = [
+            "Mode: fx.",
+            "Use for a visual effect sprite sheet.",
+            "Style: 2D pixel art.",
+            "Background: solid #FF00FF chroma key on every empty pixel.",
+            f"Frame size: {frame_size} pixels.",
+            "Frames: exactly 4.",
+            "Layout: 1 row x 4 columns.",
+            f"Final canvas size: {target_size} pixels.",
+        ]
+    else:
+        raise AssertionError(f"Unhandled mode: {mode}")
+
+    common_rules = [
+        "Use crisp pixel edges with no antialiasing blur.",
+        "Keep the asset centered within each frame.",
+        "Do not add UI, labels, explanatory text, watermarks, borders, or mockup framing.",
+    ]
+    prompt = "\n".join(
+        [
+            "Create a game asset from this request:",
+            user_prompt,
+            "",
+            "Mandatory output rules:",
+            *[f"- {rule}" for rule in rules + common_rules],
+        ]
+    )
+    return prompt, target_size
 
 
 def is_url(value: str) -> bool:
@@ -167,10 +322,31 @@ def decode_image(url: str) -> tuple[str, bytes]:
 def main() -> int:
     p = argparse.ArgumentParser(description="Generate asset images via OpenRouter.")
     p.add_argument("--prompt", required=True, help="Image prompt")
+    p.add_argument(
+        "--mode",
+        "--mod",
+        dest="mode",
+        default=None,
+        help="Asset mode: 1/character, 2/map, 3/item_gpu, 4/ui, 5/fx. Omit for raw prompt.",
+    )
+    p.add_argument(
+        "--ui-subtype",
+        "--subtype",
+        dest="ui_subtype",
+        default="icon",
+        choices=sorted(UI_SUBTYPES),
+        help="UI subtype when --mode ui is used.",
+    )
+    p.add_argument(
+        "--fx-size",
+        default="normal",
+        choices=("normal", "large"),
+        help="FX sheet size when --mode fx is used.",
+    )
     p.add_argument("-n", "--num", type=int, default=1, help="Number of images (separate API calls)")
     p.add_argument("-o", "--output-dir", default="assets/generated", help="Output directory")
     p.add_argument("--name", default=None, help="Base filename (defaults to slug of prompt)")
-    p.add_argument("--size", default=None, help="Image size, e.g. 1024x1024")
+    p.add_argument("--size", default=None, help="Image request size. Defaults to the mode target size when --mode is set.")
     p.add_argument("--quality", default=None, help="Image quality: low | medium | high")
     p.add_argument("--model", default=DEFAULT_MODEL, help="OpenRouter model id")
     p.add_argument(
@@ -193,7 +369,10 @@ def main() -> int:
     base_name = args.name or slugify(args.prompt)
     ts = time.strftime("%Y%m%d-%H%M%S")
 
-    payload = build_payload(args.model, args.prompt, args.size, args.quality, args.reference_image)
+    mode = normalize_mode(args.mode)
+    prompt, mode_size = build_mode_prompt(args.prompt, mode, args.ui_subtype, args.fx_size)
+    request_size = args.size or mode_size
+    payload = build_payload(args.model, prompt, request_size, args.quality, args.reference_image)
     if args.dry_run:
         print(json.dumps(redact_payload_for_print(payload), indent=2))
         return 0

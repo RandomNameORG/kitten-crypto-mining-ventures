@@ -18,6 +18,78 @@ Calls `openai/gpt-5.4-image-2` via OpenRouter using the local
 `OPENROUTER_API_KEY`. Saves PNGs into `assets/generated/` by default.
 Supports text-only generation and image-referenced generation.
 
+## Asset modes
+
+Use `--mode` for project assets unless the user explicitly wants a raw,
+unconstrained generation. `--mod` is accepted as an alias. Mode names and
+numbers are both accepted.
+
+### Mode 1: character
+
+For characters, NPCs, monsters, and the cat protagonist.
+
+- Style: 2D pixel art
+- Background: `#FF00FF`
+- Frame size: `64x64`
+- Default frames: `4`
+- Default layout: `1x4`
+- Default canvas: `256x64`
+
+If the prompt action is walk / walking / move / moving / 移动 / 行走:
+
+- Generate all four directions in one sheet: `down`, `left`, `right`, `up`
+- Each direction has 4 frames
+- Layout: `4x4`
+- Canvas: `256x256`
+
+### Mode 2: map
+
+For scenes, rooms, biomes, and room backgrounds.
+
+- Resolution: `640x360`
+- Style: 2D top-down / 3/4 pixel art
+- Full scene image, no magenta background
+- Single image, no frame slicing
+- No UI, no text
+- No characters by default unless the prompt explicitly asks
+
+### Mode 3: item_gpu
+
+For items, GPUs, devices, machines, and props.
+
+- Style: 2D pixel art
+- Background: `#FF00FF`
+- Frame size: `64x64`
+- Frames: `4`
+- Layout: `1x4`
+- Canvas: `256x64`
+
+### Mode 4: ui
+
+For UI assets. Select with `--ui-subtype`.
+
+| Subtype | Size | Frames | Background |
+|---------|------|--------|------------|
+| `icon_small` | `16x16` | `1` | `#FF00FF` |
+| `icon` | `32x32` | `1` | `#FF00FF` |
+| `icon_large` | `64x64` | `1` | `#FF00FF` |
+| `button` | `160x48` | `1` | transparent-ready / `#FF00FF` |
+| `panel` | `320x180` | `1` | transparent-ready / `#FF00FF` |
+| `card` | `180x240` | `1` | transparent-ready / `#FF00FF` |
+| `popup` | `360x200` | `1` | transparent-ready / `#FF00FF` |
+
+### Mode 5: fx
+
+For visual effects.
+
+- Style: 2D pixel art
+- Background: `#FF00FF`
+- Default frame size: `64x64`
+- Default frames: `4`
+- Default layout: `1x4`
+- Default canvas: `256x64`
+- Large FX: `--fx-size large`, frame size `96x96`, canvas `384x96`
+
 ## Preflight
 
 ```bash
@@ -35,9 +107,9 @@ Invoke the script from the project root:
 
 ```bash
 python3 .claude/skills/gen-image/scripts/generate.py \
-  --prompt "pixel-art kitten miner holding a pickaxe, 32x32, transparent bg" \
+  --mode character \
+  --prompt "kitten miner holding a pickaxe idle animation" \
   -n 4 \
-  --size 1024x1024 \
   --output-dir assets/generated/kitten-miner
 ```
 
@@ -45,12 +117,22 @@ With reference images:
 
 ```bash
 python3 .claude/skills/gen-image/scripts/generate.py \
-  --prompt "redraw this kitten miner as a 32x32 pixel-art idle sprite, transparent bg" \
+  --mode character \
+  --prompt "redraw this kitten miner as a walking sprite" \
   --reference-image assets/2d/spritesheet/characters/player/idle/down-1.png \
   --reference-image assets/2d/spritesheet/characters/player/idle/right-1.png \
   -n 2 \
-  --size 1024x1024 \
   --output-dir assets/generated/kitten-miner
+```
+
+UI example:
+
+```bash
+python3 .claude/skills/gen-image/scripts/generate.py \
+  --mode ui \
+  --ui-subtype button \
+  --prompt "green upgrade button with beveled pixel edges" \
+  --output-dir assets/generated/ui
 ```
 
 Flags:
@@ -58,10 +140,13 @@ Flags:
 | Flag | Default | Notes |
 |------|---------|-------|
 | `--prompt` | (required) | Text prompt for the image |
+| `--mode`, `--mod` | none | `1`/`character`, `2`/`map`, `3`/`item_gpu`, `4`/`ui`, `5`/`fx`; omit only for raw prompts |
+| `--ui-subtype`, `--subtype` | `icon` | UI subtype when `--mode ui` is used |
+| `--fx-size` | `normal` | Use `large` for `96x96 x 4 = 384x96` FX sheets |
 | `-n, --num` | `1` | How many images to generate (one API call per image) |
 | `-o, --output-dir` | `assets/generated` | Directory to write files into (created if missing) |
 | `--name` | slug of prompt | Base filename |
-| `--size` | model default | e.g. `512x512`, `1024x1024`, `1536x1024` |
+| `--size` | mode target size | Override the image request size |
 | `--quality` | model default | `low` / `medium` / `high` |
 | `--model` | `openai/gpt-5.4-image-2` | Override model id |
 | `-r, --reference-image` | none | Reference image path, URL, or data URL. Repeat for multiple images |
