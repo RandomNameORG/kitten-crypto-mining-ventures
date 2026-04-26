@@ -17,6 +17,7 @@ const resetButton = document.querySelector("#resetButton");
 const STAGE = { width: 512, height: 288 };
 const DIRECTIONS = ["down", "left", "right", "up"];
 const FRAME_COUNT = 4;
+const ARRIVAL_DISTANCE = 6;
 const CHARACTER_ROOT = "/assets/2d/spritesheet/characters";
 const tabs = [
   ["store", "商店"],
@@ -81,6 +82,7 @@ const actor = {
   emote: "",
   emoteClock: 0,
   bobClock: 0,
+  coolingIndex: 0,
 };
 const images = {
   rooms: new Map(),
@@ -595,6 +597,15 @@ function distanceToTarget() {
   return Math.hypot(actor.targetX - actor.x, actor.targetY - actor.y);
 }
 
+function coolingPoint(fan, mood) {
+  const offsets = mood === "critical"
+    ? [[-20, 0], [16, 4], [-4, 10]]
+    : [[-16, 0], [16, 3], [0, 9]];
+  const [dx, dy] = offsets[actor.coolingIndex % offsets.length];
+  actor.coolingIndex += 1;
+  return { x: fan.x + dx, y: fan.y + dy };
+}
+
 function handleCatAI(dt) {
   if (!model) return;
   const room = currentRoom();
@@ -629,16 +640,26 @@ function handleCatAI(dt) {
   }
   if ((mood === "hot" || mood === "critical") && actor.reactionClock <= 0) {
     const fan = catPoint("fan");
-    const nearFan = Math.hypot(actor.x - fan.x, actor.y - fan.y) < 22;
+    const nearFan = Math.hypot(actor.x - fan.x, actor.y - fan.y) < 26;
+    const arrived = distanceToTarget() <= ARRIVAL_DISTANCE;
     if (actor.state !== mood || (!nearFan && actor.decisionClock <= 0)) {
-      setActorTarget({ x: fan.x + (mood === "critical" ? -8 : 0), y: fan.y }, mood, mood === "critical" ? "!!" : "热");
-      actor.decisionClock = mood === "critical" ? 3.2 : 4.5;
-    } else if (distanceToTarget() < 5) {
+      setActorTarget(coolingPoint(fan, mood), mood, mood === "critical" ? "!!" : "热");
+      actor.decisionClock = mood === "critical" ? 2.8 : 3.8;
+    } else if (arrived && actor.decisionClock <= 0) {
+      const next = coolingPoint(fan, mood);
+      const nextDistance = Math.hypot(next.x - actor.x, next.y - actor.y);
+      if (nextDistance > 12) {
+        setActorTarget(next, mood, mood === "critical" ? "!!" : "热");
+      } else {
+        actor.direction = "down";
+        if (actor.emoteClock <= 0) showEmote(mood === "critical" ? "!!" : "热", mood === "critical" ? 1.3 : 1.7);
+      }
+      actor.decisionClock = mood === "critical" ? 2.6 : 3.6;
+    } else if (arrived) {
       actor.targetX = actor.x;
       actor.targetY = actor.y;
       actor.direction = "down";
       if (actor.emoteClock <= 0) showEmote(mood === "critical" ? "!!" : "热", mood === "critical" ? 1.3 : 1.7);
-      actor.decisionClock = Math.max(actor.decisionClock, mood === "critical" ? 1.8 : 2.8);
     }
     return;
   }
@@ -665,7 +686,9 @@ function movementVector() {
   const toX = actor.targetX - actor.x;
   const toY = actor.targetY - actor.y;
   const distance = Math.hypot(toX, toY);
-  if (distance <= 3) {
+  if (distance <= ARRIVAL_DISTANCE) {
+    actor.targetX = actor.x;
+    actor.targetY = actor.y;
     pointer.active = false;
     return { dx: 0, dy: 0 };
   }
@@ -699,7 +722,6 @@ function updateActor(dt) {
 }
 
 function actorSpeed() {
-  if ((actor.state === "hot" || actor.state === "critical") && distanceToTarget() < 6) return 0;
   if (actor.state === "alarm") return 118;
   if (actor.state === "critical") return 74;
   if (actor.state === "hot") return 58;
