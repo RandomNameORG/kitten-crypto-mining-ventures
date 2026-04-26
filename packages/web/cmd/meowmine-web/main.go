@@ -177,7 +177,7 @@ func main() {
 	mux.HandleFunc("/api/snapshot", wg.handleSnapshot)
 	mux.HandleFunc("/api/action", wg.handleAction)
 	mux.Handle("/assets/", http.FileServer(http.Dir(".")))
-	mux.Handle("/ui/", http.StripPrefix("/ui/", http.FileServer(http.Dir(webUIDir))))
+	mux.Handle("/ui/", http.StripPrefix("/ui/", http.FileServer(http.Dir(frontendDistDir))))
 	mux.HandleFunc("/", serveIndex)
 
 	log.Printf("meowmine 2D web running at http://localhost%s", displayAddr(*addr))
@@ -191,7 +191,7 @@ func serveIndex(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	http.ServeFile(w, r, filepath.Join(webUIDir, "play.html"))
+	http.ServeFile(w, r, filepath.Join(frontendDistDir, "index.html"))
 }
 
 func (wg *webGame) handleSnapshot(w http.ResponseWriter, r *http.Request) {
@@ -458,12 +458,12 @@ func displayAddr(addr string) string {
 	return addr
 }
 
-const webUIDir = "packages/web/ui"
+const frontendDistDir = "packages/web/frontend/dist"
 
 func init() {
 	if wd, err := os.Getwd(); err == nil {
-		if _, err := os.Stat(filepath.Join(wd, webUIDir)); err != nil {
-			log.Printf("warning: run from repository root so %s/ and assets/ are available", webUIDir)
+		if _, err := os.Stat(filepath.Join(wd, frontendDistDir, "index.html")); err != nil {
+			log.Printf("warning: %s/index.html missing — run `make frontend-build` first", frontendDistDir)
 		}
 	}
 }

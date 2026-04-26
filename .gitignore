@@ -27,3 +27,7 @@ Thumbs.db
 
 .env
 .claude/skills/gen-image/scripts/__pycache__
+
+# Frontend
+node_modules/
+packages/web/frontend/dist/

@@ -6,7 +6,9 @@ SSH     := $(BIN_DIR)/meowmine-ssh
 SIM     := $(BIN_DIR)/meowmine-sim
 WEB     := $(BIN_DIR)/meowmine-web
 
-.PHONY: help build build-sim build-web run run-web run-sim run-debug ssh test lint vet tidy clean
+FRONTEND_DIR := packages/web/frontend
+
+.PHONY: help build build-sim build-web run run-web run-web-dev run-sim run-debug ssh test lint vet tidy clean frontend-install frontend-build frontend-dev
 
 help: ## Show this help
 	@awk 'BEGIN {FS = ":.*##"}; /^[a-zA-Z_-]+:.*##/ { printf "  %-12s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
@@ -35,8 +37,23 @@ run: ## Run the local TUI (equivalent to: go run ./packages/cli/cmd/meowmine)
 run-debug: ## Run the local TUI with --debug (time multiplier + HUD + cheats)
 	go run ./packages/cli/cmd/meowmine --debug
 
-run-web: ## Run the 2D web server on http://localhost:8080
+run-web: frontend-build ## Build frontend and run the 2D web server on http://localhost:8080
 	go run ./packages/web/cmd/meowmine-web
+
+run-web-dev: ## Vite dev (:5173) with API proxy — start `make run-web` in another shell first
+	cd $(FRONTEND_DIR) && npm run dev
+
+frontend-install: ## Install frontend npm deps
+	cd $(FRONTEND_DIR) && npm install
+
+frontend-build: ## Build the React frontend (writes packages/web/frontend/dist)
+	@if [ ! -d "$(FRONTEND_DIR)/node_modules" ]; then \
+		echo "  installing frontend deps (one-time)"; \
+		cd $(FRONTEND_DIR) && npm install; \
+	fi
+	cd $(FRONTEND_DIR) && npm run build
+
+frontend-dev: run-web-dev ## Alias for run-web-dev
 
 run-sim: ## Run the headless simulator for 1h of virtual time (seed=1)
 	go run ./packages/cli/cmd/meowmine-sim --ticks=3600 --seed=1
