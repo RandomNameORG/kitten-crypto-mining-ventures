@@ -20,6 +20,9 @@ export interface Snapshot {
   legacy: LegacySummary;
   stats: Stats;
   ok: boolean;
+  difficulty_defs: DifficultyDef[];
+  langs: LangOption[];
+  event_defs: EventDef[];
 }
 
 export interface GameState {
@@ -245,6 +248,36 @@ export interface Stats {
   lifetime_earned_fmt: string;
   events_by_category: Record<string, number>;
   market_price_history: number[];
+}
+
+export interface DifficultyDef {
+  id: string;
+  emoji: string;
+  label: string;
+  desc: string;
+  earn_mult: number;
+  bill_mult: number;
+  threat_mult: number;
+  starter_cash: number;
+  market_volatility_mult: number;
+  event_freq_mult: number;
+  current: boolean;
+}
+
+export interface LangOption {
+  code: string;
+  label: string;
+  current: boolean;
+}
+
+export interface EventDef {
+  id: string;
+  category: string;
+  emoji: string;
+  name: string;
+  text: string;
+  weight: number;
+  cooldown_sec: number;
 }
 
 export interface ActionRequest {

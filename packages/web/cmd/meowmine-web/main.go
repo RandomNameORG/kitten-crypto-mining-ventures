@@ -48,6 +48,9 @@ type snapshot struct {
 	Legacy          legacyView           `json:"legacy"`
 	Stats           statsView            `json:"stats"`
 	OK              bool                 `json:"ok"`
+	DifficultyDefs  []difficultyDefView  `json:"difficulty_defs"`
+	Langs           []langOptionView     `json:"langs"`
+	EventDefs       []eventDefView       `json:"event_defs"`
 }
 
 type stateView struct {
@@ -277,6 +280,36 @@ type statsView struct {
 	LifetimeEarnedFmt  string          `json:"lifetime_earned_fmt"`
 	EventsByCategory   map[string]int  `json:"events_by_category"`
 	MarketPriceHistory []float64       `json:"market_price_history"`
+}
+
+type difficultyDefView struct {
+	ID                   string  `json:"id"`
+	Emoji                string  `json:"emoji"`
+	Label                string  `json:"label"`
+	Desc                 string  `json:"desc"`
+	EarnMult             float64 `json:"earn_mult"`
+	BillMult             float64 `json:"bill_mult"`
+	ThreatMult           float64 `json:"threat_mult"`
+	StarterCash          float64 `json:"starter_cash"`
+	MarketVolatilityMult float64 `json:"market_volatility_mult"`
+	EventFreqMult        float64 `json:"event_freq_mult"`
+	Current              bool    `json:"current"`
+}
+
+type langOptionView struct {
+	Code    string `json:"code"`
+	Label   string `json:"label"`
+	Current bool   `json:"current"`
+}
+
+type eventDefView struct {
+	ID          string `json:"id"`
+	Category    string `json:"category"`
+	Emoji       string `json:"emoji"`
+	Name        string `json:"name"`
+	Text        string `json:"text"`
+	Weight      int    `json:"weight"`
+	CooldownSec int    `json:"cooldown_sec"`
 }
 
 type actionRequest struct {
@@ -777,6 +810,47 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 		LifetimeEarnedFmt:  game.FmtBTC(s.LifetimeEarned),
 		EventsByCategory:   eventsByCat,
 		MarketPriceHistory: append([]float64{}, s.MarketPriceHistory...),
+	}
+
+	diffs := data.Difficulties()
+	out.DifficultyDefs = make([]difficultyDefView, 0, len(diffs))
+	for _, d := range diffs {
+		out.DifficultyDefs = append(out.DifficultyDefs, difficultyDefView{
+			ID:                   d.ID,
+			Emoji:                d.Emoji,
+			Label:                d.LocalLabel(),
+			Desc:                 d.LocalDesc(),
+			EarnMult:             d.EarnMult,
+			BillMult:             d.BillMult,
+			ThreatMult:           d.ThreatMult,
+			StarterCash:          d.StarterCash,
+			MarketVolatilityMult: d.MarketVolatilityMult,
+			EventFreqMult:        d.EventFreqMult,
+			Current:              d.ID == s.Difficulty,
+		})
+	}
+
+	out.Langs = make([]langOptionView, 0, len(i18n.Languages))
+	for _, code := range i18n.Languages {
+		out.Langs = append(out.Langs, langOptionView{
+			Code:    code,
+			Label:   i18n.Label(code),
+			Current: code == s.Lang,
+		})
+	}
+
+	evDefs := data.Events()
+	out.EventDefs = make([]eventDefView, 0, len(evDefs))
+	for _, def := range evDefs {
+		out.EventDefs = append(out.EventDefs, eventDefView{
+			ID:          def.ID,
+			Category:    def.Category,
+			Emoji:       def.Emoji,
+			Name:        def.LocalName(),
+			Text:        def.LocalText(),
+			Weight:      def.Weight,
+			CooldownSec: def.CooldownSec,
+		})
 	}
 
 	return out

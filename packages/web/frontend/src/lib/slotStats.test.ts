@@ -38,6 +38,9 @@ function snap(gpus: GPU[]): Snapshot {
     legacy: {} as Snapshot["legacy"],
     stats: {} as Snapshot["stats"],
     ok: true,
+    difficulty_defs: [],
+    langs: [],
+    event_defs: [],
   };
 }
 
