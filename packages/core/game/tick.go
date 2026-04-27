@@ -83,6 +83,7 @@ func (s *State) Tick(now int64) {
 	s.advanceMarket(now)
 	s.advanceMining(now, dt)
 	s.advanceBilling(now)
+	s.advancePSUOverload(now, dt)
 	s.advanceSyndicate(now)
 	s.advanceResearch(now)
 	s.payWages(now)
@@ -196,6 +197,10 @@ func (s *State) advanceMining(now int64, dt float64) {
 			continue
 		}
 		coolingBonus := (1.0 + 0.25*float64(room.CoolingLvl)) * s.MasteryCoolingMult()
+		// PSU swap downtime: while a replacement is in progress every GPU
+		// in the room sits idle (no earn, no wear from heat). Mirrors the
+		// design's 2-minute "rebooting the rack" feel.
+		roomPSUPaused := room.PSUResumeAt > now
 
 		for _, g := range s.GPUs {
 			if g.Room != roomID || g.Status != "running" {
@@ -206,7 +211,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 			if room.Heat > 0.8*room.MaxHeat {
 				efficiencyFactor = 0.5
 			}
-			if !miningPaused {
+			if !miningPaused && !roomPSUPaused {
 				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult()
 				// Syndicate cut: divert the agreed fraction into the
 				// contribution pool before crediting BTC so the player
@@ -275,6 +280,8 @@ func (s *State) advanceMining(now int64, dt float64) {
 				_, _, hOut, _ := s.GPUStats(g)
 				heatPerTick += hOut
 			}
+			// PSU(next-sprint): RoomPSUEfficiency / RoomPSUHeat ready to multiply in
+			// once balance retune is scheduled.
 			netPerTick := heatPerTick - roomDef.BaseCooling*coolingBonus
 			room.Heat += netPerTick * float64(ticks)
 		}
@@ -311,6 +318,8 @@ func (s *State) advanceBilling(now int64) {
 			_, pow, _, _ := s.GPUStats(g)
 			volt += pow
 		}
+		// PSU(next-sprint): RoomPSUEfficiency / RoomPSUHeat ready to multiply in
+		// once balance retune is scheduled.
 		totalBill += volt * ElectricPerVoltMin * roomDef.ElectricCostMult * minutes * billMult
 		totalRent += float64(roomDef.RentPerHour) * (minutes / 60.0) * s.DifficultyBillMult()
 	}
