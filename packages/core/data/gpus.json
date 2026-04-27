@@ -12,6 +12,8 @@
     "durability_hours": 2,
     "price": 40,
     "scrap_value": 5,
+    "base_resale_ratio": 0.20,
+    "btc_sensitivity": 0.3,
     "special": "smoky"
   },
   {
@@ -26,7 +28,9 @@
     "heat_output": 0.5,
     "durability_hours": 10,
     "price": 120,
-    "scrap_value": 40
+    "scrap_value": 40,
+    "base_resale_ratio": 0.35,
+    "btc_sensitivity": 0.5
   },
   {
     "id": "gtx1060ti",
@@ -40,7 +44,9 @@
     "heat_output": 0.75,
     "durability_hours": 12,
     "price": 320,
-    "scrap_value": 110
+    "scrap_value": 110,
+    "base_resale_ratio": 0.35,
+    "btc_sensitivity": 0.5
   },
   {
     "id": "rx580",
@@ -55,6 +61,8 @@
     "durability_hours": 8,
     "price": 380,
     "scrap_value": 120,
+    "base_resale_ratio": 0.30,
+    "btc_sensitivity": 0.6,
     "special": "leech"
   },
   {
@@ -70,6 +78,8 @@
     "durability_hours": 18,
     "price": 1200,
     "scrap_value": 420,
+    "base_resale_ratio": 0.40,
+    "btc_sensitivity": 0.7,
     "special": "heavy"
   },
   {
@@ -84,7 +94,9 @@
     "heat_output": 1.5,
     "durability_hours": 20,
     "price": 1800,
-    "scrap_value": 650
+    "scrap_value": 650,
+    "base_resale_ratio": 0.40,
+    "btc_sensitivity": 0.7
   },
   {
     "id": "rtx3080",
@@ -99,6 +111,8 @@
     "durability_hours": 16,
     "price": 5500,
     "scrap_value": 1800,
+    "base_resale_ratio": 0.45,
+    "btc_sensitivity": 0.8,
     "special": "trophy"
   },
   {
@@ -114,6 +128,8 @@
     "durability_hours": 12,
     "price": 18000,
     "scrap_value": 6000,
+    "base_resale_ratio": 0.45,
+    "btc_sensitivity": 0.9,
     "special": "inferno"
   },
   {
@@ -129,6 +145,8 @@
     "durability_hours": 40,
     "price": 60000,
     "scrap_value": 22000,
+    "base_resale_ratio": 0.50,
+    "btc_sensitivity": 0.9,
     "special": "heavy"
   }
 ]

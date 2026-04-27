@@ -1,0 +1,52 @@
+[
+  {
+    "id": "solo",
+    "name": "Solo Mining",
+    "name_zh": "单兵作战",
+    "flavor": "No pool, no fee, no shoulders to cry on. You against the entire global hashrate — and on the rare lucky tick, the whole block reward.",
+    "flavor_zh": "不入池，不抽成，不哭泣。一个人对抗全网算力——偶尔走运,整块奖励都归你。",
+    "fee": 0.0,
+    "settlement_mode": "solo",
+    "risk": "extreme"
+  },
+  {
+    "id": "scratch_pool",
+    "name": "ScratchPool",
+    "name_zh": "抓挠池",
+    "flavor": "The big mainstream pool. Boring, reliable, and busy enough that your share gets diluted. The default everyone migrates onto.",
+    "flavor_zh": "主流大池。无聊、稳定、人多到把你的份额稀释成毛毛雨。新手默认入驻。",
+    "fee": 0.02,
+    "settlement_mode": "pplns",
+    "risk": "low"
+  },
+  {
+    "id": "kitten_hash",
+    "name": "KittenHash",
+    "name_zh": "喵爪算力池",
+    "flavor": "Small but tidy. Low fee, PPS settlement — every share is paid the moment it lands. Variance is the operator's problem, not yours.",
+    "flavor_zh": "小而整洁。手续费低，PPS 结算——每份算力提交即结算。方差由池主背锅，不关你事。",
+    "fee": 0.01,
+    "settlement_mode": "pps",
+    "risk": "medium"
+  },
+  {
+    "id": "dark_claw",
+    "name": "DarkClaw",
+    "name_zh": "暗爪池",
+    "flavor": "Onion-routed, no KYC, accepts hashrate of dubious provenance. Higher fee buys silence. Cops watch this pool's payout addresses.",
+    "flavor_zh": "洋葱路由，免实名，来路不正的算力也照收。手续费高一点，买的是沉默。条子盯着这个池的出账地址。",
+    "fee": 0.03,
+    "settlement_mode": "pplns",
+    "risk": "medium"
+  },
+  {
+    "id": "whisker_fi",
+    "name": "WhiskerFi",
+    "name_zh": "胡须金融池",
+    "flavor": "DeFi-flavored hashpool with the lowest fee on the market. PPS+ shares the block tx fees too. Roughly 10% of these pools rug per quarter.",
+    "flavor_zh": "DeFi 风味的算力池，手续费全市场最低。PPS+ 还分块内交易费。每季度大约一成的这类池跑路。",
+    "fee": 0.005,
+    "settlement_mode": "pps_plus",
+    "risk": "high"
+  }
+]

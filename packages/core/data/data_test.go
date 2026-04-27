@@ -68,6 +68,8 @@ func TestEventsValid(t *testing.T) {
 		"earn_multiplier": true, "damage_gpu": true, "burn_room_chance": true,
 		"eviction_warning": true, "money_loss": true,
 		"tax_audit": true, "damage_oc_gpu": true, "market_pin": true,
+		"psu_explode": true, "psu_smoking_chain": true, "pool_runaway": true,
+		"solo_block_hit": true, "psu_chain_explode": true, "fire_sale": true,
 	}
 	for _, e := range Events() {
 		if !validCats[e.Category] {
@@ -128,5 +130,75 @@ func TestLookupHelpers(t *testing.T) {
 	}
 	if _, ok := MercByID("tabby_guard"); !ok {
 		t.Error("MercByID(tabby_guard) should resolve")
+	}
+	if _, ok := PSUByID("psu_builtin"); !ok {
+		t.Error("PSUByID(psu_builtin) should resolve")
+	}
+	if _, ok := PoolByID("scratch_pool"); !ok {
+		t.Error("PoolByID(scratch_pool) should resolve")
+	}
+	if _, ok := PoolByID("nonexistent"); ok {
+		t.Error("PoolByID(nonexistent) should fail")
+	}
+}
+
+func TestPoolsValid(t *testing.T) {
+	seen := map[string]bool{}
+	for _, p := range Pools() {
+		if p.ID == "" {
+			t.Error("pool has empty id")
+		}
+		if seen[p.ID] {
+			t.Errorf("duplicate pool id: %s", p.ID)
+		}
+		seen[p.ID] = true
+		if p.Fee < 0 || p.Fee > 1 {
+			t.Errorf("pool %s fee %v out of [0, 1]", p.ID, p.Fee)
+		}
+		if p.SettlementMode == "" {
+			t.Errorf("pool %s missing settlement_mode", p.ID)
+		}
+	}
+	// Spec'd catalog (§5.3): five pools covering Solo + the four pool flavors.
+	required := []string{"solo", "scratch_pool", "kitten_hash", "dark_claw", "whisker_fi"}
+	for _, id := range required {
+		if !seen[id] {
+			t.Errorf("required pool %q missing from catalog", id)
+		}
+	}
+}
+
+func TestPSUsValid(t *testing.T) {
+	seen := map[string]bool{}
+	for _, p := range PSUs() {
+		if p.ID == "" {
+			t.Error("PSU has empty id")
+		}
+		if seen[p.ID] {
+			t.Errorf("duplicate PSU id: %s", p.ID)
+		}
+		seen[p.ID] = true
+		if p.RatedPower <= 0 {
+			t.Errorf("PSU %s rated_power must be positive, got %v", p.ID, p.RatedPower)
+		}
+		if p.Efficiency < 0.5 || p.Efficiency > 1.0 {
+			t.Errorf("PSU %s efficiency %v out of [0.5, 1.0]", p.ID, p.Efficiency)
+		}
+	}
+	// Spec'd catalog (§4.3) plus the built-in passthrough used for migration.
+	required := []string{
+		"psu_builtin",
+		"psu_trash",
+		"psu_bronze500",
+		"psu_silver650",
+		"psu_gold850",
+		"psu_gold1200",
+		"psu_platinum1600",
+		"psu_meowcore",
+	}
+	for _, id := range required {
+		if !seen[id] {
+			t.Errorf("required PSU %q missing from catalog", id)
+		}
 	}
 }

@@ -30,11 +30,26 @@ type GPU struct {
 	OCLevel int `json:"oc_level,omitempty"`
 }
 
+// PSU is a runtime instance of a power-supply unit installed in a room.
+// Capacity, efficiency, heat, and overload tolerance come from the static
+// PSUDef referenced via DefID — see packages/core/game/psu.go for the
+// helpers that aggregate these per-room.
+type PSU struct {
+	InstanceID  int    `json:"instance_id"`
+	DefID       string `json:"def_id"`
+	Status      string `json:"status"` // running | broken
+	InstalledAt int64  `json:"installed_at"`
+}
+
 // RoomState is the runtime instance of a Room owned by the player.
 type RoomState struct {
 	DefID      string  `json:"def_id"`
 	Heat       float64 `json:"heat"`
 	MaxHeat    float64 `json:"max_heat"`
+	// StaleRate is the per-room baseline fraction of work that gets rejected
+	// as stale (§7.2). Folded into earnings + PPLNS share accumulation via
+	// EffectiveStaleRate, which adds a pool-risk modifier on top.
+	StaleRate  float64 `json:"stale_rate,omitempty"`
 	LockLvl    int     `json:"lock_lvl"`     // 0-5, base defense vs theft
 	CCTVLvl    int     `json:"cctv_lvl"`     // 0-5, catches thieves + deters merc betrayal
 	WiringLvl  int     `json:"wiring_lvl"`   // 0-5, reduces outage + fire chance
@@ -45,6 +60,17 @@ type RoomState struct {
 	// this room. Each room has its own cadence (RoomDef.HeatTickSec) so
 	// good-cooling biomes update rarely, bad ones update often.
 	LastHeatTickUnix int64 `json:"last_heat_tick_unix,omitempty"`
+
+	// PSUUnits are the power-supply units installed in this room. Every room
+	// is guaranteed to hold at least one running PSU (the migration / starter
+	// path seeds psu_builtin) so the rest of the engine can treat capacity,
+	// efficiency, and heat aggregations uniformly.
+	PSUUnits []*PSU `json:"psu_units,omitempty"`
+
+	// PSUResumeAt is the unix second after which mining can resume in this
+	// room. Set by ReplacePSU to model the spec'd 120s downtime. Zero means
+	// no pause active.
+	PSUResumeAt int64 `json:"psu_resume_at,omitempty"`
 }
 
 // Merc is a runtime mercenary instance.
@@ -101,6 +127,7 @@ type State struct {
 	Rooms         map[string]*RoomState `json:"rooms"`
 	GPUs          []*GPU                `json:"gpus"`
 	NextGPUID     int                   `json:"next_gpu_id"`
+	NextPSUID     int                   `json:"next_psu_id"`
 	Modifiers     []Modifier            `json:"modifiers"`
 	EventCooldown EventCooldowns        `json:"event_cooldown"`
 	LastTickUnix       int64            `json:"last_tick_unix"`
@@ -151,6 +178,31 @@ type State struct {
 	SyndicateLastPayoutUnix int64   `json:"syndicate_last_payout_unix,omitempty"`
 	SyndicateContribution   float64 `json:"syndicate_contribution,omitempty"`
 	SyndicateTotalDividends float64 `json:"syndicate_total_dividends,omitempty"`
+
+	// PoolID is the player's currently-joined mining pool. Defaults to
+	// scratch_pool on new games and via migration. See packages/core/data/
+	// pools.json for the catalog and packages/core/game/pools.go for the
+	// pool helpers / SwitchPool transition mechanic.
+	PoolID string `json:"pool_id,omitempty"`
+	// PoolSwitchFrom is the pool we're transitioning away from while
+	// PoolSwitchAt > now. Empty when the player is stable on PoolID.
+	PoolSwitchFrom string `json:"pool_switch_from,omitempty"`
+	// PoolSwitchAt is the unix second when the 10-minute pool transition
+	// completes. 0 means stable. While >now mining is paused — see
+	// IsPoolSwitching.
+	PoolSwitchAt int64 `json:"pool_switch_at,omitempty"`
+	// PoolShares is the running PPLNS share accumulator. Voided when
+	// switching out of a PPLNS pool (per §5.5). Untouched when switching
+	// out of PPS / PPS+ / Solo. Pool(next-sprint) wires this into the
+	// settlement-mode payout math.
+	PoolShares float64 `json:"pool_shares,omitempty"`
+
+	// NetworkCongestion is the current on-chain congestion level driving
+	// the gas-fee surcharge on cashouts (§11.2). Drifts deterministically
+	// in [congestionMin, congestionMax] via advanceCongestion — no RNG
+	// path so sim determinism stays intact.
+	NetworkCongestion      float64 `json:"network_congestion,omitempty"`
+	LastCongestionTickUnix int64   `json:"last_congestion_tick_unix,omitempty"`
 
 	// Lang persists the player's chosen language code ("en" | "zh"). Loaded
 	// by LoadFrom into the i18n package at startup.
@@ -223,6 +275,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 		Rooms:          map[string]*RoomState{},
 		GPUs:           []*GPU{},
 		NextGPUID:      1,
+		NextPSUID:      1,
 		Modifiers:      []Modifier{},
 		EventCooldown:  EventCooldowns{},
 		LastTickUnix:   now,
@@ -241,6 +294,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 		MarketPrice:        1.0,
 		PrevMarketPrice:    1.0,
 		LastMarketTickUnix: now,
+		PoolID:             "scratch_pool",
 	}
 	// Unlock every room flagged as default.
 	for _, r := range data.Rooms() {
@@ -300,11 +354,29 @@ func (s *State) unlockRoomInternal(r data.RoomDef) {
 	if maxHeat <= 0 {
 		maxHeat = 90 // legacy fallback for rooms without an explicit ceiling
 	}
-	s.Rooms[r.ID] = &RoomState{
-		DefID:   r.ID,
-		Heat:    20,
-		MaxHeat: maxHeat,
+	// Newtonian model (§3.2): a fresh room sits at ambient until load
+	// pushes it toward equilibrium. Arctic at -10 is a feature, not a bug.
+	rs := &RoomState{
+		DefID:     r.ID,
+		Heat:      r.Ambient,
+		MaxHeat:   maxHeat,
+		StaleRate: r.StaleRate,
 	}
+	// Every new room starts with a built-in passthrough PSU so capacity is
+	// effectively unlimited until the player buys real hardware. Keeping it
+	// in the catalog (instead of as a magic constant) lets every PSU helper
+	// treat it uniformly.
+	if s.NextPSUID < 1 {
+		s.NextPSUID = 1
+	}
+	rs.PSUUnits = []*PSU{{
+		InstanceID:  s.NextPSUID,
+		DefID:       "psu_builtin",
+		Status:      "running",
+		InstalledAt: time.Now().Unix(),
+	}}
+	s.NextPSUID++
+	s.Rooms[r.ID] = rs
 }
 
 // UnlockRoom unlocks a room if the player can afford it.
@@ -391,6 +463,11 @@ func (s *State) BuyGPU(defID string) error {
 	if !ok {
 		return fmt.Errorf("no such GPU: %s", defID)
 	}
+	// PSU capacity gate runs *before* BTC deduction so an oversubscribed
+	// rig refuses the purchase cleanly instead of debiting then erroring.
+	if !s.RoomCanFitGPU(s.CurrentRoom, defID) {
+		return fmt.Errorf("PSU capacity exceeded — install a larger PSU")
+	}
 	if s.BTC < float64(def.Price) {
 		return fmt.Errorf("need %s, have %s", FmtBTCInt(def.Price), FmtBTC(s.BTC))
 	}
@@ -406,32 +483,35 @@ func (s *State) BuyGPU(defID string) error {
 	return nil
 }
 
-// SellGPU scraps a GPU for its scrap value (boosted by Tax Optimization skill).
+// SellGPU sells a GPU at its BTC-linked secondhand value (§8.1) minus the
+// gas-fee surcharge (§11.2). Research fragments still drop on every sell
+// — the Mastery scrap/frag multipliers apply to the gross before gas.
 func (s *State) SellGPU(instanceID int) error {
 	for i, g := range s.GPUs {
 		if g.InstanceID == instanceID {
-			base := 0
 			name := "Unknown"
 			if g.BlueprintID != "" {
-				// MEOWCore scrap value: mid-tier.
-				base = 2000 + (s.blueprintTier(g.BlueprintID)-1)*2000
 				name = fmt.Sprintf("MEOWCore v%d", s.blueprintTier(g.BlueprintID))
 			} else if def, ok := data.GPUByID(g.DefID); ok {
-				base = def.ScrapValue
 				name = def.LocalName()
 			}
-			value := float64(base) * s.ScrapValueMult() * s.MasteryScrapMult()
-			// Also grant 1-3 research fragments. Mastery scales the yield.
+			gross := s.GPUResalePrice(g) * s.ScrapValueMult() * s.MasteryScrapMult()
+			gas := s.GasFeeFor(gross)
+			net := gross - gas
+			if net < 0 {
+				net = 0
+			}
 			rawFrags := 1 + rand.Intn(3)
 			frags := int(float64(rawFrags) * s.MasteryFragMult())
 			if frags < rawFrags {
 				frags = rawFrags
 			}
-			s.BTC += value
+			s.BTC += net
 			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
 			s.TotalGPUsScrapped++
-			s.appendLog("info", i18n.T("log.gpu.scrapped", name, FmtBTC(value), frags))
+			s.appendLog("info", i18n.T("log.gpu.scrapped", name, FmtBTC(net), frags))
+			s.appendLog("info", fmt.Sprintf("Gas fee: %s", FmtBTC(gas)))
 			if s.MarketPrice > 1.5 {
 				s.grantAchievement("peak_sell")
 			}
@@ -636,6 +716,9 @@ func (s *State) ensureInit() {
 	if s.NextBlueprintN < 1 {
 		s.NextBlueprintN = 1
 	}
+	if s.NextPSUID < 1 {
+		s.NextPSUID = 1
+	}
 	// Ensure every room-state object references a known room. Unknown ids
 	// (from removed biomes) silently drop so the game keeps loading.
 	// Also resync each room's MaxHeat to its (possibly updated) catalog
@@ -648,6 +731,36 @@ func (s *State) ensureInit() {
 		}
 		if def.MaxHeat > 0 {
 			rs.MaxHeat = def.MaxHeat
+		}
+		// Sprint 5 §3.2 migration: pre-Newtonian saves wrote Heat=20 (or
+		// left it at the JSON zero value if the field was missing). Treat
+		// Heat==0 as genuinely uninitialised and backfill from Ambient so
+		// the first tick after load doesn't snap from 0°C toward
+		// equilibrium. Saves carrying a real player temperature are left
+		// alone — no ride down to ambient on load.
+		if rs.Heat == 0 {
+			rs.Heat = def.Ambient
+		}
+		// PSU §15 migration: pre-PSU saves have no PSUUnits. Drop a
+		// running psu_builtin into every such room so capacity is
+		// effectively unlimited and every helper has at least one PSU
+		// to aggregate over. Balance-neutral: builtin has efficiency
+		// 1.0, heat 0, tolerance 1.0, so no overload roll fires.
+		if len(rs.PSUUnits) == 0 {
+			rs.PSUUnits = []*PSU{{
+				InstanceID:  s.NextPSUID,
+				DefID:       "psu_builtin",
+				Status:      "running",
+				InstalledAt: time.Now().Unix(),
+			}}
+			s.NextPSUID++
+		}
+		// Stale §7.2 migration: pre-stale saves have RoomState.StaleRate=0.
+		// Backfill from the catalog when the room def has a non-zero rate
+		// so legacy saves migrate onto the new mechanic. Idempotent: a
+		// room already carrying a non-zero rate is left alone.
+		if rs.StaleRate == 0 && def.StaleRate > 0 {
+			rs.StaleRate = def.StaleRate
 		}
 	}
 	// Migration: drop any lingering `stolen` GPUs from older saves where
@@ -685,6 +798,19 @@ func (s *State) ensureInit() {
 	if s.MarketPrice == 0 {
 		s.MarketPrice = 1.0
 		s.PrevMarketPrice = 1.0
+	}
+	// Pool §5 migration: pre-pool saves have no PoolID. Default to
+	// scratch_pool — same as a fresh new game — so legacy saves migrate
+	// onto the safe mainstream pool. Balance-neutral: this sprint only
+	// wires the transition pause; fee/settlement payout lands next sprint.
+	if s.PoolID == "" {
+		s.PoolID = "scratch_pool"
+	}
+	// Gas/NetWorth §8/§11 migration: pre-sprint-4 saves have
+	// NetworkCongestion=0. Seed to the neutral 0.2 baseline so the first
+	// gas-fee calculation after load doesn't read as a free cashout.
+	if s.NetworkCongestion == 0 {
+		s.NetworkCongestion = 0.2
 	}
 }
 

@@ -16,6 +16,12 @@ var roomsJSON []byte
 //go:embed events.json
 var eventsJSON []byte
 
+//go:embed psus.json
+var psusJSON []byte
+
+//go:embed pools.json
+var poolsJSON []byte
+
 type GPUDef struct {
 	ID              string  `json:"id"`
 	Name            string  `json:"name"`
@@ -29,7 +35,15 @@ type GPUDef struct {
 	DurabilityHours int     `json:"durability_hours"`
 	Price           int     `json:"price"`
 	ScrapValue      int     `json:"scrap_value"`
-	Special         string  `json:"special,omitempty"`
+	// BaseResaleRatio is the fraction of original Price recovered on a sell
+	// at neutral market (MarketPrice = 1.0). See §8.1: scrap is 0.20, common
+	// 0.30–0.35, rare 0.40, epic 0.45, datacenter 0.50.
+	BaseResaleRatio float64 `json:"base_resale_ratio"`
+	// BtcSensitivity scales how much MarketPrice deviation from 1.0 swings
+	// resale value. Trash is barely BTC-correlated (0.3); flagship epics
+	// track BTC almost 1:1 (0.9). See §8.1.
+	BtcSensitivity float64 `json:"btc_sensitivity"`
+	Special        string  `json:"special,omitempty"`
 }
 
 // LocalName returns the GPU name in the currently-active language.
@@ -45,10 +59,29 @@ type RoomDef struct {
 	Slots             int      `json:"slots"`
 	BaseCooling       float64  `json:"base_cooling"`
 	MaxHeat           float64  `json:"max_heat"`
-	HeatTickSec       int      `json:"heat_tick_sec"` // seconds between heat updates (5 = fast, 60 = slow)
+	// HeatTickSec is retained for save / fixture compatibility only — the
+	// Newtonian-cooling model (§3.2) runs every tick, so this field no
+	// longer gates anything in advanceMining. Older saves and the
+	// RoomHeatDeltaPerTick / SecondsUntilNextHeatTick UI helpers still
+	// reference it. Cosmetic from Sprint 5 onward.
+	HeatTickSec       int      `json:"heat_tick_sec"`
+	// Ambient is the room's environmental temperature (°C). Floor for the
+	// equilibrium calculation: a room with zero load lands at Ambient.
+	// Arctic ships at −10°C is intentional — cold biomes are a feature.
+	Ambient           float64  `json:"ambient"`
+	// Dissipation is the room's heat-shedding coefficient. Higher values
+	// pull equilibrium back toward Ambient harder under the same load
+	// (sea-container 0.40 vs alley 0.15). See §3.2.
+	Dissipation       float64  `json:"dissipation"`
+	// ApproachSpeed is the per-second fraction of the gap between current
+	// temperature and equilibrium that the room closes each tick. 0.03 is
+	// the design-doc default — ~30-60s to 90% steady state. Smaller values
+	// give the player a longer reaction window.
+	ApproachSpeed     float64  `json:"approach_speed"`
 	ElectricCostMult  float64  `json:"electric_cost_mult"`
 	RentPerHour       int      `json:"rent_per_hour"`
 	ThreatBase        float64  `json:"threat_base"`
+	StaleRate         float64  `json:"stale_rate"`
 	ThreatPool        []string `json:"threat_pool"`
 	UnlockCost        int      `json:"unlock_cost"`
 	UnlockedByDefault bool     `json:"unlocked_by_default"`
@@ -86,10 +119,53 @@ type EventDef struct {
 func (e EventDef) LocalName() string { return i18n.Pick(e.Name, e.NameZH) }
 func (e EventDef) LocalText() string { return i18n.Pick(e.Text, e.TextZH) }
 
+// PSUDef is a power-supply unit definition. Rated power, efficiency, heat,
+// and overload tolerance feed the runtime PSU mechanics in
+// packages/core/game/psu.go. Sprint 1 wires capacity + overload but defers
+// efficiency-into-bill and heat-into-temperature to a balance retune.
+type PSUDef struct {
+	ID                string  `json:"id"`
+	Name              string  `json:"name"`
+	NameZH            string  `json:"name_zh,omitempty"`
+	Flavor            string  `json:"flavor"`
+	FlavorZH          string  `json:"flavor_zh,omitempty"`
+	RatedPower        float64 `json:"rated_power"`
+	Efficiency        float64 `json:"efficiency"`
+	HeatOutput        float64 `json:"heat_output"`
+	Quality           string  `json:"quality"`
+	OverloadTolerance float64 `json:"overload_tolerance"`
+	Price             int     `json:"price"`
+	ExplosionDamage   int     `json:"explosion_damage"`
+}
+
+func (p PSUDef) LocalName() string   { return i18n.Pick(p.Name, p.NameZH) }
+func (p PSUDef) LocalFlavor() string { return i18n.Pick(p.Flavor, p.FlavorZH) }
+
+// PoolDef is a mining pool definition. Fee is fractional (0.02 = 2%).
+// SettlementMode is one of "pps", "pplns", "pps_plus", "solo" — feeds the
+// pool-payout math in packages/core/game/pools.go (next sprint wires the
+// actual fee + settlement-mode payout into advanceMining; this sprint is
+// structural).
+type PoolDef struct {
+	ID             string  `json:"id"`
+	Name           string  `json:"name"`
+	NameZH         string  `json:"name_zh,omitempty"`
+	Flavor         string  `json:"flavor"`
+	FlavorZH       string  `json:"flavor_zh,omitempty"`
+	Fee            float64 `json:"fee"`
+	SettlementMode string  `json:"settlement_mode"`
+	Risk           string  `json:"risk"`
+}
+
+func (p PoolDef) LocalName() string   { return i18n.Pick(p.Name, p.NameZH) }
+func (p PoolDef) LocalFlavor() string { return i18n.Pick(p.Flavor, p.FlavorZH) }
+
 var (
 	gpus   []GPUDef
 	rooms  []RoomDef
 	events []EventDef
+	psus   []PSUDef
+	pools  []PoolDef
 )
 
 func init() {
@@ -102,11 +178,19 @@ func init() {
 	if err := json.Unmarshal(eventsJSON, &events); err != nil {
 		panic("bad events.json: " + err.Error())
 	}
+	if err := json.Unmarshal(psusJSON, &psus); err != nil {
+		panic("bad psus.json: " + err.Error())
+	}
+	if err := json.Unmarshal(poolsJSON, &pools); err != nil {
+		panic("bad pools.json: " + err.Error())
+	}
 }
 
 func GPUs() []GPUDef     { return gpus }
 func Rooms() []RoomDef   { return rooms }
 func Events() []EventDef { return events }
+func PSUs() []PSUDef     { return psus }
+func Pools() []PoolDef   { return pools }
 
 func GPUByID(id string) (GPUDef, bool) {
 	for _, g := range gpus {
@@ -133,4 +217,22 @@ func EventByID(id string) (EventDef, bool) {
 		}
 	}
 	return EventDef{}, false
+}
+
+func PSUByID(id string) (PSUDef, bool) {
+	for _, p := range psus {
+		if p.ID == id {
+			return p, true
+		}
+	}
+	return PSUDef{}, false
+}
+
+func PoolByID(id string) (PoolDef, bool) {
+	for _, p := range pools {
+		if p.ID == id {
+			return p, true
+		}
+	}
+	return PoolDef{}, false
 }

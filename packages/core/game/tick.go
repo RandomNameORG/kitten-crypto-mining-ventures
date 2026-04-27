@@ -81,8 +81,10 @@ func (s *State) Tick(now int64) {
 	s.pruneModifiers(now)
 	s.advanceShipping(now)
 	s.advanceMarket(now)
+	s.advanceCongestion(now)
 	s.advanceMining(now, dt)
 	s.advanceBilling(now)
+	s.advancePSUOverload(now, dt)
 	s.advanceSyndicate(now)
 	s.advanceResearch(now)
 	s.payWages(now)
@@ -189,6 +191,16 @@ func (s *State) GPUStats(g *GPU) (eff, pow, heat, dur float64) {
 func (s *State) advanceMining(now int64, dt float64) {
 	miningPaused := s.IsMiningPaused(now)
 	earnMult := s.earnMultiplier(now)
+	// Pool transition: while the 10-min switch window is open every
+	// running rig sits idle (no earn). Mirrors PSU replace's per-room
+	// pause but applies game-wide since pools are a player-level choice.
+	poolSwitching := s.IsPoolSwitching(now)
+	// Pool fee + settlement-mode payout (§5). Applied to per-tick earned
+	// before the syndicate cut so the syndicate slices the pool-net
+	// amount — matches real-world semantics. Mid-switch returns 1.0 but
+	// the pause guard above still freezes earnings for the window.
+	poolPayoutMult := s.EffectivePoolPayoutMult()
+	pplnsActive := !miningPaused && !poolSwitching && s.PoolSettlementMode() == "pplns"
 
 	for roomID, room := range s.Rooms {
 		roomDef, ok := data.RoomByID(roomID)
@@ -196,18 +208,40 @@ func (s *State) advanceMining(now int64, dt float64) {
 			continue
 		}
 		coolingBonus := (1.0 + 0.25*float64(room.CoolingLvl)) * s.MasteryCoolingMult()
+		// PSU swap downtime: while a replacement is in progress every GPU
+		// in the room sits idle (no earn, no wear from heat). Mirrors the
+		// design's 2-minute "rebooting the rack" feel.
+		roomPSUPaused := room.PSUResumeAt > now
+		// PSU efficiency (§3.6 / §4.4): capacity-weighted mean of the
+		// room's running PSU efficiencies. Builtin is 1.0 so fresh-game
+		// rooms don't shift; an installed PSU at 0.75-0.95 takes the
+		// corresponding hit on per-GPU earn.
+		psuEff := s.RoomPSUEfficiency(roomID)
+		// Stale §7.2: room+pool fraction of work that gets rejected. Folded
+		// into both BTC earnings and the PPLNS share accumulator via a
+		// single staleMult so payout and credit stay aligned (you can't
+		// earn shares for work that didn't count).
+		staleMult := 1.0 - s.EffectiveStaleRate(roomID)
 
 		for _, g := range s.GPUs {
 			if g.Room != roomID || g.Status != "running" {
 				continue
 			}
 			eff, _, _, dur := s.GPUStats(g)
+			effEff := eff * staleMult
 			efficiencyFactor := 1.0
 			if room.Heat > 0.8*room.MaxHeat {
 				efficiencyFactor = 0.5
 			}
-			if !miningPaused {
-				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult()
+			if !miningPaused && !roomPSUPaused && !poolSwitching {
+				earned := effEff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult() * s.PoolInfiltrationEarnMult() * psuEff * poolPayoutMult
+				// Structural PPLNS share accumulator. dt seconds of work
+				// per running GPU, scaled by efficiency so a hotter rig
+				// contributes proportionally less to the share pool — the
+				// quantitative payout/decay logic lands next sprint.
+				if pplnsActive {
+					s.PoolShares += effEff * dt
+				}
 				// Syndicate cut: divert the agreed fraction into the
 				// contribution pool before crediting BTC so the player
 				// only sees (1-cut) of each GPU's raw earn. Proportional
@@ -249,37 +283,39 @@ func (s *State) advanceMining(now int64, dt float64) {
 				}
 			}
 		}
-		// Heat updates at a room-specific interval (see HeatTickSec in
-		// rooms.json). Good-cooling rooms update rarely (chunky jumps),
-		// bad rooms update often. Between ticks heat is flat so the
-		// player sees discrete thermal events, not a per-second crawl.
-		tickInterval := int64(roomDef.HeatTickSec)
-		if tickInterval <= 0 {
-			tickInterval = 10
-		}
-		if room.LastHeatTickUnix == 0 {
-			room.LastHeatTickUnix = now
-		}
-		elapsedSinceHeatTick := now - room.LastHeatTickUnix
-		if elapsedSinceHeatTick >= tickInterval {
-			ticks := elapsedSinceHeatTick / tickInterval
-			room.LastHeatTickUnix += ticks * tickInterval
-			// heatDelta accumulator above is in per-second units; convert
-			// to per-tick by multiplying by the GPU-side heat rate directly.
-			// Recompute instead of rescaling heatDelta to keep units clear.
-			var heatPerTick float64
-			for _, g := range s.GPUs {
-				if g.Room != roomID || g.Status != "running" {
-					continue
-				}
-				_, _, hOut, _ := s.GPUStats(g)
-				heatPerTick += hOut
+		// Newtonian-cooling temperature model (§3.2). Heat moves toward an
+		// equilibrium target every tick instead of accumulating in chunky
+		// per-cadence jumps. Equilibrium = ambient + max(0, load - cooling)
+		// / dissipation. Approach speed (~0.03/s) gives a 30-60s reaction
+		// window, so adding/removing a card surfaces as a gradient the
+		// player can see and respond to.
+		var totalHeat float64
+		for _, g := range s.GPUs {
+			if g.Room != roomID || g.Status != "running" {
+				continue
 			}
-			netPerTick := heatPerTick - roomDef.BaseCooling*coolingBonus
-			room.Heat += netPerTick * float64(ticks)
+			_, _, hOut, _ := s.GPUStats(g)
+			totalHeat += hOut
 		}
-		if room.Heat < 20 {
-			room.Heat = 20
+		// PSU heat counts toward the same load (§3.6 / §4.4). Builtin PSU
+		// has heat_output 0 so legacy / fresh-game rooms don't shift.
+		totalHeat += s.RoomPSUHeat(roomID)
+		cooling := roomDef.BaseCooling * coolingBonus
+		netLoad := totalHeat - cooling
+		if netLoad < 0 {
+			netLoad = 0
+		}
+		// Defensive: a fixture room with Dissipation==0 (pre-Sprint-5
+		// rooms.json or hand-built test state) would divide by zero. Skip
+		// the equilibrium math entirely and let temperature ride at
+		// ambient — the field is required by the new model and any room
+		// missing it predates the mechanic.
+		if roomDef.Dissipation > 0 {
+			equilibrium := roomDef.Ambient + netLoad/roomDef.Dissipation
+			room.Heat += (equilibrium - room.Heat) * roomDef.ApproachSpeed * dt
+		}
+		if room.Heat < roomDef.Ambient {
+			room.Heat = roomDef.Ambient
 		}
 		if room.Heat > room.MaxHeat {
 			room.Heat = room.MaxHeat
@@ -311,6 +347,10 @@ func (s *State) advanceBilling(now int64) {
 			_, pow, _, _ := s.GPUStats(g)
 			volt += pow
 		}
+		// Bills are charged on raw GPU draw — PSU efficiency reduces
+		// useful output (handled in advanceMining), it doesn't reduce
+		// what the meter reads. PSU heat folds into the room's totalHeat
+		// at the equilibrium step above, not here.
 		totalBill += volt * ElectricPerVoltMin * roomDef.ElectricCostMult * minutes * billMult
 		totalRent += float64(roomDef.RentPerHour) * (minutes / 60.0) * s.DifficultyBillMult()
 	}
