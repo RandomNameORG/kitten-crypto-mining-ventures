@@ -1,5 +1,6 @@
 import { ActionBar, ActionButton } from "../components/ActionButton";
 import type { ActionRequest, Snapshot } from "../types";
+import { skillIconSrc } from "../util";
 
 interface Props {
   snapshot: Snapshot;
@@ -22,27 +23,30 @@ export function SkillsPanel({ snapshot, dispatch }: Props) {
           const canBuy =
             !skill.unlocked && !!prereqOk && snapshot.state.tech_point >= skill.cost;
           return (
-            <article key={skill.id} className="row">
-              <div className="row-head">
-                <span className="row-title">{skill.name}</span>
-                <span className="tag">{skill.cost} TP</span>
+            <article key={skill.id} className="row item-row">
+              <img className="item-icon" src={skillIconSrc(skill.id)} alt="" loading="lazy" />
+              <div className="item-content">
+                <div className="row-head">
+                  <span className="row-title">{skill.name}</span>
+                  <span className="tag">{skill.cost} TP</span>
+                </div>
+                <div className="copy">{skill.desc}</div>
+                <div className="facts">
+                  <span className="fact">{skill.lane}</span>
+                  <span className="fact">
+                    {skill.unlocked ? "已学会" : prereqOk ? "可研究" : "前置未解"}
+                  </span>
+                </div>
+                <ActionBar>
+                  <ActionButton
+                    label={skill.unlocked ? "已研究" : "研究"}
+                    icon="研"
+                    intent="primary"
+                    disabled={!canBuy}
+                    onClick={() => dispatch({ action: "unlock_skill", id: skill.id })}
+                  />
+                </ActionBar>
               </div>
-              <div className="copy">{skill.desc}</div>
-              <div className="facts">
-                <span className="fact">{skill.lane}</span>
-                <span className="fact">
-                  {skill.unlocked ? "已学会" : prereqOk ? "可研究" : "前置未解"}
-                </span>
-              </div>
-              <ActionBar>
-                <ActionButton
-                  label={skill.unlocked ? "已研究" : "研究"}
-                  icon="研"
-                  intent="primary"
-                  disabled={!canBuy}
-                  onClick={() => dispatch({ action: "unlock_skill", id: skill.id })}
-                />
-              </ActionBar>
             </article>
           );
         })}

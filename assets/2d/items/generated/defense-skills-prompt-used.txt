@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: 2D pixel-art game UI icon sprite sheet for "矿业大亨喵".
+Input images: assets/2d/character_design.png as character/style reference; assets/2d/玩法释义图.png as gameplay UI/item reference.
+Primary request: 14 separate square item/skill icons arranged in a 7 columns x 2 rows grid.
+Subjects: reinforced door lock, CCTV security camera, cable wiring upgrade, cooling fan unit, armor plating shield, undervolt lightning battery, overclock GPU flame, PCB repair wrench/circuit board, auto repair robot arm, MEOWCore blueprint chip, smart invoicing receipt, tax optimization coin ledger, hedged wallet, chain ghost hacker mask.
+Style: cute cyberpunk pixel art, crisp chunky pixels, dark outline, mint green highlights, warm gold accents, dark teal shadows, reference palette.
+Background: flat solid #ff00ff chroma-key background for local transparency extraction.
+Constraints: no text, labels, numbers, characters, watermarks, or UI chrome.
