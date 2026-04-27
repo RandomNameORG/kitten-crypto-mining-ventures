@@ -27,23 +27,27 @@ type webGame struct {
 }
 
 type snapshot struct {
-	State          stateView           `json:"state"`
-	Rooms          []roomView          `json:"rooms"`
-	GPUs           []gpuView           `json:"gpus"`
-	GPUDefs        []gpuDefView        `json:"gpu_defs"`
-	Skills         []skillView         `json:"skills"`
-	Mercs          []mercView          `json:"mercs"`
-	MercDefs       []mercDefView       `json:"merc_defs"`
-	Log            []logView           `json:"log"`
-	LastEvent      *eventView          `json:"last_event,omitempty"`
-	Modifiers      []modifierView      `json:"modifiers"`
-	ActiveResearch *researchView       `json:"active_research,omitempty"`
-	ResearchTiers  []researchTierView  `json:"research_tiers"`
-	Blueprints     []blueprintView     `json:"blueprints"`
-	Achievements   []string            `json:"achievements"`
-	MasteryLevels  map[string]int      `json:"mastery_levels"`
-	Stats          statsView           `json:"stats"`
-	OK             bool                `json:"ok"`
+	State           stateView            `json:"state"`
+	Rooms           []roomView           `json:"rooms"`
+	GPUs            []gpuView            `json:"gpus"`
+	GPUDefs         []gpuDefView         `json:"gpu_defs"`
+	Skills          []skillView          `json:"skills"`
+	Mercs           []mercView           `json:"mercs"`
+	MercDefs        []mercDefView        `json:"merc_defs"`
+	Log             []logView            `json:"log"`
+	LastEvent       *eventView           `json:"last_event,omitempty"`
+	Modifiers       []modifierView       `json:"modifiers"`
+	ActiveResearch  *researchView        `json:"active_research,omitempty"`
+	ResearchTiers   []researchTierView   `json:"research_tiers"`
+	Blueprints      []blueprintView      `json:"blueprints"`
+	Achievements    []string             `json:"achievements"`
+	AchievementDefs []achievementDefView `json:"achievement_defs"`
+	MasteryLevels   map[string]int       `json:"mastery_levels"`
+	MasteryTracks   []masteryTrackView   `json:"mastery_tracks"`
+	LegacyPerks     []legacyPerkView     `json:"legacy_perks"`
+	Legacy          legacyView           `json:"legacy"`
+	Stats           statsView            `json:"stats"`
+	OK              bool                 `json:"ok"`
 }
 
 type stateView struct {
@@ -73,6 +77,8 @@ type stateView struct {
 	SyndicateContribution    float64 `json:"syndicate_contribution"`
 	SyndicateTotalDividends  float64 `json:"syndicate_total_dividends"`
 	SyndicateNextPayoutSec   int64   `json:"syndicate_next_payout_sec"`
+	PumpDumpUnlocked         bool    `json:"pump_dump_unlocked"`
+	PumpDumpCooldownSec      int64   `json:"pump_dump_cooldown_sec"`
 }
 
 type roomView struct {
@@ -202,11 +208,60 @@ type researchTierView struct {
 }
 
 type blueprintView struct {
-	ID        string   `json:"id"`
-	Tier      int      `json:"tier"`
-	Boosts    []string `json:"boosts"`
-	CreatedAt int64    `json:"created_at"`
-	CanPrint  bool     `json:"can_print"`
+	ID            string   `json:"id"`
+	Tier          int      `json:"tier"`
+	Boosts        []string `json:"boosts"`
+	CreatedAt     int64    `json:"created_at"`
+	CanPrint      bool     `json:"can_print"`
+	PrintBTCCost  int      `json:"print_btc_cost"`
+	PrintFragCost int      `json:"print_frag_cost"`
+}
+
+type achievementDefView struct {
+	ID       string `json:"id"`
+	Emoji    string `json:"emoji"`
+	Name     string `json:"name"`
+	Desc     string `json:"desc"`
+	TPReward int    `json:"tp_reward"`
+	Earned   bool   `json:"earned"`
+}
+
+type masteryTrackView struct {
+	ID       string  `json:"id"`
+	Emoji    string  `json:"emoji"`
+	Name     string  `json:"name"`
+	Desc     string  `json:"desc"`
+	Effect   string  `json:"effect"`
+	PerLevel float64 `json:"per_level"`
+	Level    int     `json:"level"`
+	MaxLevel int     `json:"max_level"`
+	NextCost int     `json:"next_cost"`
+	Maxed    bool    `json:"maxed"`
+}
+
+// legacyPerkView reflects one prestige perk from game.LegacyPerks().
+// Note: perks like "efficiency_5pct" cap at 0.50, so available=false can
+// mean either "owned-once" or "maxed-out" — the UI can disambiguate by
+// reading the legacy summary fields (efficiency_boost, etc).
+type legacyPerkView struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Desc      string `json:"desc"`
+	Cost      int    `json:"cost"`
+	Available bool   `json:"available"`
+	Owned     bool   `json:"owned"`
+}
+
+type legacyView struct {
+	TotalEarned        float64 `json:"total_earned"`
+	TotalEarnedFmt     string  `json:"total_earned_fmt"`
+	TotalLP            int     `json:"total_lp"`
+	SpentLP            int     `json:"spent_lp"`
+	LPAvailable        int     `json:"lp_available"`
+	StarterCash        float64 `json:"starter_cash"`
+	EfficiencyBoost    float64 `json:"efficiency_boost"`
+	UnlockedUniversity bool    `json:"unlocked_university"`
+	CarriedTP          int     `json:"carried_tp"`
 }
 
 type statsView struct {
@@ -231,6 +286,7 @@ type actionRequest struct {
 	InstanceID int      `json:"instance_id"`
 	Tier       int      `json:"tier,omitempty"`
 	Boosts     []string `json:"boosts,omitempty"`
+	Frags      int      `json:"frags,omitempty"`
 }
 
 func main() {
@@ -350,6 +406,16 @@ func (wg *webGame) handleAction(w http.ResponseWriter, r *http.Request) {
 		wg.state.SetDifficulty(req.ID)
 	case "cycle_lang":
 		wg.state.CycleLang()
+	case "level_up_mastery":
+		_, err = wg.state.LevelUpMastery(req.ID)
+	case "convert_frags_to_btc":
+		_, err = wg.state.ConvertFragsToBTC(req.Frags)
+	case "trigger_pump_dump":
+		err = wg.state.TriggerPumpDump()
+	case "repair_all_broken":
+		wg.state.RepairAllBroken()
+	case "buy_legacy_perk":
+		err = game.BuyLegacyPerk(req.ID)
 	default:
 		err = fmt.Errorf("unknown action %q", req.Action)
 	}
@@ -384,6 +450,18 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 	now := time.Now().Unix()
 	currentEarn := s.RoomEarnRatePerSec(s.CurrentRoom)
 	currentBill := s.RoomBillRatePerSec(s.CurrentRoom)
+	legacy := game.LoadLegacy()
+
+	pumpDumpUnlocked := s.HasUnlock("pump_dump_action")
+	pumpDumpCD := int64(1800)
+	if s.HasSkill("pump_dump_ii") {
+		pumpDumpCD = 900
+	}
+	pumpDumpLeft := pumpDumpCD - (now - s.EventCooldown["pump_dump"])
+	if pumpDumpLeft < 0 || !pumpDumpUnlocked {
+		pumpDumpLeft = 0
+	}
+
 	out := snapshot{
 		State: stateView{
 			KittenName:              s.KittenName,
@@ -412,6 +490,8 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 			SyndicateContribution:   s.SyndicateContribution,
 			SyndicateTotalDividends: s.SyndicateTotalDividends,
 			SyndicateNextPayoutSec:  s.SecondsUntilNextSyndicatePayout(),
+			PumpDumpUnlocked:        pumpDumpUnlocked,
+			PumpDumpCooldownSec:     pumpDumpLeft,
 		},
 		OK: true,
 	}
@@ -598,25 +678,86 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 			}
 		}
 		canPrint := false
+		btcCost := 0
+		fragCost := 0
 		if info != nil {
-			cost := info.Money * 3 / 10
-			frags := info.Frags / 5
-			canPrint = s.BTC >= float64(cost) && s.ResearchFrags >= frags && roomFree
+			btcCost = info.Money * 3 / 10
+			fragCost = info.Frags / 5
+			canPrint = s.BTC >= float64(btcCost) && s.ResearchFrags >= fragCost && roomFree
 		}
 		out.Blueprints = append(out.Blueprints, blueprintView{
-			ID:        bp.ID,
-			Tier:      bp.Tier,
-			Boosts:    append([]string{}, bp.Boosts...),
-			CreatedAt: bp.CreatedAt,
-			CanPrint:  canPrint,
+			ID:            bp.ID,
+			Tier:          bp.Tier,
+			Boosts:        append([]string{}, bp.Boosts...),
+			CreatedAt:     bp.CreatedAt,
+			CanPrint:      canPrint,
+			PrintBTCCost:  btcCost,
+			PrintFragCost: fragCost,
 		})
 	}
 
 	out.Achievements = append([]string{}, s.Achievements...)
 
+	achDefs := data.Achievements()
+	out.AchievementDefs = make([]achievementDefView, 0, len(achDefs))
+	for _, def := range achDefs {
+		out.AchievementDefs = append(out.AchievementDefs, achievementDefView{
+			ID:       def.ID,
+			Emoji:    def.Emoji,
+			Name:     def.LocalName(),
+			Desc:     def.LocalDesc(),
+			TPReward: def.TPReward,
+			Earned:   s.HasAchievement(def.ID),
+		})
+	}
+
 	out.MasteryLevels = make(map[string]int, len(s.MasteryLevels))
 	for k, v := range s.MasteryLevels {
 		out.MasteryLevels[k] = v
+	}
+
+	mTracks := data.MasteryTracks()
+	out.MasteryTracks = make([]masteryTrackView, 0, len(mTracks))
+	for _, t := range mTracks {
+		lvl := s.MasteryLevel(t.ID)
+		out.MasteryTracks = append(out.MasteryTracks, masteryTrackView{
+			ID:       t.ID,
+			Emoji:    t.Emoji,
+			Name:     t.LocalName(),
+			Desc:     t.LocalDesc(),
+			Effect:   t.Effect,
+			PerLevel: t.PerLevel,
+			Level:    lvl,
+			MaxLevel: t.MaxLevel,
+			NextCost: t.CostFor(lvl),
+			Maxed:    lvl >= t.MaxLevel,
+		})
+	}
+
+	perks := game.LegacyPerks()
+	out.LegacyPerks = make([]legacyPerkView, 0, len(perks))
+	for _, p := range perks {
+		avail := p.Available(legacy)
+		out.LegacyPerks = append(out.LegacyPerks, legacyPerkView{
+			ID:        p.ID,
+			Name:      p.Name,
+			Desc:      p.Desc,
+			Cost:      p.Cost,
+			Available: avail,
+			Owned:     !avail,
+		})
+	}
+
+	out.Legacy = legacyView{
+		TotalEarned:        legacy.TotalEarned,
+		TotalEarnedFmt:     game.FmtBTC(legacy.TotalEarned),
+		TotalLP:            legacy.TotalLP,
+		SpentLP:            legacy.SpentLP,
+		LPAvailable:        legacy.LPAvailable(),
+		StarterCash:        legacy.StarterCash,
+		EfficiencyBoost:    legacy.EfficiencyBoost,
+		UnlockedUniversity: legacy.UnlockedUniversity,
+		CarriedTP:          legacy.CarriedTP,
 	}
 
 	eventsByCat := make(map[string]int, len(s.EventsByCategory))

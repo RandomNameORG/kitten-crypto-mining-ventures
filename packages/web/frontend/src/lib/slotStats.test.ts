@@ -31,7 +31,11 @@ function snap(gpus: GPU[]): Snapshot {
     research_tiers: [],
     blueprints: [],
     achievements: [],
+    achievement_defs: [],
     mastery_levels: {},
+    mastery_tracks: [],
+    legacy_perks: [],
+    legacy: {} as Snapshot["legacy"],
     stats: {} as Snapshot["stats"],
     ok: true,
   };
