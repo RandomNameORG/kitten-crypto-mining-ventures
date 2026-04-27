@@ -118,7 +118,7 @@ func (s *State) RoomPSUHeat(roomID string) float64 {
 			total += def.HeatOutput
 		}
 	}
-	return total
+	return total * s.PSUHeatMult()
 }
 
 // RoomPSUOverloadFactor returns load / capacity. ≥1.0 means the room is
@@ -157,7 +157,7 @@ func (s *State) roomMinOverloadTolerance(roomID string) float64 {
 	if min < 0 {
 		return 1.0
 	}
-	return min
+	return min + s.PSUOverloadToleranceBonus()
 }
 
 // RoomCanFitGPU answers whether buying gpuDefID in roomID would push load

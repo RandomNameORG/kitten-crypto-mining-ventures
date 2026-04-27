@@ -28,6 +28,14 @@ func (s *State) UnlockSkill(id string) error {
 	}
 	s.UnlockedSkills[id] = true
 	s.appendLog("opportunity", i18n.T("log.skill.learned", def.LocalName()))
+	// Pool Infiltration carries a one-shot Karma hit at unlock — the spec
+	// frames it as the moral cost of compromising another pool's worker
+	// pipeline. Fires once here, not per-tick, so the player pays for the
+	// decision rather than the ongoing 2% earn boost.
+	if def.Effect.Kind == "pool_infiltrate" {
+		s.Karma -= 5
+		s.appendLog("threat", "Pool infiltration online — Karma −5")
+	}
 	return nil
 }
 
@@ -146,4 +154,94 @@ func (s *State) EarnVolatilityDamp() float64 {
 		}
 	}
 	return damp
+}
+
+// PSUOverloadToleranceBonus is the additive bonus applied to the weakest
+// running PSU's overload_tolerance — Wiring Optimization (engineer T1)
+// gives the room a wider safe band before the explosion roll fires.
+// Sums over multiple "wiring_opt" skills so future stacks compose cleanly.
+func (s *State) PSUOverloadToleranceBonus() float64 {
+	bonus := 0.0
+	for id := range s.UnlockedSkills {
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "wiring_opt" {
+			bonus += def.Effect.Value
+		}
+	}
+	return bonus
+}
+
+// PSUHeatMult scales PSU heat output. Wiring Optimization shaves 20% off
+// every running PSU's heat contribution; flat multiplier rather than a
+// stack so the spec's "−20%" stays the ceiling.
+func (s *State) PSUHeatMult() float64 {
+	for id := range s.UnlockedSkills {
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "wiring_opt" {
+			return 0.80
+		}
+	}
+	return 1.0
+}
+
+// PoolSwitchDurationSec is the transition window opened by SwitchPool.
+// Pool Hopping (mogul T2) shortens it from PoolSwitchSec (600s) to the
+// Effect.Value tucked in the catalog (180s), turning pool-shopping from
+// a 10-minute commitment into a 3-minute one.
+func (s *State) PoolSwitchDurationSec() int64 {
+	for id := range s.UnlockedSkills {
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "pool_hop" {
+			return int64(def.Effect.Value)
+		}
+	}
+	return PoolSwitchSec
+}
+
+// PoolHoppingShareRetention is the fraction of PPLNS shares preserved when
+// the player walks away from a PPLNS pool. Default 0 (the spec'd "shares
+// evaporate" rule); Pool Hopping bumps it to 0.5.
+func (s *State) PoolHoppingShareRetention() float64 {
+	for id := range s.UnlockedSkills {
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "pool_hop" {
+			return 0.5
+		}
+	}
+	return 0.0
+}
+
+// BtcSensitivityBonus is the subtractive reduction applied to a GPU's
+// BtcSensitivity when computing resale price. Asset Hedging (mogul T3)
+// flattens the BTC swing in resale value; callers clamp the result so the
+// effective sensitivity floors at 0 rather than going negative.
+func (s *State) BtcSensitivityBonus() float64 {
+	for id := range s.UnlockedSkills {
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "asset_hedge" {
+			return def.Effect.Value
+		}
+	}
+	return 0.0
+}
+
+// StaleRateBonus is the additive reduction applied to every room's stale
+// rate. Network Optimization (hacker T1) trims 3 percentage points; sums
+// over multiple "stale_reduce" skills so future stacks compose. The
+// EffectiveStaleRate caller subtracts this and lets clampStale floor at 0.
+func (s *State) StaleRateBonus() float64 {
+	bonus := 0.0
+	for id := range s.UnlockedSkills {
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "stale_reduce" {
+			bonus += def.Effect.Value
+		}
+	}
+	return bonus
+}
+
+// PoolInfiltrationEarnMult multiplies mining earn. Pool Infiltration
+// (hacker T3) folds in a 1.02 factor — the upside that pays for the
+// one-shot Karma hit applied at unlock.
+func (s *State) PoolInfiltrationEarnMult() float64 {
+	for id := range s.UnlockedSkills {
+		if def, ok := data.SkillByID(id); ok && def.Effect.Kind == "pool_infiltrate" {
+			return 1.0 + def.Effect.Value
+		}
+	}
+	return 1.0
 }
