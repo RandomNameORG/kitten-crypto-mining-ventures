@@ -68,6 +68,8 @@ func TestEventsValid(t *testing.T) {
 		"earn_multiplier": true, "damage_gpu": true, "burn_room_chance": true,
 		"eviction_warning": true, "money_loss": true,
 		"tax_audit": true, "damage_oc_gpu": true, "market_pin": true,
+		"psu_explode": true, "psu_smoking_chain": true, "pool_runaway": true,
+		"solo_block_hit": true, "psu_chain_explode": true, "fire_sale": true,
 	}
 	for _, e := range Events() {
 		if !validCats[e.Category] {
