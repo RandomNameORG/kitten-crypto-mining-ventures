@@ -88,8 +88,76 @@ When you change tick-loop behavior:
 3. If behaviour depends on event rolls, try 2–3 seeds (`--seed=1`, `--seed=2`, `--seed=3`) — should see varied outcomes but no crashes / NaN.
 4. If the change is UI-facing, `make run-debug` and drive it with `Ctrl+F` to reach the affected state quickly.
 
+## Web frontend dev workflow
+
+`packages/web/` is a *different surface* from the engine. The Ralph loop above is for `packages/core/game/`; web work has its own loop: **HMR + type-check + vitest + manual browser**. Don't run the simulator to verify a CSS change.
+
+### HMR — two terminals, browse :5173/ui/
+
+```sh
+# Terminal 1 — backend serves /api and /assets on :8080
+make run-web
+
+# Terminal 2 — Vite dev server with HMR on :5173
+make run-web-dev
+```
+
+Open **http://localhost:5173/ui/** (note the `/ui/` prefix from `vite.config.ts` `base`). Do NOT open `:8080` while developing — that serves the last `make frontend-build` and won't update.
+
+`/api` and `/assets` are proxied through Vite to :8080 (`vite.config.ts` `server.proxy`). The Go server is only authoritative for the API; React is hot-replaced in-place, component state survives most edits.
+
+**When the backend changes** (`packages/web/cmd/meowmine-web/main.go`, `packages/core/game/`), the running `make run-web` binary is stale — restart Terminal 1. Frontend-only edits do not need this.
+
+### Verification loop (web changes)
+
+1. `cd packages/web/frontend && npm run typecheck` — TS errors before runtime.
+2. `npm run test` — vitest covers pure helpers in `src/lib/` (sort, slotStats, …). Add a case here for any new pure function; don't reach for component tests yet (no setup).
+3. `npm run build` — production bundle. Catches Tailwind class typos that dev mode papers over.
+4. Manual browser walkthrough on :5173/ui/ for the affected panels.
+
+If you touched the backend, also rebuild the binary so the next `make run-web` picks it up:
+
+```sh
+go build -o bin/meowmine-web ./packages/web/cmd/meowmine-web
+```
+
+### File layout (`packages/web/frontend/src/`)
+
+| Path | Holds |
+|------|-------|
+| `App.tsx` | Tab routing + layout shell + snapshot wiring |
+| `hooks/useSnapshot.ts` | 1Hz poll of `/api/snapshot` + dispatcher for `/api/action` |
+| `panels/` | One file per tab (Store, GPUs, Defense, Skills, Mercs, Log, Stats, Rooms). Underscore-prefixed files (e.g. `_shipStrip.tsx`) are panel fragments, not standalone tabs |
+| `components/` | Reusable visuals: `SlotMeter`, `Hud`, `Tabs`, `EventBanner`, `LogStrip`, `GameStage`, `ActionButton`, plus `tier.ts` (tier visual scale) |
+| `lib/` | Pure helpers, vitest-tested: `sort.ts`, `slotStats.ts`, `useNow.ts` |
+| `types.ts` | API shape — must stay in sync with `gpuView` / `roomView` / `stateView` etc. in `packages/web/cmd/meowmine-web/main.go` |
+| `index.css` | Tailwind v4 layer + a small set of `@keyframes` (only motion that can't be inlined) |
+
+### Style: inline Tailwind for new components
+
+Older components (`.row`, `.metric`, `.tabs`, `.action-btn` in `index.css`) use `@apply`. New work uses inline Tailwind directly in JSX — no class-name layer. Reasons: deletes cleanly, lives next to the markup, no naming bikeshed. Only `@keyframes` and OS-feature `@supports` blocks belong in `index.css`.
+
+### API contract: two places, keep in sync
+
+A new field on a snapshot view requires editing **both**:
+- `packages/web/cmd/meowmine-web/main.go` — the `gpuView` / `roomView` / etc. struct + the populating code in `makeSnapshotLocked`
+- `packages/web/frontend/src/types.ts` — the corresponding TS interface
+
+Skipping one half = silent runtime breakage that TypeScript can't catch (the JSON just has `undefined`). Recent example: `ship_total_sec` had to be added to both before the ship-progress bar could render correctly.
+
+### Animation: state-change only, transform-only
+
+Three rules from the recent polish pass:
+
+1. **Idle decoration is anti-craft.** Animations earn their place by communicating state change (shipping in flight, broken GPU pulsing, buy in progress). If a card animates while nothing is happening, delete that animation.
+2. **Use `transform`, not `left/top/width`.** `transform: translateX(...)` runs on the GPU compositor; `transition: left/top/width` triggers layout every frame. The cat marker on the ship progress bar is the canonical example — `translateX` keeps it on the GPU thread.
+3. **One 1Hz clock for all consumers.** Don't put `setInterval` in per-row components. Hoist to a single `useNow()` (`lib/useNow.ts`) and pass the timestamp down — N rows × N timers will tank scroll FPS.
+
 ## Don't
 
 - Don't thread `*rand.Rand` through `State` just to make the sim byte-deterministic. The existing global `rand` + `SeedRNG` is intentional; see `events_test.go` for the established pattern.
 - Don't write to `~/.meowmine/save.json` from tests. Use `withTempHome(t)`.
 - Don't add UI imports to `packages/core/game`. The headless sim depends on that separation.
+- Don't reintroduce `@apply` class-name layers for new components in `index.css`. Inline Tailwind, in the JSX, beside the markup. Keyframes are the only exception.
+- Don't open `localhost:8080` to verify a frontend change. That's the static build. Use `:5173/ui/`.
+- Don't add a field to a snapshot view in `main.go` without also adding it to `types.ts`. TypeScript can't catch the JSON drift.
