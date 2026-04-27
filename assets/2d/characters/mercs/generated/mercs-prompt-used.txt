@@ -1,0 +1,8 @@
+Use case: stylized-concept
+Asset type: 2D pixel-art game character portrait sprite sheet for "矿业大亨喵".
+Input image: assets/2d/character_design.png as the primary style reference for cat proportions, outfit rendering, pixel density, palette, and cute cyberpunk tone.
+Primary request: 6 separate mercenary cat character portraits arranged in a 3 columns x 2 rows grid.
+Characters: Tabby Guard with guard cap and shield/flashlight; Siamese IT with headset, cable coil, and tablet; Ragdoll PR Cat with tidy jacket and friendly confident expression; Persian Ex-Military with rugged security armor, beret, and compact radio; Sphynx Oracle with hooded mint-lit cloak and glowing charm; Retired Pirate Cat with tricorn hat, eyepatch, sea coat, and coin pouch.
+Style: cute cyberpunk pixel art, chibi cat body proportions, crisp chunky pixels, dark outline, mint green highlights, warm gold accents, dark teal shadows, reference palette.
+Background: flat solid #ff00ff chroma-key background for local transparency extraction.
+Constraints: no text, labels, numbers, watermarks, guns, or extra characters.

@@ -1,6 +1,7 @@
 export const GPU_ICON_ROOT = "/assets/2d/items/gpu_cards";
 export const DEFENSE_ICON_ROOT = "/assets/2d/items/defense";
 export const SKILL_ICON_ROOT = "/assets/2d/items/skills";
+export const MERC_ICON_ROOT = "/assets/2d/characters/mercs";
 
 export function gpuIconSrc(id: string | undefined): string {
   return `${GPU_ICON_ROOT}/${encodeURIComponent(id || "scrap")}.png`;
@@ -13,6 +14,10 @@ export function defenseIconSrc(id: string | undefined): string {
 export function skillIconSrc(id: string | undefined): string {
   const key = skillIconKey(id || "");
   return `${SKILL_ICON_ROOT}/${encodeURIComponent(key)}.png`;
+}
+
+export function mercIconSrc(id: string | undefined): string {
+  return `${MERC_ICON_ROOT}/${encodeURIComponent(id || "tabby_guard")}.png`;
 }
 
 function skillIconKey(id: string): string {
