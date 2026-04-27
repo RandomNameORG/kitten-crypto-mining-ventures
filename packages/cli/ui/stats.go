@@ -48,6 +48,7 @@ func (a App) renderStatsView() string {
 
 	lines = append(lines,
 		row(i18n.T("stats.row.lifetime"), BTCStyle.Render(game.FmtBTC(s.LifetimeEarned))),
+		row(i18n.T("stats.row.networth"), BTCStyle.Render(game.FmtBTC(s.NetWorth()))),
 		row(i18n.T("stats.row.ticks"), fmt.Sprintf("%d", s.TotalTicks)),
 		row(i18n.T("stats.row.market"), fmt.Sprintf("%.2f×", s.MarketPrice)),
 	)
