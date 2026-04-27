@@ -190,6 +190,12 @@ func (s *State) GPUStats(g *GPU) (eff, pow, heat, dur float64) {
 func (s *State) advanceMining(now int64, dt float64) {
 	miningPaused := s.IsMiningPaused(now)
 	earnMult := s.earnMultiplier(now)
+	// Pool transition: while the 10-min switch window is open every
+	// running rig sits idle (no earn). Mirrors PSU replace's per-room
+	// pause but applies game-wide since pools are a player-level choice.
+	poolSwitching := s.IsPoolSwitching(now)
+	// Pool(next-sprint): apply PoolFee + settlement-mode payout here.
+	pplnsActive := !miningPaused && !poolSwitching && s.PoolSettlementMode() == "pplns"
 
 	for roomID, room := range s.Rooms {
 		roomDef, ok := data.RoomByID(roomID)
@@ -211,8 +217,16 @@ func (s *State) advanceMining(now int64, dt float64) {
 			if room.Heat > 0.8*room.MaxHeat {
 				efficiencyFactor = 0.5
 			}
-			if !miningPaused && !roomPSUPaused {
+			if !miningPaused && !roomPSUPaused && !poolSwitching {
+				// Pool(next-sprint): apply PoolFee + settlement-mode payout here.
 				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult()
+				// Structural PPLNS share accumulator. dt seconds of work
+				// per running GPU, scaled by efficiency so a hotter rig
+				// contributes proportionally less to the share pool — the
+				// quantitative payout/decay logic lands next sprint.
+				if pplnsActive {
+					s.PoolShares += eff * dt
+				}
 				// Syndicate cut: divert the agreed fraction into the
 				// contribution pool before crediting BTC so the player
 				// only sees (1-cut) of each GPU's raw earn. Proportional

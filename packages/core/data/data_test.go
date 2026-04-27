@@ -132,6 +132,38 @@ func TestLookupHelpers(t *testing.T) {
 	if _, ok := PSUByID("psu_builtin"); !ok {
 		t.Error("PSUByID(psu_builtin) should resolve")
 	}
+	if _, ok := PoolByID("scratch_pool"); !ok {
+		t.Error("PoolByID(scratch_pool) should resolve")
+	}
+	if _, ok := PoolByID("nonexistent"); ok {
+		t.Error("PoolByID(nonexistent) should fail")
+	}
+}
+
+func TestPoolsValid(t *testing.T) {
+	seen := map[string]bool{}
+	for _, p := range Pools() {
+		if p.ID == "" {
+			t.Error("pool has empty id")
+		}
+		if seen[p.ID] {
+			t.Errorf("duplicate pool id: %s", p.ID)
+		}
+		seen[p.ID] = true
+		if p.Fee < 0 || p.Fee > 1 {
+			t.Errorf("pool %s fee %v out of [0, 1]", p.ID, p.Fee)
+		}
+		if p.SettlementMode == "" {
+			t.Errorf("pool %s missing settlement_mode", p.ID)
+		}
+	}
+	// Spec'd catalog (§5.3): five pools covering Solo + the four pool flavors.
+	required := []string{"solo", "scratch_pool", "kitten_hash", "dark_claw", "whisker_fi"}
+	for _, id := range required {
+		if !seen[id] {
+			t.Errorf("required pool %q missing from catalog", id)
+		}
+	}
 }
 
 func TestPSUsValid(t *testing.T) {

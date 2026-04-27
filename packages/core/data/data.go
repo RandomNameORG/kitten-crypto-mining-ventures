@@ -19,6 +19,9 @@ var eventsJSON []byte
 //go:embed psus.json
 var psusJSON []byte
 
+//go:embed pools.json
+var poolsJSON []byte
+
 type GPUDef struct {
 	ID              string  `json:"id"`
 	Name            string  `json:"name"`
@@ -111,11 +114,31 @@ type PSUDef struct {
 func (p PSUDef) LocalName() string   { return i18n.Pick(p.Name, p.NameZH) }
 func (p PSUDef) LocalFlavor() string { return i18n.Pick(p.Flavor, p.FlavorZH) }
 
+// PoolDef is a mining pool definition. Fee is fractional (0.02 = 2%).
+// SettlementMode is one of "pps", "pplns", "pps_plus", "solo" — feeds the
+// pool-payout math in packages/core/game/pools.go (next sprint wires the
+// actual fee + settlement-mode payout into advanceMining; this sprint is
+// structural).
+type PoolDef struct {
+	ID             string  `json:"id"`
+	Name           string  `json:"name"`
+	NameZH         string  `json:"name_zh,omitempty"`
+	Flavor         string  `json:"flavor"`
+	FlavorZH       string  `json:"flavor_zh,omitempty"`
+	Fee            float64 `json:"fee"`
+	SettlementMode string  `json:"settlement_mode"`
+	Risk           string  `json:"risk"`
+}
+
+func (p PoolDef) LocalName() string   { return i18n.Pick(p.Name, p.NameZH) }
+func (p PoolDef) LocalFlavor() string { return i18n.Pick(p.Flavor, p.FlavorZH) }
+
 var (
 	gpus   []GPUDef
 	rooms  []RoomDef
 	events []EventDef
 	psus   []PSUDef
+	pools  []PoolDef
 )
 
 func init() {
@@ -131,12 +154,16 @@ func init() {
 	if err := json.Unmarshal(psusJSON, &psus); err != nil {
 		panic("bad psus.json: " + err.Error())
 	}
+	if err := json.Unmarshal(poolsJSON, &pools); err != nil {
+		panic("bad pools.json: " + err.Error())
+	}
 }
 
 func GPUs() []GPUDef     { return gpus }
 func Rooms() []RoomDef   { return rooms }
 func Events() []EventDef { return events }
 func PSUs() []PSUDef     { return psus }
+func Pools() []PoolDef   { return pools }
 
 func GPUByID(id string) (GPUDef, bool) {
 	for _, g := range gpus {
@@ -172,4 +199,13 @@ func PSUByID(id string) (PSUDef, bool) {
 		}
 	}
 	return PSUDef{}, false
+}
+
+func PoolByID(id string) (PoolDef, bool) {
+	for _, p := range pools {
+		if p.ID == id {
+			return p, true
+		}
+	}
+	return PoolDef{}, false
 }
