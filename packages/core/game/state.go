@@ -46,6 +46,10 @@ type RoomState struct {
 	DefID      string  `json:"def_id"`
 	Heat       float64 `json:"heat"`
 	MaxHeat    float64 `json:"max_heat"`
+	// StaleRate is the per-room baseline fraction of work that gets rejected
+	// as stale (§7.2). Folded into earnings + PPLNS share accumulation via
+	// EffectiveStaleRate, which adds a pool-risk modifier on top.
+	StaleRate  float64 `json:"stale_rate,omitempty"`
 	LockLvl    int     `json:"lock_lvl"`     // 0-5, base defense vs theft
 	CCTVLvl    int     `json:"cctv_lvl"`     // 0-5, catches thieves + deters merc betrayal
 	WiringLvl  int     `json:"wiring_lvl"`   // 0-5, reduces outage + fire chance
@@ -344,9 +348,10 @@ func (s *State) unlockRoomInternal(r data.RoomDef) {
 		maxHeat = 90 // legacy fallback for rooms without an explicit ceiling
 	}
 	rs := &RoomState{
-		DefID:   r.ID,
-		Heat:    20,
-		MaxHeat: maxHeat,
+		DefID:     r.ID,
+		Heat:      20,
+		MaxHeat:   maxHeat,
+		StaleRate: r.StaleRate,
 	}
 	// Every new room starts with a built-in passthrough PSU so capacity is
 	// effectively unlimited until the player buys real hardware. Keeping it
@@ -728,6 +733,13 @@ func (s *State) ensureInit() {
 				InstalledAt: time.Now().Unix(),
 			}}
 			s.NextPSUID++
+		}
+		// Stale §7.2 migration: pre-stale saves have RoomState.StaleRate=0.
+		// Backfill from the catalog when the room def has a non-zero rate
+		// so legacy saves migrate onto the new mechanic. Idempotent: a
+		// room already carrying a non-zero rate is left alone.
+		if rs.StaleRate == 0 && def.StaleRate > 0 {
+			rs.StaleRate = def.StaleRate
 		}
 	}
 	// Migration: drop any lingering `stolen` GPUs from older saves where
