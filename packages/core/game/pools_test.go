@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"math"
 	"testing"
+
+	"github.com/RandomNameORG/kitten-crypto-mining-ventures/packages/core/data"
 )
 
 // TestPoolMigrationLegacySave: a save that predates the pool system has
@@ -193,6 +195,88 @@ func TestSwitchPoolRejectsInvalidAndCurrent(t *testing.T) {
 	}
 	if s.PoolID != priorID || s.PoolSwitchAt != priorAt {
 		t.Errorf("state mutated on no-op switch: PoolID=%q PoolSwitchAt=%d", s.PoolID, s.PoolSwitchAt)
+	}
+}
+
+// TestEffectivePoolPayoutMultPerPool walks every pool in pools.json and
+// asserts the multiplier matches the documented formula:
+//
+//	pps / pplns / solo : 1 - fee
+//	pps_plus           : 1 - fee + PPSPlusBonus
+//
+// Catches a regression where settlement_mode dispatching is dropped, a
+// fee gets applied twice, or the PPS+ bonus stops landing.
+func TestEffectivePoolPayoutMultPerPool(t *testing.T) {
+	withTempHome(t)
+	for _, def := range data.Pools() {
+		s := NewState("kit")
+		s.PoolID = def.ID
+		// Sanity: the helper never returns a non-finite value, regardless
+		// of the pool definition.
+		got := s.EffectivePoolPayoutMult()
+		if math.IsNaN(got) || math.IsInf(got, 0) {
+			t.Fatalf("pool %s: mult non-finite (%v)", def.ID, got)
+		}
+		want := 1.0 - def.Fee
+		if def.SettlementMode == "pps_plus" {
+			want += PPSPlusBonus
+		}
+		if math.Abs(got-want) > 1e-9 {
+			t.Errorf("pool %s (mode=%s fee=%.4f): got %.6f, want %.6f",
+				def.ID, def.SettlementMode, def.Fee, got, want)
+		}
+	}
+}
+
+// TestEffectivePoolPayoutMultPPSPlusBeatsPPS confirms the structural
+// reason a player would pick a higher-risk PPS+ pool over a same-fee PPS
+// pool: the block-tx-fee bonus must net out higher even when fees match.
+func TestEffectivePoolPayoutMultPPSPlusBeatsPPS(t *testing.T) {
+	withTempHome(t)
+	pps := NewState("kit")
+	pps.PoolID = "kitten_hash"
+	plus := NewState("kit")
+	plus.PoolID = "whisker_fi"
+	// Force the same fee on both so the comparison isolates the bonus.
+	// (whisker_fi.fee = 0.005 by design, kitten_hash.fee = 0.01 — the
+	// bonus on PPS+ at its real lower fee should already be ahead, but
+	// asserting the mult lift directly is more robust to balance retunes.)
+	if plus.EffectivePoolPayoutMult() <= pps.EffectivePoolPayoutMult() {
+		t.Errorf("PPS+ mult (%v) should beat PPS mult (%v) at scratch fees",
+			plus.EffectivePoolPayoutMult(), pps.EffectivePoolPayoutMult())
+	}
+}
+
+// TestEffectivePoolPayoutMultSoloIsOne confirms solo (fee 0) returns
+// exactly 1.0 — the lone-wolf path eats no pool overhead.
+func TestEffectivePoolPayoutMultSoloIsOne(t *testing.T) {
+	withTempHome(t)
+	s := NewState("kit")
+	s.PoolID = "solo"
+	if got := s.EffectivePoolPayoutMult(); got != 1.0 {
+		t.Errorf("solo mult = %v, want 1.0", got)
+	}
+}
+
+// TestEffectivePoolPayoutMultMidSwitchReturnsOne: while a transition
+// window is open the helper must return 1.0 — the mining-pause guard in
+// advanceMining freezes earnings anyway, but the helper has to be
+// neutral so the surrounding math isn't accidentally pumped or dunked.
+func TestEffectivePoolPayoutMultMidSwitchReturnsOne(t *testing.T) {
+	withTempHome(t)
+	s := NewState("kit")
+	const baseEpoch int64 = 1_700_000_000
+	s.LastTickUnix = baseEpoch
+	if err := s.SwitchPool("kitten_hash", baseEpoch); err != nil {
+		t.Fatalf("SwitchPool: %v", err)
+	}
+	if got := s.EffectivePoolPayoutMult(); got != 1.0 {
+		t.Errorf("mid-switch mult = %v, want 1.0", got)
+	}
+	// And after the window passes the mult should reflect the new pool.
+	s.LastTickUnix = s.PoolSwitchAt + 1
+	if got := s.EffectivePoolPayoutMult(); got == 1.0 {
+		t.Errorf("post-switch mult should reflect kitten_hash fee, got %v", got)
 	}
 }
 

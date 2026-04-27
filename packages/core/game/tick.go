@@ -195,7 +195,11 @@ func (s *State) advanceMining(now int64, dt float64) {
 	// running rig sits idle (no earn). Mirrors PSU replace's per-room
 	// pause but applies game-wide since pools are a player-level choice.
 	poolSwitching := s.IsPoolSwitching(now)
-	// Pool(next-sprint): apply PoolFee + settlement-mode payout here.
+	// Pool fee + settlement-mode payout (§5). Applied to per-tick earned
+	// before the syndicate cut so the syndicate slices the pool-net
+	// amount — matches real-world semantics. Mid-switch returns 1.0 but
+	// the pause guard above still freezes earnings for the window.
+	poolPayoutMult := s.EffectivePoolPayoutMult()
 	pplnsActive := !miningPaused && !poolSwitching && s.PoolSettlementMode() == "pplns"
 
 	for roomID, room := range s.Rooms {
@@ -208,6 +212,11 @@ func (s *State) advanceMining(now int64, dt float64) {
 		// in the room sits idle (no earn, no wear from heat). Mirrors the
 		// design's 2-minute "rebooting the rack" feel.
 		roomPSUPaused := room.PSUResumeAt > now
+		// PSU efficiency (§3.6 / §4.4): capacity-weighted mean of the
+		// room's running PSU efficiencies. Builtin is 1.0 so fresh-game
+		// rooms don't shift; an installed PSU at 0.75-0.95 takes the
+		// corresponding hit on per-GPU earn.
+		psuEff := s.RoomPSUEfficiency(roomID)
 		// Stale §7.2: room+pool fraction of work that gets rejected. Folded
 		// into both BTC earnings and the PPLNS share accumulator via a
 		// single staleMult so payout and credit stay aligned (you can't
@@ -225,8 +234,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 				efficiencyFactor = 0.5
 			}
 			if !miningPaused && !roomPSUPaused && !poolSwitching {
-				// Pool(next-sprint): apply PoolFee + settlement-mode payout here.
-				earned := effEff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult() * s.PoolInfiltrationEarnMult()
+				earned := effEff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult() * s.PoolInfiltrationEarnMult() * psuEff * poolPayoutMult
 				// Structural PPLNS share accumulator. dt seconds of work
 				// per running GPU, scaled by efficiency so a hotter rig
 				// contributes proportionally less to the share pool — the
@@ -339,8 +347,10 @@ func (s *State) advanceBilling(now int64) {
 			_, pow, _, _ := s.GPUStats(g)
 			volt += pow
 		}
-		// PSU(next-sprint): RoomPSUEfficiency / RoomPSUHeat ready to multiply in
-		// once balance retune is scheduled.
+		// Bills are charged on raw GPU draw — PSU efficiency reduces
+		// useful output (handled in advanceMining), it doesn't reduce
+		// what the meter reads. PSU heat folds into the room's totalHeat
+		// at the equilibrium step above, not here.
 		totalBill += volt * ElectricPerVoltMin * roomDef.ElectricCostMult * minutes * billMult
 		totalRent += float64(roomDef.RentPerHour) * (minutes / 60.0) * s.DifficultyBillMult()
 	}

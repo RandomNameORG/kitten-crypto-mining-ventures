@@ -255,7 +255,10 @@ func TestPSUReplacePauses(t *testing.T) {
 	}
 }
 
-// TestPSURemoveRefund: RemovePSU credits exactly 30% of original price.
+// TestPSURemoveRefund: RemovePSU credits 30% of original price minus the
+// cashout gas fee (§11.2). Pre-Sprint-8 the refund was the full 30%; gas
+// now applies the same way it does on SellGPU so PSU resale can't be
+// used as a fee-dodge.
 func TestPSURemoveRefund(t *testing.T) {
 	withTempHome(t)
 	s := NewState("kit")
@@ -265,7 +268,12 @@ func TestPSURemoveRefund(t *testing.T) {
 		t.Fatalf("install psu_silver650: %v", err)
 	}
 	silver, _ := data.PSUByID("psu_silver650")
-	expectedRefund := int(float64(silver.Price) * psuRefundFactor)
+	gross := float64(silver.Price) * psuRefundFactor
+	gas := s.GasFeeFor(gross)
+	expectedRefund := int(gross - gas)
+	if expectedRefund < 0 {
+		expectedRefund = 0
+	}
 
 	// Find the silver instance.
 	rs := s.Rooms["alley"]
@@ -285,10 +293,13 @@ func TestPSURemoveRefund(t *testing.T) {
 		t.Fatalf("RemovePSU: %v", err)
 	}
 	if refund != expectedRefund {
-		t.Errorf("refund = %d, want %d (30%% of %d)", refund, expectedRefund, silver.Price)
+		t.Errorf("refund = %d, want %d (30%% of %d minus gas %.2f)", refund, expectedRefund, silver.Price, gas)
 	}
 	if delta := s.BTC - btcBefore; delta != float64(expectedRefund) {
 		t.Errorf("BTC delta = %v, want %d", delta, expectedRefund)
+	}
+	if refund < 0 {
+		t.Errorf("refund went negative: %d", refund)
 	}
 }
 

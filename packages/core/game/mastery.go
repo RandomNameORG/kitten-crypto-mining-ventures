@@ -97,7 +97,14 @@ func (s *State) ConvertFragsToBTC(frags int) (float64, error) {
 		return 0, fmt.Errorf("need %d frags, have %d", frags, s.ResearchFrags)
 	}
 	const ratePerFrag = 0.5 // 1 frag → ₿0.5; tune if frags overflow worse
-	gained := float64(frags) * ratePerFrag
+	gross := float64(frags) * ratePerFrag
+	// Frag → BTC is a cashout, so it pays gas (§11.2) like any other
+	// withdrawal. Floor at 0 so a tiny dust trade nets zero rather than
+	// driving BTC negative when the flat surcharge exceeds the gross.
+	gained := gross - s.GasFeeFor(gross)
+	if gained < 0 {
+		gained = 0
+	}
 	s.ResearchFrags -= frags
 	s.BTC += gained
 	s.appendLog("info", i18n.T("log.alchemy.frags", frags, FmtBTC(gained)))

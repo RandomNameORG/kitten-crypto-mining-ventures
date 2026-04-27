@@ -74,9 +74,9 @@ func (s *State) RoomPSULoad(roomID string) float64 {
 // RoomPSUEfficiency is the capacity-weighted mean efficiency over running
 // PSUs in a room. Returns 1.0 if no running PSUs (defensive — should never
 // happen post-migration since unlockRoomInternal seeds psu_builtin).
-//
-// PSU(next-sprint): RoomPSUEfficiency / RoomPSUHeat ready to multiply in
-// once balance retune is scheduled.
+// advanceMining multiplies per-tick earned by this so a real PSU
+// (efficiency 0.75-0.95) takes a corresponding hit; the builtin's 1.0
+// keeps fresh-game balance untouched.
 func (s *State) RoomPSUEfficiency(roomID string) float64 {
 	rs, ok := s.Rooms[roomID]
 	if !ok {
@@ -100,10 +100,9 @@ func (s *State) RoomPSUEfficiency(roomID string) float64 {
 	return weighted / weight
 }
 
-// RoomPSUHeat sums heat_output over running PSUs in a room.
-//
-// PSU(next-sprint): RoomPSUEfficiency / RoomPSUHeat ready to multiply in
-// once balance retune is scheduled.
+// RoomPSUHeat sums heat_output over running PSUs in a room. Folded into
+// the room's totalHeat in advanceMining (see tick.go) so PSU heat counts
+// toward the same equilibrium load GPUs do.
 func (s *State) RoomPSUHeat(roomID string) float64 {
 	rs, ok := s.Rooms[roomID]
 	if !ok {
@@ -293,7 +292,15 @@ func (s *State) RemovePSU(roomID string, instanceID int) (int, error) {
 	if s.RoomPSULoad(roomID) > postCap {
 		return 0, fmt.Errorf("can't remove: GPUs would exceed remaining PSU capacity")
 	}
-	refund := int(float64(def.Price) * psuRefundFactor)
+	// 30% sell-back is a cashout — subtract gas (§11.2) the same way
+	// SellGPU does, so the player can't dodge the fee by routing value
+	// through PSU resale. Floor at 0 for dust where gas would exceed gross.
+	gross := float64(def.Price) * psuRefundFactor
+	net := gross - s.GasFeeFor(gross)
+	if net < 0 {
+		net = 0
+	}
+	refund := int(net)
 	s.BTC += float64(refund)
 	rs.PSUUnits = append(rs.PSUUnits[:idx], rs.PSUUnits[idx+1:]...)
 	return refund, nil

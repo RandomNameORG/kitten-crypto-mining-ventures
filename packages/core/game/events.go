@@ -209,7 +209,15 @@ func (s *State) applyEvent(e data.EventDef) {
 				}
 			} else {
 				if def, ok := data.GPUByID(candidate); ok {
-					s.BTC += float64(def.ScrapValue) * s.ScrapValueMult()
+					// No free slot → auto-scrap. Gas (§11.2) applies the
+					// same way as a manual SellGPU so the player can't
+					// dodge cashout fees by waiting on a no-slot gift.
+					gross := float64(def.ScrapValue) * s.ScrapValueMult()
+					net := gross - s.GasFeeFor(gross)
+					if net < 0 {
+						net = 0
+					}
+					s.BTC += net
 					s.appendLog("info", i18n.T("log.event.gift.sold", def.LocalName()))
 				}
 			}
