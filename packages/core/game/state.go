@@ -354,9 +354,11 @@ func (s *State) unlockRoomInternal(r data.RoomDef) {
 	if maxHeat <= 0 {
 		maxHeat = 90 // legacy fallback for rooms without an explicit ceiling
 	}
+	// Newtonian model (§3.2): a fresh room sits at ambient until load
+	// pushes it toward equilibrium. Arctic at -10 is a feature, not a bug.
 	rs := &RoomState{
 		DefID:     r.ID,
-		Heat:      20,
+		Heat:      r.Ambient,
 		MaxHeat:   maxHeat,
 		StaleRate: r.StaleRate,
 	}
@@ -729,6 +731,15 @@ func (s *State) ensureInit() {
 		}
 		if def.MaxHeat > 0 {
 			rs.MaxHeat = def.MaxHeat
+		}
+		// Sprint 5 §3.2 migration: pre-Newtonian saves wrote Heat=20 (or
+		// left it at the JSON zero value if the field was missing). Treat
+		// Heat==0 as genuinely uninitialised and backfill from Ambient so
+		// the first tick after load doesn't snap from 0°C toward
+		// equilibrium. Saves carrying a real player temperature are left
+		// alone — no ride down to ambient on load.
+		if rs.Heat == 0 {
+			rs.Heat = def.Ambient
 		}
 		// PSU §15 migration: pre-PSU saves have no PSUUnits. Drop a
 		// running psu_builtin into every such room so capacity is
