@@ -12,6 +12,12 @@ import (
 // `Pool Hopping` skill (next sprint) shortens it to 3 minutes.
 const PoolSwitchSec int64 = 600
 
+// PPSPlusBonus is the per-tick block-tx-fee share PPS+ pools pay on top
+// of the standard share rate. Tuned to ~0.5% of mining earn so PPS+
+// edges out PPS at the same fee — that's the structural reason a player
+// would pick a higher-risk pool.
+const PPSPlusBonus = 0.005
+
 // CurrentPool returns the player's current PoolDef. Falls back to
 // scratch_pool defensively if PoolID was somehow cleared mid-flight —
 // every new game and migrated save lands on scratch_pool, so PoolID
@@ -50,6 +56,28 @@ func (s *State) PoolFee() float64 {
 // mode tag.
 func (s *State) PoolSettlementMode() string {
 	return s.CurrentPool().SettlementMode
+}
+
+// EffectivePoolPayoutMult returns the multiplier advanceMining applies
+// to per-tick earned to model pool fee + settlement-mode payout (§5).
+//
+//	pps / pplns / solo : 1 - PoolFee
+//	pps_plus           : 1 - PoolFee + PPSPlusBonus  (block tx-fee share)
+//
+// While a switch is in flight the helper returns 1.0 — the mining-pause
+// guard in advanceMining already freezes earnings, so the math here stays
+// defensively neutral. Anchored on s.LastTickUnix so the helper is safe to
+// call from headless sim runs as well as live ticks.
+func (s *State) EffectivePoolPayoutMult() float64 {
+	if s.IsPoolSwitching(s.LastTickUnix) {
+		return 1.0
+	}
+	def := s.CurrentPool()
+	mult := 1.0 - def.Fee
+	if def.SettlementMode == "pps_plus" {
+		mult += PPSPlusBonus
+	}
+	return mult
 }
 
 // SwitchPool transitions the player from their current pool to newPoolID.

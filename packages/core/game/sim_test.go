@@ -394,6 +394,42 @@ func TestSimCryptoWinterWiderSwingsAndMoreEvents(t *testing.T) {
 	}
 }
 
+// TestSimSprint8BaselineWithinBand anchors Sprint 8's economy retune
+// (PSU efficiency + pool fee/settlement-mode wired into advanceMining,
+// gas unified across cashout paths) against a hand-verified pre-sprint
+// baseline. The baseline numbers are byte-exact LifetimeEarned values
+// for a 1h sim at the corresponding seeds before Sprint 8 landed; the
+// ±25% band gives normal balance retunes room to breathe but flags any
+// regression that double-applies the fee, applies it on the wrong side
+// of the syndicate cut, or misreads builtin PSU efficiency as < 1.0.
+func TestSimSprint8BaselineWithinBand(t *testing.T) {
+	type testCase struct {
+		seed     int64
+		baseline float64
+	}
+	cases := []testCase{
+		{seed: 1, baseline: 2.4444},
+		{seed: 2, baseline: 21.1648},
+		{seed: 3, baseline: 9.0792},
+	}
+	const band = 0.25 // ±25%
+	for _, tc := range cases {
+		withTempHome(t)
+		s := runSim(t, tc.seed, 3600)
+		got := s.LifetimeEarned
+		if math.IsNaN(got) || math.IsInf(got, 0) {
+			t.Errorf("seed=%d: LifetimeEarned non-finite: %v", tc.seed, got)
+			continue
+		}
+		lo := tc.baseline * (1.0 - band)
+		hi := tc.baseline * (1.0 + band)
+		if got < lo || got > hi {
+			t.Errorf("seed=%d: LifetimeEarned=%.4f outside ±%.0f%% band of baseline %.4f ([%.4f, %.4f])",
+				tc.seed, got, band*100, tc.baseline, lo, hi)
+		}
+	}
+}
+
 // TestSimEarningsNotHalvedBySprint4 confirms §8 / §11.2 don't gut mining
 // income. Gas fees only fire on SellGPU (the sim never calls it) and
 // congestion drift is RNG-free, so seed-N runs should be effectively

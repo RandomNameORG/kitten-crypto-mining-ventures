@@ -81,7 +81,11 @@ func TestConvertFragsRequiresRD(t *testing.T) {
 	}
 
 	beforeBTC := s.BTC
-	got, err := s.ConvertFragsToBTC(10)
+	// Convert enough frags that the cashout gas (§11.2) leaves a positive
+	// net — at the 0.5 BTC/frag rate, 10 frags grosses 5 BTC and the
+	// flat-floor gas surcharge alone would clamp the net to zero. 50
+	// frags grosses 25 BTC, well past the gas threshold.
+	got, err := s.ConvertFragsToBTC(50)
 	if err != nil {
 		t.Fatalf("ConvertFragsToBTC: %v", err)
 	}
@@ -91,8 +95,46 @@ func TestConvertFragsRequiresRD(t *testing.T) {
 	if s.BTC <= beforeBTC {
 		t.Error("BTC should have increased")
 	}
-	if s.ResearchFrags != 40 {
-		t.Errorf("expected 40 frags after spend, got %d", s.ResearchFrags)
+	if s.ResearchFrags != 0 {
+		t.Errorf("expected 0 frags after spend, got %d", s.ResearchFrags)
+	}
+}
+
+// TestConvertFragsLowCountClampsToZero: at a frag count where the gross
+// (frags * 0.5 BTC) is smaller than the gas surcharge, the cashout must
+// clamp to zero net BTC rather than driving the player negative. The
+// frags are still consumed — that's the rate the player accepts when
+// they elect to convert dust.
+func TestConvertFragsLowCountClampsToZero(t *testing.T) {
+	withTempHome(t)
+	s := NewState("Dust")
+	s.TechPoint = 100
+	_ = s.UnlockSkill("undervolt_i")
+	_ = s.UnlockSkill("undervolt_ii")
+	_ = s.UnlockSkill("rd_unlock")
+	if !s.HasUnlock("rd") {
+		t.Fatal("rd unlock should be set after walking the prereq chain")
+	}
+	s.ResearchFrags = 5
+	beforeBTC := s.BTC
+
+	// 5 frags at rate 0.5 = 2.5 BTC gross. GasFlatFloor alone is 5.0,
+	// so net would be deeply negative — must clamp to zero.
+	got, err := s.ConvertFragsToBTC(5)
+	if err != nil {
+		t.Fatalf("ConvertFragsToBTC: %v", err)
+	}
+	if got != 0 {
+		t.Errorf("expected net 0 on dust trade, got %.4f", got)
+	}
+	if got < 0 {
+		t.Errorf("net BTC went negative: %.4f", got)
+	}
+	if s.BTC < beforeBTC {
+		t.Errorf("BTC dropped on a clamp-to-zero conversion: before=%v after=%v", beforeBTC, s.BTC)
+	}
+	if s.ResearchFrags != 0 {
+		t.Errorf("frags should still be consumed (5 → 0), got %d", s.ResearchFrags)
 	}
 }
 
