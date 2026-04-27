@@ -133,7 +133,7 @@ var zhStrings = map[string]string{
 
 	// Rooms view.
 	"rooms.title":      "🏠 房间",
-	"rooms.help":       "↑/↓ 选房间   [u] 解锁   [enter] 切换   [l/c/w/o/a] 升级当前房间的防御   [esc]/[1] 返回",
+	"rooms.help":       "↑/↓ 选房间   [u] 解锁   [enter] 切换   [l/c/w/o/a] 升级当前房间的防御   [tab] 切换到电源   [esc]/[1] 返回",
 	"rooms.here":       "● 此处",
 	"rooms.unlocked":   "已解锁",
 	"rooms.to_unlock":  "解锁 %s",
@@ -144,6 +144,25 @@ var zhStrings = map[string]string{
 	"rooms.dim.wiring":  "电路",
 	"rooms.dim.cooling": "散热",
 	"rooms.dim.armor":   "护甲",
+
+	// 电源面板（房间视图，Sprint 1）。
+	"rooms.psu_section":    "🔌 电源 —— 当前房间（%s）",
+	"rooms.psu_help":       "  [tab] 切换焦点   [i] 安装   [r] 更换   [x] 拆除",
+	"rooms.psu_aggregates": "  负载 %.0fW / 容量 %.0fW · 平均能效 %.2f · 过载 %.2f×",
+	"rooms.psu_paused":     "  ⏸ 已暂停 —— %d 秒后恢复",
+	"rooms.psu_row":        "%-22s  能效 %.2f  热量 %.1f  %-7s  额定 %.0fW",
+	"rooms.psu_empty":      "  （未装电源 —— 按 [i] 安装）",
+
+	// PSU 选择面板（房间视图）。
+	"psu.picker.title.install": "🔌 安装电源",
+	"psu.picker.title.replace": "🔁 更换电源",
+	"psu.picker.help":          "↑/↓ 选择   [enter] 确认   [esc] 取消",
+	"psu.picker.row":           "%-22s  %s   能效 %.2f · 额定 %.0fW · 热量 %.1f · 过载耐受 %.2f",
+
+	// PSU 操作的状态反馈。
+	"status.psu_installed": "🔌 已安装 %s",
+	"status.psu_replaced":  "🔁 已更换 %s —— 暂停 120 秒",
+	"status.psu_removed":   "💵 已拆除 PSU —— 退款 %s",
 
 	// Skills.
 	"skills.title":         "🧠 技能树",
@@ -210,7 +229,7 @@ var zhStrings = map[string]string{
 	"hint.dashboard": "[p] 拉盘  [V] 排热  [空格] 暂停",
 	"hint.store":     "[↑/↓] 选择  [b] 购买  [esc] 返回",
 	"hint.gpus":      "[u] 升级  [o] 超频  [b] 排序  [r] 维修",
-	"hint.rooms":     "[u] 解锁  [enter] 切换  [l/c/w/o/a] 防御",
+	"hint.rooms":     "[u] 解锁  [enter] 切换  [l/c/w/o/a] 防御  [tab] 电源",
 	"hint.skills":    "[u] 解锁  [esc] 返回",
 	"hint.mercs":     "[tab] 切换  [h] 雇佣  [f] 解雇  [b] 贿赂",
 	"hint.lab":       "[t] 档位  [b] 加成  [r] 研究  [p] 打印  [x] 碎片→₿",

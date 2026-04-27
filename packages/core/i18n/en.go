@@ -133,7 +133,7 @@ var enStrings = map[string]string{
 
 	// Rooms view.
 	"rooms.title":      "🏠 Rooms",
-	"rooms.help":       "↑/↓ room   [u] unlock   [enter] switch   [l/c/w/o/a] upgrade defense on current room   [esc]/[1] back",
+	"rooms.help":       "↑/↓ room   [u] unlock   [enter] switch   [l/c/w/o/a] upgrade defense on current room   [tab] focus PSU   [esc]/[1] back",
 	"rooms.here":       "● here",
 	"rooms.unlocked":   "unlocked",
 	"rooms.to_unlock":  "%s to unlock",
@@ -144,6 +144,25 @@ var enStrings = map[string]string{
 	"rooms.dim.wiring":  "Wiring",
 	"rooms.dim.cooling": "Cooling",
 	"rooms.dim.armor":   "Armor",
+
+	// PSU panel (rooms view, Sprint 1).
+	"rooms.psu_section":    "🔌 Power Supply — current room (%s)",
+	"rooms.psu_help":       "  [tab] focus   [i] install   [r] replace   [x] remove",
+	"rooms.psu_aggregates": "  load %.0fW / cap %.0fW · mean_eff %.2f · overload %.2f×",
+	"rooms.psu_paused":     "  ⏸ paused — resumes in %ds",
+	"rooms.psu_row":        "%-22s  eff %.2f  heat %.1f  %-7s  rated %.0fW",
+	"rooms.psu_empty":      "  (no PSU installed — press [i] to install)",
+
+	// PSU picker overlay (rooms view).
+	"psu.picker.title.install": "🔌 Install PSU",
+	"psu.picker.title.replace": "🔁 Replace PSU",
+	"psu.picker.help":          "↑/↓ select   [enter] confirm   [esc] cancel",
+	"psu.picker.row":           "%-22s  %s   eff %.2f · rated %.0fW · heat %.1f · tol %.2f",
+
+	// Status feedback for PSU actions.
+	"status.psu_installed": "🔌 installed %s",
+	"status.psu_replaced":  "🔁 replaced %s — 120s pause",
+	"status.psu_removed":   "💵 removed PSU — refunded %s",
 
 	// Skills.
 	"skills.title":        "🧠 Skill Tree",
@@ -211,7 +230,7 @@ var enStrings = map[string]string{
 	"hint.dashboard": "[p] pump&dump  [V] vent  [space] pause",
 	"hint.store":     "[↑/↓] pick  [b] buy  [esc] back",
 	"hint.gpus":      "[u] upgrade  [o] overclock  [b] sort  [r] repair",
-	"hint.rooms":     "[u] unlock  [enter] switch  [l/c/w/o/a] defense",
+	"hint.rooms":     "[u] unlock  [enter] switch  [l/c/w/o/a] defense  [tab] PSU",
 	"hint.skills":    "[u] unlock  [esc] back",
 	"hint.mercs":     "[tab] switch  [h] hire  [f] fire  [b] bribe",
 	"hint.lab":       "[t] tier  [b] boosts  [r] research  [p] print  [x] frag→₿",
