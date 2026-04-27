@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "source": "core/data/rooms.json",
+  "asset_size": {
+    "width": 512,
+    "height": 288
+  },
+  "rooms": [
+    {
+      "id": "alley",
+      "name": "Alley Apartment",
+      "name_zh": "城中村出租屋",
+      "file": "alley/background.png",
+      "role": "starter",
+      "visual_notes": "Cramped rental room with neon window glow, shelves of GPU rigs, and improvised cooling."
+    },
+    {
+      "id": "university",
+      "name": "University Server Room",
+      "name_zh": "大学机房",
+      "file": "university/background.png",
+      "role": "low_power_cost",
+      "visual_notes": "Quiet server room with rack rows, tiled floor, and a lit exit door."
+    },
+    {
+      "id": "warehouse",
+      "name": "Abandoned Warehouse",
+      "name_zh": "废弃仓库",
+      "file": "warehouse/background.png",
+      "role": "midgame_capacity",
+      "visual_notes": "Large brown warehouse with skylight, pallets, racks, and floor space."
+    },
+    {
+      "id": "basement",
+      "name": "Underground Mining Den",
+      "name_zh": "地下矿场",
+      "file": "basement/background.png",
+      "role": "high_capacity_high_heat",
+      "visual_notes": "Concrete basement with exposed pipes, industrial fan, racks, and floor crack."
+    },
+    {
+      "id": "seacontainer",
+      "name": "Sea Container on a Cargo Ship",
+      "name_zh": "货船上的海运集装箱",
+      "file": "seacontainer/background.png",
+      "role": "sea_cooling_crisis",
+      "visual_notes": "Orange shipping container with ocean strip, strapped racks, and nautical hardware."
+    },
+    {
+      "id": "arctic",
+      "name": "Arctic Research Station",
+      "name_zh": "北极科考站",
+      "file": "arctic/background.png",
+      "role": "late_cooling",
+      "visual_notes": "Snowy research station interior with aurora sky and cold blue lighting."
+    },
+    {
+      "id": "nuclear",
+      "name": "Abandoned Nuclear Plant",
+      "name_zh": "废弃核电站",
+      "file": "nuclear/background.png",
+      "role": "free_power_high_threat",
+      "visual_notes": "Industrial plant room with green glow, hazard stripes, and dense racks."
+    },
+    {
+      "id": "orbit",
+      "name": "Low-Earth Orbit Module",
+      "name_zh": "近地轨道舱段",
+      "file": "orbit/background.png",
+      "role": "endgame_capacity",
+      "visual_notes": "Orbital module interior with space window, Earth view, and secured rack frames."
+    }
+  ]
+}

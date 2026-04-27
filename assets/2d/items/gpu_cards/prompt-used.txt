@@ -1,0 +1,8 @@
+Use case: game asset sprite sheet
+Asset type: 2D pixel-art UI inventory icons for a browser game shop
+Primary request: Create a 3x3 sprite sheet of nine distinct GPU graphics-card icons, one centered icon per cell, for the game "矿业大亨喵".
+Cell order left-to-right, top-to-bottom: 1 scrap trash GPU, 2 GTX 1060 kitten starter GPU, 3 GTX 1060 Ti upgraded blue GPU, 4 RX 580 alley cat red hot GPU, 5 GTX 1080 Ti heavy vault GPU, 6 RTX 2070 Super clean rare GPU, 7 RTX 3080 trophy GPU, 8 RTX 4090 inferno heater GPU, 9 A100 datacenter refugee server GPU.
+Style/medium: crisp 2D pixel art, 32-bit game item icon style, readable at 48x48 and 64x64, same pixel scale across all icons, subtle highlights, chunky silhouettes, cyberpunk rental-room mining vibe.
+Composition/framing: exact 3 columns by 3 rows grid, each icon centered with generous padding, slight 3/4 front view, no icon crosses its cell edge.
+Background: perfectly flat solid #FF00FF chroma-key background across the entire sheet. No shadows, gradients, texture, grid lines, labels, text, watermark, or floor plane. Do not use #FF00FF in any GPU icon.
+Constraints: nine separate GPU icons only, no cats, no people, no text, consistent scale and lighting; each card should visually suggest its tier and nickname through shape/color/details, but remain a believable graphics card.

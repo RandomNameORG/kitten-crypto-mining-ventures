@@ -13,6 +13,7 @@
 # Editor / IDE
 /.vscode/
 /.idea/
+/.godot/
 
 # OS
 .DS_Store
@@ -23,3 +24,11 @@ Thumbs.db
 .autonomous/
 .claude/*
 !.claude/skills/
+
+.env
+.claude/skills/gen-image/scripts/__pycache__
+
+# Frontend
+node_modules/
+packages/web/frontend/dist/
+.gstack/

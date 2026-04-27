@@ -1,0 +1,149 @@
+export interface Snapshot {
+  state: GameState;
+  rooms: Room[];
+  gpus: GPU[];
+  gpu_defs: GPUDef[];
+  skills: Skill[];
+  mercs: Merc[];
+  merc_defs: MercDef[];
+  log: LogEntry[];
+  last_event?: GameEvent;
+  ok: boolean;
+}
+
+export interface GameState {
+  kitten_name: string;
+  btc: number;
+  btc_fmt: string;
+  tech_point: number;
+  research_frags: number;
+  reputation: number;
+  karma: number;
+  current_room: string;
+  paused: boolean;
+  market_price: number;
+  market_trend: number;
+  lifetime_earned_fmt: string;
+  room_earn_fmt: string;
+  room_bill_fmt: string;
+  room_net_fmt: string;
+  mining_paused: boolean;
+  syndicate_joined: boolean;
+}
+
+export interface Room {
+  id: string;
+  name: string;
+  flavor: string;
+  slots: number;
+  unlock_cost: number;
+  unlock_cost_fmt: string;
+  unlocked: boolean;
+  current: boolean;
+  gpu_count: number;
+  heat: number;
+  max_heat: number;
+  heat_pct: number;
+  heat_delta: number;
+  heat_tick_in: number;
+  earn_fmt: string;
+  bill_fmt: string;
+  net_fmt: string;
+  defense: Defense;
+  background: string;
+}
+
+export interface Defense {
+  lock: number;
+  cctv: number;
+  wiring: number;
+  cooling: number;
+  armor: number;
+}
+
+export interface GPU {
+  instance_id: number;
+  def_id: string;
+  name: string;
+  status: string;
+  room: string;
+  upgrade: number;
+  oc_level: number;
+  hours_left: number;
+  earn_fmt: string;
+  repairable: boolean;
+  ships_at?: number;
+  ship_eta_sec?: number;
+  ship_total_sec?: number;
+}
+
+export interface GPUDef {
+  id: string;
+  name: string;
+  flavor: string;
+  tier: string;
+  efficiency: number;
+  power_draw: number;
+  heat_output: number;
+  price: number;
+  price_fmt: string;
+  scrap_fmt: string;
+}
+
+export interface Skill {
+  id: string;
+  lane: string;
+  name: string;
+  desc: string;
+  cost: number;
+  prereq: string;
+  unlocked: boolean;
+}
+
+export interface Merc {
+  instance_id: number;
+  def_id: string;
+  name: string;
+  loyalty: number;
+  room_id: string;
+}
+
+export interface MercDef {
+  id: string;
+  name: string;
+  flavor: string;
+  hire_cost_fmt: string;
+  wage_fmt: string;
+  specialty: string;
+}
+
+export interface LogEntry {
+  time: number;
+  category: string;
+  text: string;
+}
+
+export interface GameEvent {
+  seq: number;
+  id: string;
+  name: string;
+  category: string;
+  text: string;
+}
+
+export interface ActionRequest {
+  action: string;
+  id?: string;
+  dim?: string;
+  instance_id?: number;
+}
+
+export type TabId =
+  | "store"
+  | "rooms"
+  | "gpus"
+  | "defense"
+  | "skills"
+  | "mercs"
+  | "log"
+  | "stats";

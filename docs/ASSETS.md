@@ -49,7 +49,7 @@ Each illustration is 50×10, drawn above the dashboard when the room is active.
 
 Tiny 12×4 ASCII icons shown next to each GPU in the rack, color-tinted per tier.
 
-- **files**: `assets/ascii/gpu_{id}.txt` where `{id}` is the GPU id from `core/data/gpus.json`
+- **files**: `assets/ascii/gpu_{id}.txt` where `{id}` is the GPU id from `packages/core/data/gpus.json`
 - **size**: 12×4
 - **prompt (template)**:
   > 12×4 ASCII mini-icon of a PC graphics card labeled "[short name]". Show fan circles (O) and PCB edge (lines). Monospace. Four rows exactly. No color codes.
