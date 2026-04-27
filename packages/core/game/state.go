@@ -30,6 +30,17 @@ type GPU struct {
 	OCLevel int `json:"oc_level,omitempty"`
 }
 
+// PSU is a runtime instance of a power-supply unit installed in a room.
+// Capacity, efficiency, heat, and overload tolerance come from the static
+// PSUDef referenced via DefID — see packages/core/game/psu.go for the
+// helpers that aggregate these per-room.
+type PSU struct {
+	InstanceID  int    `json:"instance_id"`
+	DefID       string `json:"def_id"`
+	Status      string `json:"status"` // running | broken
+	InstalledAt int64  `json:"installed_at"`
+}
+
 // RoomState is the runtime instance of a Room owned by the player.
 type RoomState struct {
 	DefID      string  `json:"def_id"`
@@ -45,6 +56,17 @@ type RoomState struct {
 	// this room. Each room has its own cadence (RoomDef.HeatTickSec) so
 	// good-cooling biomes update rarely, bad ones update often.
 	LastHeatTickUnix int64 `json:"last_heat_tick_unix,omitempty"`
+
+	// PSUUnits are the power-supply units installed in this room. Every room
+	// is guaranteed to hold at least one running PSU (the migration / starter
+	// path seeds psu_builtin) so the rest of the engine can treat capacity,
+	// efficiency, and heat aggregations uniformly.
+	PSUUnits []*PSU `json:"psu_units,omitempty"`
+
+	// PSUResumeAt is the unix second after which mining can resume in this
+	// room. Set by ReplacePSU to model the spec'd 120s downtime. Zero means
+	// no pause active.
+	PSUResumeAt int64 `json:"psu_resume_at,omitempty"`
 }
 
 // Merc is a runtime mercenary instance.
@@ -101,6 +123,7 @@ type State struct {
 	Rooms         map[string]*RoomState `json:"rooms"`
 	GPUs          []*GPU                `json:"gpus"`
 	NextGPUID     int                   `json:"next_gpu_id"`
+	NextPSUID     int                   `json:"next_psu_id"`
 	Modifiers     []Modifier            `json:"modifiers"`
 	EventCooldown EventCooldowns        `json:"event_cooldown"`
 	LastTickUnix       int64            `json:"last_tick_unix"`
@@ -223,6 +246,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 		Rooms:          map[string]*RoomState{},
 		GPUs:           []*GPU{},
 		NextGPUID:      1,
+		NextPSUID:      1,
 		Modifiers:      []Modifier{},
 		EventCooldown:  EventCooldowns{},
 		LastTickUnix:   now,
@@ -300,11 +324,26 @@ func (s *State) unlockRoomInternal(r data.RoomDef) {
 	if maxHeat <= 0 {
 		maxHeat = 90 // legacy fallback for rooms without an explicit ceiling
 	}
-	s.Rooms[r.ID] = &RoomState{
+	rs := &RoomState{
 		DefID:   r.ID,
 		Heat:    20,
 		MaxHeat: maxHeat,
 	}
+	// Every new room starts with a built-in passthrough PSU so capacity is
+	// effectively unlimited until the player buys real hardware. Keeping it
+	// in the catalog (instead of as a magic constant) lets every PSU helper
+	// treat it uniformly.
+	if s.NextPSUID < 1 {
+		s.NextPSUID = 1
+	}
+	rs.PSUUnits = []*PSU{{
+		InstanceID:  s.NextPSUID,
+		DefID:       "psu_builtin",
+		Status:      "running",
+		InstalledAt: time.Now().Unix(),
+	}}
+	s.NextPSUID++
+	s.Rooms[r.ID] = rs
 }
 
 // UnlockRoom unlocks a room if the player can afford it.
@@ -390,6 +429,11 @@ func (s *State) BuyGPU(defID string) error {
 	def, ok := data.GPUByID(defID)
 	if !ok {
 		return fmt.Errorf("no such GPU: %s", defID)
+	}
+	// PSU capacity gate runs *before* BTC deduction so an oversubscribed
+	// rig refuses the purchase cleanly instead of debiting then erroring.
+	if !s.RoomCanFitGPU(s.CurrentRoom, defID) {
+		return fmt.Errorf("PSU capacity exceeded — install a larger PSU")
 	}
 	if s.BTC < float64(def.Price) {
 		return fmt.Errorf("need %s, have %s", FmtBTCInt(def.Price), FmtBTC(s.BTC))
@@ -636,6 +680,9 @@ func (s *State) ensureInit() {
 	if s.NextBlueprintN < 1 {
 		s.NextBlueprintN = 1
 	}
+	if s.NextPSUID < 1 {
+		s.NextPSUID = 1
+	}
 	// Ensure every room-state object references a known room. Unknown ids
 	// (from removed biomes) silently drop so the game keeps loading.
 	// Also resync each room's MaxHeat to its (possibly updated) catalog
@@ -648,6 +695,20 @@ func (s *State) ensureInit() {
 		}
 		if def.MaxHeat > 0 {
 			rs.MaxHeat = def.MaxHeat
+		}
+		// PSU §15 migration: pre-PSU saves have no PSUUnits. Drop a
+		// running psu_builtin into every such room so capacity is
+		// effectively unlimited and every helper has at least one PSU
+		// to aggregate over. Balance-neutral: builtin has efficiency
+		// 1.0, heat 0, tolerance 1.0, so no overload roll fires.
+		if len(rs.PSUUnits) == 0 {
+			rs.PSUUnits = []*PSU{{
+				InstanceID:  s.NextPSUID,
+				DefID:       "psu_builtin",
+				Status:      "running",
+				InstalledAt: time.Now().Unix(),
+			}}
+			s.NextPSUID++
 		}
 	}
 	// Migration: drop any lingering `stolen` GPUs from older saves where

@@ -129,4 +129,42 @@ func TestLookupHelpers(t *testing.T) {
 	if _, ok := MercByID("tabby_guard"); !ok {
 		t.Error("MercByID(tabby_guard) should resolve")
 	}
+	if _, ok := PSUByID("psu_builtin"); !ok {
+		t.Error("PSUByID(psu_builtin) should resolve")
+	}
+}
+
+func TestPSUsValid(t *testing.T) {
+	seen := map[string]bool{}
+	for _, p := range PSUs() {
+		if p.ID == "" {
+			t.Error("PSU has empty id")
+		}
+		if seen[p.ID] {
+			t.Errorf("duplicate PSU id: %s", p.ID)
+		}
+		seen[p.ID] = true
+		if p.RatedPower <= 0 {
+			t.Errorf("PSU %s rated_power must be positive, got %v", p.ID, p.RatedPower)
+		}
+		if p.Efficiency < 0.5 || p.Efficiency > 1.0 {
+			t.Errorf("PSU %s efficiency %v out of [0.5, 1.0]", p.ID, p.Efficiency)
+		}
+	}
+	// Spec'd catalog (§4.3) plus the built-in passthrough used for migration.
+	required := []string{
+		"psu_builtin",
+		"psu_trash",
+		"psu_bronze500",
+		"psu_silver650",
+		"psu_gold850",
+		"psu_gold1200",
+		"psu_platinum1600",
+		"psu_meowcore",
+	}
+	for _, id := range required {
+		if !seen[id] {
+			t.Errorf("required PSU %q missing from catalog", id)
+		}
+	}
 }

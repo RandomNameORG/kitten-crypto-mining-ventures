@@ -16,6 +16,9 @@ var roomsJSON []byte
 //go:embed events.json
 var eventsJSON []byte
 
+//go:embed psus.json
+var psusJSON []byte
+
 type GPUDef struct {
 	ID              string  `json:"id"`
 	Name            string  `json:"name"`
@@ -86,10 +89,33 @@ type EventDef struct {
 func (e EventDef) LocalName() string { return i18n.Pick(e.Name, e.NameZH) }
 func (e EventDef) LocalText() string { return i18n.Pick(e.Text, e.TextZH) }
 
+// PSUDef is a power-supply unit definition. Rated power, efficiency, heat,
+// and overload tolerance feed the runtime PSU mechanics in
+// packages/core/game/psu.go. Sprint 1 wires capacity + overload but defers
+// efficiency-into-bill and heat-into-temperature to a balance retune.
+type PSUDef struct {
+	ID                string  `json:"id"`
+	Name              string  `json:"name"`
+	NameZH            string  `json:"name_zh,omitempty"`
+	Flavor            string  `json:"flavor"`
+	FlavorZH          string  `json:"flavor_zh,omitempty"`
+	RatedPower        float64 `json:"rated_power"`
+	Efficiency        float64 `json:"efficiency"`
+	HeatOutput        float64 `json:"heat_output"`
+	Quality           string  `json:"quality"`
+	OverloadTolerance float64 `json:"overload_tolerance"`
+	Price             int     `json:"price"`
+	ExplosionDamage   int     `json:"explosion_damage"`
+}
+
+func (p PSUDef) LocalName() string   { return i18n.Pick(p.Name, p.NameZH) }
+func (p PSUDef) LocalFlavor() string { return i18n.Pick(p.Flavor, p.FlavorZH) }
+
 var (
 	gpus   []GPUDef
 	rooms  []RoomDef
 	events []EventDef
+	psus   []PSUDef
 )
 
 func init() {
@@ -102,11 +128,15 @@ func init() {
 	if err := json.Unmarshal(eventsJSON, &events); err != nil {
 		panic("bad events.json: " + err.Error())
 	}
+	if err := json.Unmarshal(psusJSON, &psus); err != nil {
+		panic("bad psus.json: " + err.Error())
+	}
 }
 
 func GPUs() []GPUDef     { return gpus }
 func Rooms() []RoomDef   { return rooms }
 func Events() []EventDef { return events }
+func PSUs() []PSUDef     { return psus }
 
 func GPUByID(id string) (GPUDef, bool) {
 	for _, g := range gpus {
@@ -133,4 +163,13 @@ func EventByID(id string) (EventDef, bool) {
 		}
 	}
 	return EventDef{}, false
+}
+
+func PSUByID(id string) (PSUDef, bool) {
+	for _, p := range psus {
+		if p.ID == id {
+			return p, true
+		}
+	}
+	return PSUDef{}, false
 }
