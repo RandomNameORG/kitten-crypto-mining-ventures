@@ -81,6 +81,7 @@ func (s *State) Tick(now int64) {
 	s.pruneModifiers(now)
 	s.advanceShipping(now)
 	s.advanceMarket(now)
+	s.advanceCongestion(now)
 	s.advanceMining(now, dt)
 	s.advanceBilling(now)
 	s.advancePSUOverload(now, dt)
