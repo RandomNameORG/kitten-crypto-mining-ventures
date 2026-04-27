@@ -347,3 +347,433 @@ func marketCrashEvent(factor float64, seconds int) data.EventDef {
 		Effects:  []effectShim{{Kind: "market_pin", Factor: factor, Seconds: seconds}},
 	}.toDef()
 }
+
+func psuExplodeEvent() data.EventDef {
+	return eventShim{
+		Category: "crisis",
+		Emoji:    "💥",
+		Name:     "Shim PSU Explode",
+		Effects:  []effectShim{{Kind: "psu_explode"}},
+	}.toDef()
+}
+
+func psuSmokingEvent() data.EventDef {
+	return eventShim{
+		Category: "threat",
+		Emoji:    "🔌",
+		Name:     "Shim PSU Smoke",
+		Effects: []effectShim{
+			{Kind: "earn_multiplier", Factor: 0.7, Seconds: 600},
+			{Kind: "psu_smoking_chain"},
+		},
+	}.toDef()
+}
+
+func poolRunawayEvent() data.EventDef {
+	return eventShim{
+		Category: "crisis",
+		Emoji:    "🏊",
+		Name:     "Shim Pool Runaway",
+		Effects:  []effectShim{{Kind: "pool_runaway"}},
+	}.toDef()
+}
+
+func soloBlockHitEvent(amount float64) data.EventDef {
+	return eventShim{
+		Category: "opportunity",
+		Emoji:    "🎰",
+		Name:     "Shim Solo Hit",
+		Effects:  []effectShim{{Kind: "solo_block_hit", Amount: amount}},
+	}.toDef()
+}
+
+func psuChainExplodeEvent() data.EventDef {
+	return eventShim{
+		Category: "crisis",
+		Emoji:    "🔥",
+		Name:     "Shim PSU Chain",
+		Effects:  []effectShim{{Kind: "psu_chain_explode"}},
+	}.toDef()
+}
+
+func fireSaleEvent() data.EventDef {
+	return eventShim{
+		Category: "opportunity",
+		Emoji:    "🛒",
+		Name:     "Shim Fire Sale",
+		Effects:  []effectShim{{Kind: "fire_sale"}},
+	}.toDef()
+}
+
+// installRunningPSU drops a freshly-running PSU instance into the room
+// with the given InstalledAt time. Used by tests that need to set up the
+// gate conditions for E21/E22/E26 by hand without going through the
+// shopping flow.
+func installRunningPSU(s *State, roomID, defID string, installedAt int64) *PSU {
+	rs := s.Rooms[roomID]
+	if rs == nil {
+		return nil
+	}
+	if s.NextPSUID < 1 {
+		s.NextPSUID = 1
+	}
+	p := &PSU{
+		InstanceID:  s.NextPSUID,
+		DefID:       defID,
+		Status:      "running",
+		InstalledAt: installedAt,
+	}
+	s.NextPSUID++
+	rs.PSUUnits = append(rs.PSUUnits, p)
+	return p
+}
+
+// fillRoomGPUs adds n running GPUs of the given type to the room.
+func fillRoomGPUs(s *State, roomID, defID string, n int) {
+	for i := 0; i < n; i++ {
+		s.addGPU(defID, roomID, false)
+	}
+}
+
+// dropBuiltinPSU removes the freebie psu_builtin from a room so tests can
+// exercise overload paths under a real capacity number. The builtin's 100kW
+// rating makes any realistic GPU load under-utilised; tests for E21/E26
+// need it gone to push factor past 1.0+tol.
+func dropBuiltinPSU(s *State, roomID string) {
+	rs := s.Rooms[roomID]
+	if rs == nil {
+		return
+	}
+	keep := rs.PSUUnits[:0]
+	for _, p := range rs.PSUUnits {
+		if p.DefID == "psu_builtin" {
+			continue
+		}
+		keep = append(keep, p)
+	}
+	rs.PSUUnits = keep
+}
+
+// --- E21: psu_explode ---
+
+func TestPSUExplode_GateRequiresOverloadedNonBuiltin(t *testing.T) {
+	withTempHome(t)
+	s := NewState("PSUExplodeGate")
+	if s.eventGatePasses("psu_explode") {
+		t.Fatal("fresh state should fail the psu_explode gate (only psu_builtin)")
+	}
+	// To trip the overload gate, drop the freebie 100kW builtin so the
+	// trash PSU's tiny 300W band actually matters, then load the room
+	// past 300W * (1+0.05).
+	dropBuiltinPSU(s, s.CurrentRoom)
+	installRunningPSU(s, s.CurrentRoom, "psu_trash", 0)
+	for s.RoomPSUOverloadFactor(s.CurrentRoom) <= 1.05 {
+		s.addGPU("a100", s.CurrentRoom, false)
+		if len(s.GPUs) > 30 {
+			t.Fatalf("could not push room past trash PSU tol; factor=%.2f",
+				s.RoomPSUOverloadFactor(s.CurrentRoom))
+		}
+	}
+	if !s.eventGatePasses("psu_explode") {
+		t.Fatalf("expected gate to pass; overloadFactor=%.2f tol=%.2f",
+			s.RoomPSUOverloadFactor(s.CurrentRoom),
+			s.roomMinOverloadTolerance(s.CurrentRoom))
+	}
+}
+
+func TestPSUExplode_EffectBreaksPSUAndGPUs(t *testing.T) {
+	withTempHome(t)
+	rand.Seed(7)
+	s := NewState("PSUExplodeFx")
+	psu := installRunningPSU(s, s.CurrentRoom, "psu_trash", 0)
+	// A handful of running GPUs to get bricked.
+	for i := 0; i < 3; i++ {
+		s.addGPU("gtx1060", s.CurrentRoom, false)
+	}
+	beforeRunning := 0
+	for _, g := range s.GPUs {
+		if g.Status == "running" {
+			beforeRunning++
+		}
+	}
+	s.applyEvent(psuExplodeEvent())
+	if psu.Status != "broken" {
+		t.Fatalf("psu_explode should break the trash PSU; status=%s", psu.Status)
+	}
+	afterRunning := 0
+	for _, g := range s.GPUs {
+		if g.Status == "running" {
+			afterRunning++
+		}
+	}
+	if afterRunning >= beforeRunning {
+		t.Fatalf("expected some GPUs bricked; before=%d after=%d", beforeRunning, afterRunning)
+	}
+}
+
+func TestPSUExplode_FizzlesWithNoRealPSU(t *testing.T) {
+	withTempHome(t)
+	s := NewState("PSUExplodeNone")
+	logBefore := len(s.Log)
+	// Only psu_builtin in the room — applyEvent should log the no-op,
+	// not crash, and not touch the builtin.
+	s.applyEvent(psuExplodeEvent())
+	if len(s.Log) == logBefore {
+		t.Fatal("expected a log line for no-real-PSU fizzle")
+	}
+	for _, p := range s.Rooms[s.CurrentRoom].PSUUnits {
+		if p.Status != "running" {
+			t.Fatalf("builtin PSU should not be bricked; status=%s", p.Status)
+		}
+	}
+}
+
+// --- E22: psu_smoking ---
+
+func TestPSUSmoking_GateRequiresOldTrashPSU(t *testing.T) {
+	withTempHome(t)
+	s := NewState("SmokeGate")
+	s.LastTickUnix = 1_000_000
+	if s.eventGatePasses("psu_smoking") {
+		t.Fatal("fresh state should fail the psu_smoking gate")
+	}
+	// Trash PSU younger than 5h: still a fail.
+	installRunningPSU(s, s.CurrentRoom, "psu_trash", s.LastTickUnix-3600)
+	if s.eventGatePasses("psu_smoking") {
+		t.Fatal("a 1h-old trash PSU shouldn't trip the smoking gate")
+	}
+	// Backdate it past the 5h window.
+	s.Rooms[s.CurrentRoom].PSUUnits[len(s.Rooms[s.CurrentRoom].PSUUnits)-1].InstalledAt = s.LastTickUnix - 18001
+	if !s.eventGatePasses("psu_smoking") {
+		t.Fatal("a >5h-old trash PSU should trip the smoking gate")
+	}
+}
+
+func TestPSUSmoking_EffectAppliesEarnDebuff(t *testing.T) {
+	withTempHome(t)
+	rand.Seed(1)
+	s := NewState("SmokeFx")
+	s.applyEvent(psuSmokingEvent())
+	found := false
+	for _, m := range s.Modifiers {
+		if m.Kind == "earn_mult" && m.Factor == 0.7 {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected a 0.7× earn_mult modifier; got %+v", s.Modifiers)
+	}
+}
+
+// --- E23: mining_disaster ---
+
+func TestMiningDisaster_GateRequiresLatePriceFloor(t *testing.T) {
+	withTempHome(t)
+	s := NewState("MDGate")
+	if s.eventGatePasses("mining_disaster") {
+		t.Fatal("fresh state should fail mining_disaster gate")
+	}
+	s.MarketPrice = 0.3
+	if s.eventGatePasses("mining_disaster") {
+		t.Fatal("low price alone shouldn't trip — needs late-game LE too")
+	}
+	s.LifetimeEarned = 5000
+	if !s.eventGatePasses("mining_disaster") {
+		t.Fatal("low price + late LE should pass gate")
+	}
+}
+
+// --- E24: pool_runaway ---
+
+func TestPoolRunaway_GateRequiresWhiskerFi(t *testing.T) {
+	withTempHome(t)
+	s := NewState("RunGate")
+	if s.eventGatePasses("pool_runaway") {
+		t.Fatal("scratch_pool default shouldn't trip pool_runaway gate")
+	}
+	s.PoolID = "whisker_fi"
+	if !s.eventGatePasses("pool_runaway") {
+		t.Fatal("whisker_fi pool should pass pool_runaway gate")
+	}
+}
+
+func TestPoolRunaway_EffectResetsPoolAndShares(t *testing.T) {
+	withTempHome(t)
+	s := NewState("RunFx")
+	s.PoolID = "whisker_fi"
+	s.PoolShares = 12345
+	s.PoolSwitchFrom = "scratch_pool"
+	s.PoolSwitchAt = 999999
+	s.applyEvent(poolRunawayEvent())
+	if s.PoolID != "scratch_pool" {
+		t.Fatalf("pool should be reset to scratch_pool; got %s", s.PoolID)
+	}
+	if s.PoolShares != 0 {
+		t.Fatalf("shares should be voided; got %v", s.PoolShares)
+	}
+	if s.PoolSwitchFrom != "" || s.PoolSwitchAt != 0 {
+		t.Fatalf("switch fields should be cleared; got from=%q at=%d", s.PoolSwitchFrom, s.PoolSwitchAt)
+	}
+}
+
+// --- E25: solo_block_hit ---
+
+func TestSoloBlockHit_GateRequiresSolo(t *testing.T) {
+	withTempHome(t)
+	s := NewState("SoloGate")
+	if s.eventGatePasses("solo_block_hit") {
+		t.Fatal("default scratch_pool shouldn't trip solo gate")
+	}
+	s.PoolID = "solo"
+	if !s.eventGatePasses("solo_block_hit") {
+		t.Fatal("solo pool should pass solo gate")
+	}
+}
+
+func TestSoloBlockHit_EffectAddsLumpBTC(t *testing.T) {
+	withTempHome(t)
+	s := NewState("SoloFx")
+	before := s.BTC
+	s.applyEvent(soloBlockHitEvent(0.5))
+	want := before + 500.0
+	if s.BTC != want {
+		t.Fatalf("expected BTC+500; got %v want %v", s.BTC, want)
+	}
+}
+
+// --- E26: psu_chain_explode ---
+
+func TestPSUChainExplode_GateRequiresTwoTrashAndOverload(t *testing.T) {
+	withTempHome(t)
+	s := NewState("ChainGate")
+	if s.eventGatePasses("psu_chain_explode") {
+		t.Fatal("fresh state shouldn't trip chain gate")
+	}
+	installRunningPSU(s, s.CurrentRoom, "psu_trash", 0)
+	if s.eventGatePasses("psu_chain_explode") {
+		t.Fatal("one trash PSU shouldn't trip chain gate")
+	}
+	installRunningPSU(s, s.CurrentRoom, "psu_trash", 0)
+	// Two trash PSUs but no overload yet — should still fail because
+	// builtin's huge capacity drops overload factor far below 1.0.
+	if s.eventGatePasses("psu_chain_explode") {
+		t.Fatal("two trash but no overload shouldn't trip chain gate")
+	}
+	// Remove builtin to force capacity = 600W trash, then load past 1.0
+	// with high-draw cards (a100 is 20W each).
+	dropBuiltinPSU(s, s.CurrentRoom)
+	for s.RoomPSUOverloadFactor(s.CurrentRoom) <= 1.0 {
+		s.addGPU("a100", s.CurrentRoom, false)
+		if len(s.GPUs) > 50 {
+			t.Fatalf("could not push factor past 1.0; got %.2f",
+				s.RoomPSUOverloadFactor(s.CurrentRoom))
+		}
+	}
+	if !s.eventGatePasses("psu_chain_explode") {
+		t.Fatalf("expected chain gate to pass; overload=%.2f trash=%d",
+			s.RoomPSUOverloadFactor(s.CurrentRoom),
+			s.roomTrashPSUCount(s.CurrentRoom))
+	}
+}
+
+func TestPSUChainExplode_EffectBricksTrashAndHalfGPUs(t *testing.T) {
+	withTempHome(t)
+	rand.Seed(11)
+	s := NewState("ChainFx")
+	a := installRunningPSU(s, s.CurrentRoom, "psu_trash", 0)
+	b := installRunningPSU(s, s.CurrentRoom, "psu_trash", 0)
+	c := installRunningPSU(s, s.CurrentRoom, "psu_silver650", 0)
+	for i := 0; i < 4; i++ {
+		s.addGPU("gtx1060", s.CurrentRoom, false)
+	}
+	runningBefore := 0
+	for _, g := range s.GPUs {
+		if g.Status == "running" {
+			runningBefore++
+		}
+	}
+	s.applyEvent(psuChainExplodeEvent())
+	if a.Status != "broken" || b.Status != "broken" {
+		t.Fatalf("both trash PSUs should be broken; a=%s b=%s", a.Status, b.Status)
+	}
+	if c.Status != "running" {
+		t.Fatalf("silver PSU should not be touched; status=%s", c.Status)
+	}
+	runningAfter := 0
+	for _, g := range s.GPUs {
+		if g.Status == "running" {
+			runningAfter++
+		}
+	}
+	wantBroken := runningBefore / 2
+	if runningBefore-runningAfter != wantBroken {
+		t.Fatalf("expected %d GPUs broken; got %d (before=%d after=%d)",
+			wantBroken, runningBefore-runningAfter, runningBefore, runningAfter)
+	}
+}
+
+// --- E27: share_dilution ---
+
+func TestShareDilution_GateRequiresPPLNSAndLatGame(t *testing.T) {
+	withTempHome(t)
+	s := NewState("DilGate")
+	// scratch_pool is PPLNS, but LE gate fails on a fresh state.
+	if s.eventGatePasses("share_dilution") {
+		t.Fatal("fresh state shouldn't trip dilution gate (LE too low)")
+	}
+	s.LifetimeEarned = 5000
+	if !s.eventGatePasses("share_dilution") {
+		t.Fatal("PPLNS + late LE should pass gate")
+	}
+	s.PoolID = "kitten_hash" // PPS — should fail
+	if s.eventGatePasses("share_dilution") {
+		t.Fatal("PPS pool shouldn't trip dilution gate")
+	}
+	s.PoolID = "whisker_fi" // PPS+ — should pass
+	if !s.eventGatePasses("share_dilution") {
+		t.Fatal("PPS+ pool should pass dilution gate")
+	}
+	// Mid-switch: should fail.
+	s.PoolSwitchAt = s.LastTickUnix + 60
+	if s.eventGatePasses("share_dilution") {
+		t.Fatal("mid-pool-switch shouldn't trip dilution gate")
+	}
+}
+
+// --- E28: fire_sale ---
+
+func TestFireSale_GateRequiresRecentMiningDisaster(t *testing.T) {
+	withTempHome(t)
+	s := NewState("FireGate")
+	s.LastTickUnix = 1_000_000
+	if s.eventGatePasses("fire_sale") {
+		t.Fatal("fresh state shouldn't trip fire_sale gate (no disaster on record)")
+	}
+	// Fresh disaster cooldown entry within 600s window.
+	s.EventCooldown["mining_disaster"] = s.LastTickUnix - 100
+	if !s.eventGatePasses("fire_sale") {
+		t.Fatal("recent mining_disaster should trip fire_sale gate")
+	}
+	// Old disaster: window expired.
+	s.EventCooldown["mining_disaster"] = s.LastTickUnix - 700
+	if s.eventGatePasses("fire_sale") {
+		t.Fatal("old mining_disaster shouldn't trip fire_sale gate")
+	}
+}
+
+func TestFireSale_EffectIsLogOnly(t *testing.T) {
+	withTempHome(t)
+	s := NewState("FireFx")
+	btcBefore, modsBefore := s.BTC, len(s.Modifiers)
+	s.applyEvent(fireSaleEvent())
+	if s.BTC != btcBefore {
+		t.Fatalf("fire_sale shouldn't move BTC; before=%v after=%v", btcBefore, s.BTC)
+	}
+	if len(s.Modifiers) != modsBefore {
+		t.Fatalf("fire_sale shouldn't add modifiers; before=%d after=%d", modsBefore, len(s.Modifiers))
+	}
+	if !logContains(s, "Fire sale") {
+		t.Fatalf("expected fire-sale log line; got %v", logTexts(s))
+	}
+}

@@ -23,6 +23,10 @@ func (s *State) MaybeFireEvent() *data.EventDef {
 		"group_chat_sos", "celeb_interview", "halving", "police_visit",
 		"voltage_dip",
 		"tax_audit", "power_surge", "market_crash",
+		// Sprint 6 §10.1 — PSU/pool/BTC-linked event family. Gates in
+		// eventGatePasses keep these out of the fresh-game baseline.
+		"psu_explode", "psu_smoking", "mining_disaster", "pool_runaway",
+		"solo_block_hit", "psu_chain_explode", "share_dilution", "fire_sale",
 	}
 	all := append([]string{}, pool...)
 	all = append(all, globalPool...)
@@ -107,6 +111,50 @@ func (s *State) eventGatePasses(id string) bool {
 			}
 		}
 		return false
+	case "psu_explode":
+		// E21: a non-builtin PSU in the current room is past its
+		// overload tolerance band — same condition the silent
+		// per-tick path watches, surfaced as an event banner here.
+		return s.roomHasOverloadedNonBuiltinPSU(s.CurrentRoom)
+	case "psu_smoking":
+		// E22: a psu_trash in current room older than 5h.
+		return s.roomHasOldTrashPSU(s.CurrentRoom, 18000)
+	case "mining_disaster":
+		// E23: late-game crash event — pinned behind LE so the 1h
+		// fresh-game baseline can't trigger it even in a deep dip.
+		return s.MarketPrice < 0.4 && s.LifetimeEarned > 1000
+	case "pool_runaway":
+		// E24: only the rug-pull pool can rug-pull.
+		return s.PoolID == "whisker_fi"
+	case "solo_block_hit":
+		// E25: only matters when actually solo mining.
+		return s.PoolID == "solo"
+	case "psu_chain_explode":
+		// E26: ≥2 running psu_trash AND room past 1.0× capacity.
+		return s.roomTrashPSUCount(s.CurrentRoom) >= 2 &&
+			s.RoomPSUOverloadFactor(s.CurrentRoom) > 1.0
+	case "share_dilution":
+		// E27: PPLNS / PPS+ pools only, late-game gated.
+		mode := s.PoolSettlementMode()
+		if mode != "pplns" && mode != "pps_plus" {
+			return false
+		}
+		if s.LifetimeEarned <= 1000 {
+			return false
+		}
+		// Don't pile on while the player is mid-pool-switch — the
+		// transition pause already blocks earnings.
+		return s.PoolSwitchAt == 0
+	case "fire_sale":
+		// E28: the buyer's market only opens in the wake of a recent
+		// mining_disaster. Use s.LastTickUnix as the time anchor (sim
+		// determinism) and require an actual cooldown entry — a fresh
+		// game's zero-valued map never trips this.
+		last, ok := s.EventCooldown["mining_disaster"]
+		if !ok {
+			return false
+		}
+		return s.LastTickUnix-last < 600
 	}
 	return true
 }
@@ -236,6 +284,84 @@ func (s *State) applyEvent(e data.EventDef) {
 			s.MarketPrice = eff.Factor
 			s.PrevMarketPrice = s.MarketPrice
 			s.appendLog("crisis", i18n.T("log.event.crash.fired", eff.Factor, eff.Seconds))
+		case "psu_explode":
+			// E21 §10.1 — pop the weakest non-builtin PSU in the
+			// current room (the same "blow-first" candidate the per-
+			// tick overload path picks). Reuses psuExplode for the
+			// damage roll so the bricked-GPU cadence stays uniform.
+			if id, ok := s.weakestNonBuiltinRunningPSU(s.CurrentRoom); ok {
+				s.psuExplode(s.CurrentRoom, id)
+			} else {
+				s.appendLog("info", "PSU jolt — but no real PSU to fail. Lucky.")
+			}
+		case "psu_smoking_chain":
+			// E22 §10.1 — 5% chance the smoking PSU also explodes.
+			// The earn_mult portion is wired via the catalog effect
+			// list; this branch only handles the chain-explosion
+			// roll so the dice stay together.
+			if rand.Float64() < 0.05 {
+				if id, ok := s.weakestNonBuiltinRunningPSU(s.CurrentRoom); ok {
+					s.psuExplode(s.CurrentRoom, id)
+				}
+			}
+		case "pool_runaway":
+			// E24 §10.1 — the pool rugged. Unsettled PPLNS shares
+			// vanish and we snap the player back to scratch_pool
+			// with no transition window (no time to settle when the
+			// pool literally vanished).
+			s.PoolShares = 0
+			s.PoolID = "scratch_pool"
+			s.PoolSwitchFrom = ""
+			s.PoolSwitchAt = 0
+			s.appendLog("crisis", "Pool runaway! Unsettled shares lost — back to ScratchPool.")
+		case "solo_block_hit":
+			// E25 §10.1 — solo lottery hit. Effect Amount × 1000
+			// → 0.5 spec amount → ₿500 lump-sum payout.
+			reward := eff.Amount * 1000
+			s.BTC += reward
+			s.appendLog("opportunity", fmt.Sprintf("Solo block hit! +%s lump sum.", FmtBTC(reward)))
+		case "psu_chain_explode":
+			// E26 §10.1 — every running psu_trash in the room
+			// breaks; half (rounded down, min 1 if any GPUs were
+			// running) of running GPUs in the room go down too.
+			rs := s.Rooms[s.CurrentRoom]
+			if rs == nil {
+				break
+			}
+			brokenPSUs := 0
+			for _, p := range rs.PSUUnits {
+				if p.Status != "running" {
+					continue
+				}
+				if p.DefID == "psu_trash" {
+					p.Status = "broken"
+					brokenPSUs++
+				}
+			}
+			candidates := []*GPU{}
+			for _, g := range s.GPUs {
+				if g.Room == s.CurrentRoom && g.Status == "running" {
+					candidates = append(candidates, g)
+				}
+			}
+			toBreak := len(candidates) / 2
+			if toBreak == 0 && len(candidates) > 0 {
+				toBreak = 1
+			}
+			brokenGPUs := 0
+			for i := 0; i < toBreak && len(candidates) > 0; i++ {
+				idx := rand.Intn(len(candidates))
+				victim := candidates[idx]
+				victim.Status = "broken"
+				victim.HoursLeft = 0
+				candidates = append(candidates[:idx], candidates[idx+1:]...)
+				brokenGPUs++
+			}
+			s.appendLog("crisis", fmt.Sprintf("PSU chain explosion — %d trash PSU(s) and %d GPU(s) bricked.", brokenPSUs, brokenGPUs))
+		case "fire_sale":
+			// E28 §10.1 — opportunity log only.
+			// future sprint: wire shop-discount modifier here.
+			s.appendLog("opportunity", "Fire sale on used hardware — bargains everywhere.")
 		}
 	}
 }
@@ -353,6 +479,97 @@ func (s *State) burnCurrentRoom() {
 		roomName = def.LocalName()
 	}
 	s.appendLog("crisis", i18n.T("log.event.fire.destroyed", destroyed, roomName))
+}
+
+// roomHasOverloadedNonBuiltinPSU returns true when the room is past its
+// weakest PSU's safe band AND that weakest PSU isn't the freebie psu_builtin.
+// Mirrors the silent overload roll's gating condition (advancePSUOverload)
+// so E21 can ride the same surface as a player-visible event.
+func (s *State) roomHasOverloadedNonBuiltinPSU(roomID string) bool {
+	rs, ok := s.Rooms[roomID]
+	if !ok {
+		return false
+	}
+	hasNonBuiltin := false
+	for _, p := range rs.PSUUnits {
+		if p.Status != "running" {
+			continue
+		}
+		if p.DefID != "psu_builtin" {
+			hasNonBuiltin = true
+			break
+		}
+	}
+	if !hasNonBuiltin {
+		return false
+	}
+	tol := s.roomMinOverloadTolerance(roomID)
+	return s.RoomPSUOverloadFactor(roomID) > 1.0+tol
+}
+
+// roomHasOldTrashPSU returns true when any running psu_trash in the room
+// has been installed for at least olderThanSec seconds (anchored on
+// s.LastTickUnix to keep the headless sim deterministic). Empty / freshly
+// installed rooms naturally return false.
+func (s *State) roomHasOldTrashPSU(roomID string, olderThanSec int64) bool {
+	rs, ok := s.Rooms[roomID]
+	if !ok {
+		return false
+	}
+	for _, p := range rs.PSUUnits {
+		if p.Status != "running" || p.DefID != "psu_trash" {
+			continue
+		}
+		if s.LastTickUnix-p.InstalledAt > olderThanSec {
+			return true
+		}
+	}
+	return false
+}
+
+// roomTrashPSUCount counts running psu_trash instances in the room.
+func (s *State) roomTrashPSUCount(roomID string) int {
+	rs, ok := s.Rooms[roomID]
+	if !ok {
+		return 0
+	}
+	n := 0
+	for _, p := range rs.PSUUnits {
+		if p.Status == "running" && p.DefID == "psu_trash" {
+			n++
+		}
+	}
+	return n
+}
+
+// weakestNonBuiltinRunningPSU picks the lowest-tolerance non-builtin running
+// PSU instance — the canonical "blow-first" candidate the random-roll
+// PSU-explosion events should target. Returns (instanceID, true) on hit;
+// (0, false) when no eligible PSU exists in the room.
+func (s *State) weakestNonBuiltinRunningPSU(roomID string) (int, bool) {
+	rs, ok := s.Rooms[roomID]
+	if !ok {
+		return 0, false
+	}
+	pickID := 0
+	pickTol := -1.0
+	for _, p := range rs.PSUUnits {
+		if p.Status != "running" || p.DefID == "psu_builtin" {
+			continue
+		}
+		def, ok := data.PSUByID(p.DefID)
+		if !ok {
+			continue
+		}
+		if pickTol < 0 || def.OverloadTolerance < pickTol {
+			pickTol = def.OverloadTolerance
+			pickID = p.InstanceID
+		}
+	}
+	if pickID == 0 {
+		return 0, false
+	}
+	return pickID, true
 }
 
 // RepairAllBroken repairs every broken GPU the player can afford in cost
