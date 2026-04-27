@@ -86,6 +86,11 @@ var skillDefs = []SkillDef{
 		NameZH: "MEOWCore 蓝图",
 		Desc:   "Unlock custom GPU research.",
 		DescZH: "解锁自研显卡研究。"},
+	{ID: "wiring_optimization", Lane: "engineer", Cost: 3, Effect: SkillEffect{Kind: "wiring_opt", Value: 0.10},
+		Name:   "Wiring Optimization",
+		NameZH: "布线优化",
+		Desc:   "PSU overload tolerance +10%, PSU heat output −20%.",
+		DescZH: "电源过载容限 +10%，电源产热 −20%。"},
 
 	// Mogul.
 	{ID: "smart_invoicing", Lane: "mogul", Cost: 3, Effect: SkillEffect{Kind: "bill_mult", Value: 0.85},
@@ -133,6 +138,16 @@ var skillDefs = []SkillDef{
 		NameZH: "风险投资",
 		Desc:   "Unlock Prestige retirement.",
 		DescZH: "解锁「退休转生」。"},
+	{ID: "pool_hopping", Lane: "mogul", Cost: 5, Prereq: "smart_invoicing", Effect: SkillEffect{Kind: "pool_hop", Value: 180},
+		Name:   "Pool Hopping",
+		NameZH: "矿池跳跃",
+		Desc:   "Pool switch window 600s → 180s. Keep 50% of PPLNS shares on leave.",
+		DescZH: "矿池切换窗口 600 秒 → 180 秒。离开 PPLNS 时保留 50% 份额。"},
+	{ID: "asset_hedging", Lane: "mogul", Cost: 8, Prereq: "hedged_wallet", Effect: SkillEffect{Kind: "asset_hedge", Value: 0.20},
+		Name:   "Asset Hedging",
+		NameZH: "资产对冲",
+		Desc:   "GPU resale BTC sensitivity −0.2 (clamped at 0).",
+		DescZH: "显卡二手价 BTC 敏感度 −0.2（最低为 0）。"},
 
 	// Hacker.
 	{ID: "neighbor_leech", Lane: "hacker", Cost: 3, Effect: SkillEffect{Kind: "bill_mult", Value: 0.90},
@@ -170,6 +185,16 @@ var skillDefs = []SkillDef{
 		NameZH: "链上幽灵 II",
 		Desc:   "Merc loyalty floor +15 more (total +30).",
 		DescZH: "佣兵忠诚下限再 +15（共 +30）。"},
+	{ID: "network_optimization", Lane: "hacker", Cost: 3, Effect: SkillEffect{Kind: "stale_reduce", Value: 0.03},
+		Name:   "Network Optimization",
+		NameZH: "网络优化",
+		Desc:   "Stale rate −3% in every room.",
+		DescZH: "所有房间无效份额率 −3%。"},
+	{ID: "pool_infiltration", Lane: "hacker", Cost: 10, Prereq: "pump_dump", Effect: SkillEffect{Kind: "pool_infiltrate", Value: 0.02},
+		Name:   "Pool Infiltration",
+		NameZH: "矿池渗透",
+		Desc:   "Mining earnings +2%. Costs Karma −5 on unlock.",
+		DescZH: "挖矿收益 +2%。解锁时业力 −5。"},
 }
 
 func Skills() []SkillDef { return skillDefs }

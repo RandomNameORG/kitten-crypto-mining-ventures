@@ -226,7 +226,7 @@ func (s *State) advanceMining(now int64, dt float64) {
 			}
 			if !miningPaused && !roomPSUPaused && !poolSwitching {
 				// Pool(next-sprint): apply PoolFee + settlement-mode payout here.
-				earned := effEff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult()
+				earned := effEff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult() * s.PoolInfiltrationEarnMult()
 				// Structural PPLNS share accumulator. dt seconds of work
 				// per running GPU, scaled by efficiency so a hotter rig
 				// contributes proportionally less to the share pool — the

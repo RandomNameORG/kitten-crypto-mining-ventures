@@ -70,14 +70,16 @@ func (s *State) SwitchPool(newPoolID string, now int64) error {
 	}
 	leavingDef := s.CurrentPool()
 	// PPLNS shares evaporate when you walk away — that's the structural
-	// gimmick that gives PPS its lower-variance appeal.
+	// gimmick that gives PPS its lower-variance appeal. Pool Hopping
+	// (mogul T2) softens this to 50% retention via PoolHoppingShareRetention.
 	if leavingDef.SettlementMode == "pplns" {
-		s.PoolShares = 0
+		s.PoolShares *= s.PoolHoppingShareRetention()
 	}
 	s.PoolSwitchFrom = s.PoolID
 	s.PoolID = newPoolID
-	s.PoolSwitchAt = now + PoolSwitchSec
+	switchSec := s.PoolSwitchDurationSec()
+	s.PoolSwitchAt = now + switchSec
 	s.appendLog("info", fmt.Sprintf("Switching pool: %s → %s (%ds transition)",
-		leavingDef.LocalName(), newDef.LocalName(), PoolSwitchSec))
+		leavingDef.LocalName(), newDef.LocalName(), switchSec))
 	return nil
 }

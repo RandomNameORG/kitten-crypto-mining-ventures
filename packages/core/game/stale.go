@@ -44,9 +44,9 @@ func (s *State) EffectiveStaleRate(roomID string) float64 {
 	}
 	base := rs.StaleRate
 	if s.PoolSwitchAt > 0 {
-		return clampStale(base)
+		return clampStale(base - s.StaleRateBonus())
 	}
-	return clampStale(base + poolRiskStaleModifier(s.CurrentPool().Risk))
+	return clampStale(base + poolRiskStaleModifier(s.CurrentPool().Risk) - s.StaleRateBonus())
 }
 
 func clampStale(v float64) float64 {

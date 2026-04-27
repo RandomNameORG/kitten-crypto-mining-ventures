@@ -75,7 +75,10 @@ func (s *State) GPUResalePrice(g *GPU) float64 {
 	if g.BlueprintID != "" {
 		tier := s.blueprintTier(g.BlueprintID)
 		base := 2000.0 + float64(tier-1)*2000.0
-		sens := 0.2 + 0.05*float64(tier-1)
+		sens := 0.2 + 0.05*float64(tier-1) - s.BtcSensitivityBonus()
+		if sens < 0 {
+			sens = 0
+		}
 		// MEOWCore base_resale_ratio is implicitly 1.0 — the inherent
 		// base already accounts for handcrafted-asset pricing.
 		return base * (1.0 + (s.MarketPrice-1.0)*sens)
@@ -84,7 +87,11 @@ func (s *State) GPUResalePrice(g *GPU) float64 {
 	if !ok {
 		return 0
 	}
-	mult := 1.0 + (s.MarketPrice-1.0)*def.BtcSensitivity
+	sens := def.BtcSensitivity - s.BtcSensitivityBonus()
+	if sens < 0 {
+		sens = 0
+	}
+	mult := 1.0 + (s.MarketPrice-1.0)*sens
 	return float64(def.Price) * def.BaseResaleRatio * mult
 }
 
