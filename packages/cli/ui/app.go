@@ -62,6 +62,14 @@ type App struct {
 	gpusCursor     int
 	gpusSortMode   gpuSortMode
 	roomsCursor    int
+	roomsFocus     int // 0 = rooms list, 1 = PSU list (Sprint 1 PSU panel)
+	psuCursor      int // index into the current room's PSUUnits
+	psuPickerActive bool
+	psuPickerCursor int
+	psuPickerMode   string // "install" | "replace"
+	// Pool picker overlay (Sprint 2 — Stats view).
+	poolPickerActive bool
+	poolPickerCursor int
 	skillsCursor   int
 	mercsCursor    int // index into hireable list when hiring; else 0
 	mercsOwnedCur  int // cursor in owned list
@@ -350,6 +358,9 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a, nil
 	case "4":
 		a.view = viewRooms
+		a.roomsFocus = 0
+		a.psuCursor = 0
+		a.psuPickerActive = false
 		return a, nil
 	case "5":
 		a.view = viewSkills
@@ -368,6 +379,7 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a, nil
 	case "0":
 		a.view = viewStats
+		a.poolPickerActive = false
 		return a, nil
 	case "?":
 		a.view = viewHelp
@@ -431,6 +443,8 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a.handlePrestigeKey(key)
 	case viewMastery:
 		return a.handleMasteryKey(key)
+	case viewStats:
+		return a.handleStatsKey(key)
 	}
 
 	// Dashboard-only fallbacks.

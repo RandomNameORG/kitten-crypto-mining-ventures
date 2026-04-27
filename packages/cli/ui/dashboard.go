@@ -283,6 +283,10 @@ func (a App) renderRoomPanel(def data.RoomDef, width int, compact bool) string {
 	lines = append(lines, "  "+renderHeatBar(heatFrac, barW)+"  "+zoneStyle.Render(i18n.T(zoneLabel)))
 	lines = append(lines, netStyle.Render(i18n.T("dash.line.cash2", game.FmtBTC(earn), game.FmtBTCSigned(net))))
 	lines = append(lines, renderMarketLine(a.state))
+	lines = append(lines, DimStyle.Render(i18n.T("dash.line.infra",
+		a.state.EffectiveStaleRate(def.ID)*100,
+		a.state.NetworkCongestion*100,
+		a.state.EffectiveGasFeeRate()*100)))
 	if !compact {
 		lines = append(lines, "")
 	}
@@ -416,6 +420,10 @@ func (a App) renderKeyInfoPanel(def data.RoomDef, width int, compact bool) strin
 		VoltStyle.Render(fmt.Sprintf("%s %.0fW  −%s/s", IconBolt, volt, game.FmtBTC(bill))),
 		netStyle.Render(fmt.Sprintf("%s net %s/s", IconChartUp, game.FmtBTCSigned(net))),
 		renderMarketLine(a.state),
+		DimStyle.Render(truncate(i18n.T("dash.line.infra",
+			a.state.EffectiveStaleRate(roomID)*100,
+			a.state.NetworkCongestion*100,
+			a.state.EffectiveGasFeeRate()*100), innerW)),
 		heatStyle.Render(fmt.Sprintf("%s %.0f/%.0f %+.1f/s", IconThermo, heat, maxHeat, heatDelta)),
 		renderHeatBar(heatFrac, barW),
 		impactStyle.Render(truncate(i18n.T(impactKey), innerW)),
