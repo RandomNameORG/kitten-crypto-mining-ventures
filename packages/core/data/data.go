@@ -59,7 +59,25 @@ type RoomDef struct {
 	Slots             int      `json:"slots"`
 	BaseCooling       float64  `json:"base_cooling"`
 	MaxHeat           float64  `json:"max_heat"`
-	HeatTickSec       int      `json:"heat_tick_sec"` // seconds between heat updates (5 = fast, 60 = slow)
+	// HeatTickSec is retained for save / fixture compatibility only — the
+	// Newtonian-cooling model (§3.2) runs every tick, so this field no
+	// longer gates anything in advanceMining. Older saves and the
+	// RoomHeatDeltaPerTick / SecondsUntilNextHeatTick UI helpers still
+	// reference it. Cosmetic from Sprint 5 onward.
+	HeatTickSec       int      `json:"heat_tick_sec"`
+	// Ambient is the room's environmental temperature (°C). Floor for the
+	// equilibrium calculation: a room with zero load lands at Ambient.
+	// Arctic ships at −10°C is intentional — cold biomes are a feature.
+	Ambient           float64  `json:"ambient"`
+	// Dissipation is the room's heat-shedding coefficient. Higher values
+	// pull equilibrium back toward Ambient harder under the same load
+	// (sea-container 0.40 vs alley 0.15). See §3.2.
+	Dissipation       float64  `json:"dissipation"`
+	// ApproachSpeed is the per-second fraction of the gap between current
+	// temperature and equilibrium that the room closes each tick. 0.03 is
+	// the design-doc default — ~30-60s to 90% steady state. Smaller values
+	// give the player a longer reaction window.
+	ApproachSpeed     float64  `json:"approach_speed"`
 	ElectricCostMult  float64  `json:"electric_cost_mult"`
 	RentPerHour       int      `json:"rent_per_hour"`
 	ThreatBase        float64  `json:"threat_base"`

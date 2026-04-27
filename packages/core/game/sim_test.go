@@ -204,10 +204,16 @@ func TestSimOCDrainsDurabilityFaster(t *testing.T) {
 	hoursDrop := baseHours - ocHours
 	moreBroken := ocBroken > baseBroken
 	// Meaningful-drop threshold: at level 2 wear is 3× baseline, so over
-	// a full virtual hour a healthy fleet should lose at least one extra
-	// hour of cumulative durability. If we see neither extra breakage nor
-	// ≥1h of extra drain, the OC wearMult path isn't firing.
-	if !moreBroken && hoursDrop < 1.0 {
+	// a full virtual hour a healthy fleet should lose at least an extra
+	// fraction of cumulative durability. Sprint 5's Newtonian-cooling
+	// model (§3.2) keeps starter alley near 30°C — well below the 80%
+	// MaxHeat wear cliff — so the OC wear differential is no longer
+	// amplified by a heat-driven wearMult bump in this rig. The 0.3-hr
+	// floor still distinguishes a working ocWearMult table (≥0.5h drop
+	// per seed in spot checks) from a regression that disables it
+	// entirely (drop ≈ 0). When OC kills a card and an event refills
+	// the slot, hoursDrop can also flip sign — `moreBroken` covers that.
+	if !moreBroken && hoursDrop < 0.3 {
 		t.Fatalf("OC did not wear GPUs faster: baseHours=%.2f ocHours=%.2f drop=%.2f baseBroken=%d ocBroken=%d",
 			baseHours, ocHours, hoursDrop, baseBroken, ocBroken)
 	}
