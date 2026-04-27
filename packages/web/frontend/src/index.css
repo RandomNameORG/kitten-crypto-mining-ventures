@@ -46,9 +46,9 @@
 
 @layer components {
   /* layout */
-  .app { @apply mx-auto grid grid-rows-[auto_1fr] min-h-screen w-full max-w-[1440px]; }
+  .app { @apply mx-auto grid grid-rows-[auto_1fr] min-h-screen w-full max-w-[1720px]; }
   .topbar { @apply sticky top-0 z-10 grid grid-cols-[minmax(220px,1fr)_minmax(0,3fr)] gap-3 px-3 pt-2.5 pb-2.5 border-b border-line/60 bg-bg/80 backdrop-blur items-stretch; }
-  .layout { @apply grid grid-cols-[minmax(0,1.05fr)_minmax(440px,1fr)] gap-3 p-3 min-h-0 items-start; }
+  .layout { @apply grid grid-cols-[minmax(520px,0.92fr)_minmax(620px,1.18fr)] gap-3 p-3 min-h-0 items-start; }
 
   /* brand + status */
   .brand { @apply flex items-center gap-3 min-w-0; }
@@ -95,7 +95,7 @@
 
   /* canvas */
   .canvas-wrap { @apply relative grid place-items-start justify-center p-2 bg-[oklch(8%_0.008_200)]; }
-  canvas { @apply block w-full max-h-[260px] aspect-[16/9] border border-line/40 rounded-md cursor-crosshair bg-[oklch(8%_0.008_200)]; }
+  canvas { @apply block w-full max-h-[420px] aspect-[16/9] border border-line/40 rounded-md cursor-crosshair bg-[oklch(8%_0.008_200)]; }
   .toast { @apply absolute left-4 bottom-4 px-2.5 py-2 rounded-md border border-mint/40 bg-bg/85 text-mint text-[11px] pointer-events-none backdrop-blur-md; max-width: min(520px, calc(100% - 32px)); }
 
   /* stage foot bars */
@@ -224,7 +224,7 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-@media (max-width: 960px) {
+@media (max-width: 1200px) {
   .layout { grid-template-columns: 1fr; }
   .topbar { grid-template-columns: 1fr; }
   .hud { grid-template-columns: repeat(2, 1fr); }
