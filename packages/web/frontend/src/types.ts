@@ -13,7 +13,11 @@ export interface Snapshot {
   research_tiers: ResearchTier[];
   blueprints: Blueprint[];
   achievements: string[];
+  achievement_defs: AchievementDef[];
   mastery_levels: Record<string, number>;
+  mastery_tracks: MasteryTrack[];
+  legacy_perks: LegacyPerk[];
+  legacy: LegacySummary;
   stats: Stats;
   ok: boolean;
 }
@@ -45,6 +49,8 @@ export interface GameState {
   syndicate_contribution: number;
   syndicate_total_dividends: number;
   syndicate_next_payout_sec: number;
+  pump_dump_unlocked: boolean;
+  pump_dump_cooldown_sec: number;
 }
 
 export interface Room {
@@ -179,6 +185,51 @@ export interface Blueprint {
   boosts: string[];
   created_at: number;
   can_print: boolean;
+  print_btc_cost: number;
+  print_frag_cost: number;
+}
+
+export interface AchievementDef {
+  id: string;
+  emoji: string;
+  name: string;
+  desc: string;
+  tp_reward: number;
+  earned: boolean;
+}
+
+export interface MasteryTrack {
+  id: string;
+  emoji: string;
+  name: string;
+  desc: string;
+  effect: string;
+  per_level: number;
+  level: number;
+  max_level: number;
+  next_cost: number;
+  maxed: boolean;
+}
+
+export interface LegacyPerk {
+  id: string;
+  name: string;
+  desc: string;
+  cost: number;
+  available: boolean;
+  owned: boolean;
+}
+
+export interface LegacySummary {
+  total_earned: number;
+  total_earned_fmt: string;
+  total_lp: number;
+  spent_lp: number;
+  lp_available: number;
+  starter_cash: number;
+  efficiency_boost: number;
+  unlocked_university: boolean;
+  carried_tp: number;
 }
 
 export interface Stats {
@@ -203,6 +254,7 @@ export interface ActionRequest {
   instance_id?: number;
   tier?: number;
   boosts?: string[];
+  frags?: number;
 }
 
 export type TabId =

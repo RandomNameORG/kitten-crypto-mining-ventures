@@ -180,6 +180,44 @@ Group all the lifetime counters that today live unexposed on `*State`:
 | `EventsByCategory` — `state.go:183`                            | `events_by_category`                            |
 | `MarketPriceHistory` — `state.go:185` (cap `MarketHistoryCap`) | `market_price_history`                          |
 
+### 2.12 Sprint 2 — design catalogs and small enrichments
+
+Added in Sprint 2 so the frontend can render Achievement / Mastery / Legacy
+panels without hardcoding the catalog. All additive — existing keys (`achievements`,
+`mastery_levels`) are unchanged.
+
+- **`achievement_defs: []achievementDefView`** — full catalog from
+  `data.Achievements()`. Per entry: `id`, `emoji`, `name` (`def.LocalName()`),
+  `desc` (`def.LocalDesc()`), `tp_reward`, `earned` (`s.HasAchievement(id)`).
+- **`mastery_tracks: []masteryTrackView`** — full catalog from
+  `data.MasteryTracks()` joined with the player's per-track level. Per entry:
+  `id`, `emoji`, `name`, `desc`, `effect`, `per_level`, `level`
+  (`s.MasteryLevel(t.ID)`), `max_level`, `next_cost` (`t.CostFor(level)` —
+  `-1` sentinel when maxed, kept as-is per engine contract), `maxed`.
+- **`legacy_perks: []legacyPerkView`** — `game.LegacyPerks()` joined with the
+  loaded `*LegacyStore`. Per entry: `id`, `name`, `desc`, `cost`, `available`
+  (`p.Available(legacy)`), `owned` (derived as `!available`). Note: perks like
+  `efficiency_5pct` cap at 0.50, so `available=false` can mean either
+  "owned-once" or "maxed-out" — the UI disambiguates by reading the legacy
+  summary fields.
+- **`legacy: legacyView`** — flat summary of `*LegacyStore` (loaded once per
+  snapshot via `game.LoadLegacy()`): `total_earned`, `total_earned_fmt`,
+  `total_lp`, `spent_lp`, `lp_available` (`legacy.LPAvailable()`),
+  `starter_cash`, `efficiency_boost`, `unlocked_university`, `carried_tp`.
+
+Two small enrichments to existing views:
+
+- **`blueprintView.print_btc_cost`** (int) and **`blueprintView.print_frag_cost`**
+  (int) — same `info.Money * 3 / 10` and `info.Frags / 5` already used to
+  compute `can_print`, exposed so the UI can render a "Print (₿X / Yfrags)"
+  button label without recomputing.
+- **`stateView.pump_dump_unlocked`** (bool) and **`stateView.pump_dump_cooldown_sec`**
+  (int64) — `unlocked = s.HasUnlock("pump_dump_action")`; cooldown mirrors
+  the formula in `TriggerPumpDump` (`tick.go:486`): base 1800s, halved to
+  900s when `pump_dump_ii` is unlocked, minus `now - s.EventCooldown["pump_dump"]`,
+  clamped to 0. Both fields are zero when not unlocked — that's the "hidden"
+  signal for the UI.
+
 ### 2.11 What's already exposed (kept for clarity, no change)
 
 `state.kitten_name`, `state.btc(_fmt)`, `state.tech_point`,
@@ -223,8 +261,25 @@ already wired today, so not part of this sprint): `buy_gpu`, `switch_room`,
 `cycle_oc`, `vent`, `toggle_pause`, `unlock_skill`, `hire_merc`,
 `bribe_merc`, `fire_merc`, `reset`. These are all already in the switch.
 
-Out of scope for this sprint (engine method exists but not requested):
-`LevelUpMastery` (`mastery.go:13`), `ConvertFragsToBTC` (`mastery.go:89`),
-`TriggerPumpDump` (`tick.go:486`), `RepairAllBroken` (`events.go:362`),
-`BuyLegacyPerk` (`prestige.go:102`). These can be wired in a follow-up
-once the picker UIs land.
+### Sprint 2 wired
+
+The following actions, listed as out-of-scope for Sprint 1, were wired in
+Sprint 2:
+
+| Action key             | Engine call                                       | Body fields read           |
+| ---------------------- | ------------------------------------------------- | -------------------------- |
+| `level_up_mastery`     | `state.LevelUpMastery(id)` — `mastery.go:13`      | reuse `id`                 |
+| `convert_frags_to_btc` | `state.ConvertFragsToBTC(frags)` — `mastery.go:89`| **new** `frags int`        |
+| `trigger_pump_dump`    | `state.TriggerPumpDump()` — `tick.go:486`         | none                       |
+| `repair_all_broken`    | `state.RepairAllBroken()` — `events.go:362`       | none (returns no error)    |
+| `buy_legacy_perk`      | `game.BuyLegacyPerk(id)` — `prestige.go:102`      | reuse `id` (package-level) |
+
+Notes for future maintainers:
+- `RepairAllBroken` returns `(int, int)` with no error — the dispatch just
+  calls and discards. Surfacing the (repaired, skipped) counts is a future
+  enrichment if the UI needs it.
+- `BuyLegacyPerk` is a package-level func that mutates the on-disk
+  `LegacyStore`, not `wg.state`. The next snapshot reflects the new
+  `legacy.*` fields automatically — no extra plumbing.
+- `actionRequest` gained one new field this sprint: `frags int` (omitempty).
+  Reuses the existing `id` for the other four actions.
