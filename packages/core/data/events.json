@@ -361,5 +361,104 @@
     "weight": 3,
     "cooldown_sec": 7200,
     "effects": [{"kind": "market_pin", "factor": 0.3, "seconds": 300}]
+  },
+  {
+    "id": "psu_explode",
+    "name": "PSU Explodes",
+    "name_zh": "PSU 爆炸",
+    "category": "crisis",
+    "emoji": "💥",
+    "text": "A PSU pops with a smell of melted plastic. Several rigs go dark.",
+    "text_zh": "电源砰的一声炸了，闻到一股烧焦塑料味，几台矿机随之熄灭。",
+    "weight": 3,
+    "cooldown_sec": 600,
+    "effects": [{"kind": "psu_explode"}]
+  },
+  {
+    "id": "psu_smoking",
+    "name": "Sketchy PSU Smoking",
+    "name_zh": "劣质电源冒烟",
+    "category": "threat",
+    "emoji": "🔌",
+    "text": "That dumpster PSU has been wheezing for hours. It's smoking now. Productivity tanks.",
+    "text_zh": "那台垃圾桶电源已经吭哧吭哧好几个小时了，现在开始冒烟。产能直线下降。",
+    "weight": 3,
+    "cooldown_sec": 1800,
+    "effects": [
+      {"kind": "earn_multiplier", "factor": 0.7, "seconds": 600},
+      {"kind": "psu_smoking_chain"}
+    ]
+  },
+  {
+    "id": "mining_disaster",
+    "name": "Mining Disaster Sell-off",
+    "name_zh": "矿难抛售潮",
+    "category": "crisis",
+    "emoji": "📉",
+    "text": "The price tanked, miners panicked, the panic tanked the price more. Spiral.",
+    "text_zh": "币价崩了，矿工恐慌抛售，恐慌又把币价砸得更低。死亡螺旋。",
+    "weight": 2,
+    "cooldown_sec": 3600,
+    "effects": [{"kind": "market_pin", "factor": 0.3, "seconds": 300}]
+  },
+  {
+    "id": "pool_runaway",
+    "name": "Pool Runaway",
+    "name_zh": "矿池跑路",
+    "category": "crisis",
+    "emoji": "🏊",
+    "text": "The pool's website is down. Their Telegram is gone. So is your unsettled balance.",
+    "text_zh": "矿池官网打不开，电报群也消失了，你那点没结算的份额一起人间蒸发。",
+    "weight": 2,
+    "cooldown_sec": 7200,
+    "effects": [{"kind": "pool_runaway"}]
+  },
+  {
+    "id": "solo_block_hit",
+    "name": "Solo Block Hit!",
+    "name_zh": "Solo 中块！",
+    "category": "opportunity",
+    "emoji": "🎰",
+    "text": "Against all odds, your lone rig solved a block. The chain pays out in full.",
+    "text_zh": "天降好运，你这台孤鬼矿机居然爆了一整块。整块奖励落袋。",
+    "weight": 1,
+    "cooldown_sec": 1800,
+    "effects": [{"kind": "solo_block_hit", "amount": 0.5}]
+  },
+  {
+    "id": "psu_chain_explode",
+    "name": "PSU Chain Reaction",
+    "name_zh": "PSU 连锁爆炸",
+    "category": "crisis",
+    "emoji": "🔥",
+    "text": "One trash PSU pops and takes its neighbours with it. The whole rail goes up.",
+    "text_zh": "一台垃圾电源炸了，连带把旁边几台一起拖下水。整条电源线全废。",
+    "weight": 2,
+    "cooldown_sec": 3600,
+    "effects": [{"kind": "psu_chain_explode"}]
+  },
+  {
+    "id": "share_dilution",
+    "name": "Pool Share Dilution",
+    "name_zh": "矿池份额被稀释",
+    "category": "social",
+    "emoji": "📊",
+    "text": "A whale just plugged in to your pool. Your share of the next payout window shrinks.",
+    "text_zh": "一头大鲸鱼刚刚接入你所在的矿池，你在下个结算窗口的份额被稀释。",
+    "weight": 3,
+    "cooldown_sec": 1800,
+    "effects": [{"kind": "earn_multiplier", "factor": 0.8, "seconds": 1800}]
+  },
+  {
+    "id": "fire_sale",
+    "name": "Mining Disaster Fire Sale",
+    "name_zh": "矿难抄底",
+    "category": "opportunity",
+    "emoji": "🛒",
+    "text": "Panicked miners are unloading hardware at any price. A buyer's market opens for a moment.",
+    "text_zh": "恐慌的矿工们抛售硬件，价格随便砍。短暂的买方市场窗口打开。",
+    "weight": 3,
+    "cooldown_sec": 1200,
+    "effects": [{"kind": "fire_sale"}]
   }
 ]
