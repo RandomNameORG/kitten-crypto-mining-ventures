@@ -27,36 +27,61 @@ type webGame struct {
 }
 
 type snapshot struct {
-	State     stateView     `json:"state"`
-	Rooms     []roomView    `json:"rooms"`
-	GPUs      []gpuView     `json:"gpus"`
-	GPUDefs   []gpuDefView  `json:"gpu_defs"`
-	Skills    []skillView   `json:"skills"`
-	Mercs     []mercView    `json:"mercs"`
-	MercDefs  []mercDefView `json:"merc_defs"`
-	Log       []logView     `json:"log"`
-	LastEvent *eventView    `json:"last_event,omitempty"`
-	OK        bool          `json:"ok"`
+	State           stateView            `json:"state"`
+	Rooms           []roomView           `json:"rooms"`
+	GPUs            []gpuView            `json:"gpus"`
+	GPUDefs         []gpuDefView         `json:"gpu_defs"`
+	Skills          []skillView          `json:"skills"`
+	Mercs           []mercView           `json:"mercs"`
+	MercDefs        []mercDefView        `json:"merc_defs"`
+	Log             []logView            `json:"log"`
+	LastEvent       *eventView           `json:"last_event,omitempty"`
+	Modifiers       []modifierView       `json:"modifiers"`
+	ActiveResearch  *researchView        `json:"active_research,omitempty"`
+	ResearchTiers   []researchTierView   `json:"research_tiers"`
+	Blueprints      []blueprintView      `json:"blueprints"`
+	Achievements    []string             `json:"achievements"`
+	AchievementDefs []achievementDefView `json:"achievement_defs"`
+	MasteryLevels   map[string]int       `json:"mastery_levels"`
+	MasteryTracks   []masteryTrackView   `json:"mastery_tracks"`
+	LegacyPerks     []legacyPerkView     `json:"legacy_perks"`
+	Legacy          legacyView           `json:"legacy"`
+	Stats           statsView            `json:"stats"`
+	OK              bool                 `json:"ok"`
+	DifficultyDefs  []difficultyDefView  `json:"difficulty_defs"`
+	Langs           []langOptionView     `json:"langs"`
+	EventDefs       []eventDefView       `json:"event_defs"`
 }
 
 type stateView struct {
-	KittenName        string  `json:"kitten_name"`
-	BTC               float64 `json:"btc"`
-	BTCFmt            string  `json:"btc_fmt"`
-	TechPoint         int     `json:"tech_point"`
-	ResearchFrags     int     `json:"research_frags"`
-	Reputation        int     `json:"reputation"`
-	Karma             int     `json:"karma"`
-	CurrentRoom       string  `json:"current_room"`
-	Paused            bool    `json:"paused"`
-	MarketPrice       float64 `json:"market_price"`
-	MarketTrend       int     `json:"market_trend"`
-	LifetimeEarnedFmt string  `json:"lifetime_earned_fmt"`
-	RoomEarnFmt       string  `json:"room_earn_fmt"`
-	RoomBillFmt       string  `json:"room_bill_fmt"`
-	RoomNetFmt        string  `json:"room_net_fmt"`
-	MiningPaused      bool    `json:"mining_paused"`
-	SyndicateJoined   bool    `json:"syndicate_joined"`
+	KittenName               string  `json:"kitten_name"`
+	BTC                      float64 `json:"btc"`
+	BTCFmt                   string  `json:"btc_fmt"`
+	TechPoint                int     `json:"tech_point"`
+	ResearchFrags            int     `json:"research_frags"`
+	Reputation               int     `json:"reputation"`
+	Karma                    int     `json:"karma"`
+	CurrentRoom              string  `json:"current_room"`
+	Paused                   bool    `json:"paused"`
+	MarketPrice              float64 `json:"market_price"`
+	PrevMarketPrice          float64 `json:"prev_market_price"`
+	MarketTrend              int     `json:"market_trend"`
+	LifetimeEarned           float64 `json:"lifetime_earned"`
+	LifetimeEarnedFmt        string  `json:"lifetime_earned_fmt"`
+	LegacyAvailable          int     `json:"legacy_available"`
+	Difficulty               string  `json:"difficulty"`
+	Lang                     string  `json:"lang"`
+	RoomEarnFmt              string  `json:"room_earn_fmt"`
+	RoomBillFmt              string  `json:"room_bill_fmt"`
+	RoomNetFmt               string  `json:"room_net_fmt"`
+	MiningPaused             bool    `json:"mining_paused"`
+	SyndicateJoined          bool    `json:"syndicate_joined"`
+	SyndicateCanJoin         bool    `json:"syndicate_can_join"`
+	SyndicateContribution    float64 `json:"syndicate_contribution"`
+	SyndicateTotalDividends  float64 `json:"syndicate_total_dividends"`
+	SyndicateNextPayoutSec   int64   `json:"syndicate_next_payout_sec"`
+	PumpDumpUnlocked         bool    `json:"pump_dump_unlocked"`
+	PumpDumpCooldownSec      int64   `json:"pump_dump_cooldown_sec"`
 }
 
 type roomView struct {
@@ -90,19 +115,20 @@ type defenseView struct {
 }
 
 type gpuView struct {
-	InstanceID int     `json:"instance_id"`
-	DefID      string  `json:"def_id"`
-	Name       string  `json:"name"`
-	Status     string  `json:"status"`
-	Room       string  `json:"room"`
-	Upgrade    int     `json:"upgrade"`
-	OCLevel    int     `json:"oc_level"`
-	HoursLeft  float64 `json:"hours_left"`
-	EarnFmt    string  `json:"earn_fmt"`
-	Repairable bool    `json:"repairable"`
-	ShipsAt      int64 `json:"ships_at,omitempty"`
-	ShipEtaSec   int64 `json:"ship_eta_sec,omitempty"`
-	ShipTotalSec int64 `json:"ship_total_sec,omitempty"`
+	InstanceID   int     `json:"instance_id"`
+	DefID        string  `json:"def_id"`
+	BlueprintID  string  `json:"blueprint_id,omitempty"`
+	Name         string  `json:"name"`
+	Status       string  `json:"status"`
+	Room         string  `json:"room"`
+	Upgrade      int     `json:"upgrade"`
+	OCLevel      int     `json:"oc_level"`
+	HoursLeft    float64 `json:"hours_left"`
+	EarnFmt      string  `json:"earn_fmt"`
+	Repairable   bool    `json:"repairable"`
+	ShipsAt      int64   `json:"ships_at,omitempty"`
+	ShipEtaSec   int64   `json:"ship_eta_sec,omitempty"`
+	ShipTotalSec int64   `json:"ship_total_sec,omitempty"`
 }
 
 type gpuDefView struct {
@@ -159,11 +185,141 @@ type eventView struct {
 	Text     string `json:"text"`
 }
 
+type modifierView struct {
+	Kind        string  `json:"kind"`
+	Factor      float64 `json:"factor"`
+	ExpiresAt   int64   `json:"expires_at"`
+	SecondsLeft int64   `json:"seconds_left"`
+}
+
+type researchView struct {
+	Tier        int      `json:"tier"`
+	Boosts      []string `json:"boosts"`
+	StartedAt   int64    `json:"started_at"`
+	DurationSec int      `json:"duration_sec"`
+	Progress    float64  `json:"progress"`
+	SecondsLeft int64    `json:"seconds_left"`
+}
+
+type researchTierView struct {
+	Tier        int    `json:"tier"`
+	Name        string `json:"name"`
+	DurationSec int    `json:"duration_sec"`
+	Frags       int    `json:"frags"`
+	Money       int    `json:"money"`
+	MinLvl      int    `json:"min_lvl"`
+}
+
+type blueprintView struct {
+	ID            string   `json:"id"`
+	Tier          int      `json:"tier"`
+	Boosts        []string `json:"boosts"`
+	CreatedAt     int64    `json:"created_at"`
+	CanPrint      bool     `json:"can_print"`
+	PrintBTCCost  int      `json:"print_btc_cost"`
+	PrintFragCost int      `json:"print_frag_cost"`
+}
+
+type achievementDefView struct {
+	ID       string `json:"id"`
+	Emoji    string `json:"emoji"`
+	Name     string `json:"name"`
+	Desc     string `json:"desc"`
+	TPReward int    `json:"tp_reward"`
+	Earned   bool   `json:"earned"`
+}
+
+type masteryTrackView struct {
+	ID       string  `json:"id"`
+	Emoji    string  `json:"emoji"`
+	Name     string  `json:"name"`
+	Desc     string  `json:"desc"`
+	Effect   string  `json:"effect"`
+	PerLevel float64 `json:"per_level"`
+	Level    int     `json:"level"`
+	MaxLevel int     `json:"max_level"`
+	NextCost int     `json:"next_cost"`
+	Maxed    bool    `json:"maxed"`
+}
+
+// legacyPerkView reflects one prestige perk from game.LegacyPerks().
+// Note: perks like "efficiency_5pct" cap at 0.50, so available=false can
+// mean either "owned-once" or "maxed-out" — the UI can disambiguate by
+// reading the legacy summary fields (efficiency_boost, etc).
+type legacyPerkView struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Desc      string `json:"desc"`
+	Cost      int    `json:"cost"`
+	Available bool   `json:"available"`
+	Owned     bool   `json:"owned"`
+}
+
+type legacyView struct {
+	TotalEarned        float64 `json:"total_earned"`
+	TotalEarnedFmt     string  `json:"total_earned_fmt"`
+	TotalLP            int     `json:"total_lp"`
+	SpentLP            int     `json:"spent_lp"`
+	LPAvailable        int     `json:"lp_available"`
+	StarterCash        float64 `json:"starter_cash"`
+	EfficiencyBoost    float64 `json:"efficiency_boost"`
+	UnlockedUniversity bool    `json:"unlocked_university"`
+	CarriedTP          int     `json:"carried_tp"`
+}
+
+type statsView struct {
+	TotalTicks         int64           `json:"total_ticks"`
+	TotalGPUsBought    int             `json:"total_gpus_bought"`
+	TotalGPUsScrapped  int             `json:"total_gpus_scrapped"`
+	OCTimeT1Sec        int64           `json:"oc_time_t1_sec"`
+	OCTimeT2Sec        int64           `json:"oc_time_t2_sec"`
+	TotalWagesPaid     float64         `json:"total_wages_paid"`
+	TotalWagesPaidFmt  string          `json:"total_wages_paid_fmt"`
+	MarketCrashCount   int             `json:"market_crash_count"`
+	LifetimeEarned     float64         `json:"lifetime_earned"`
+	LifetimeEarnedFmt  string          `json:"lifetime_earned_fmt"`
+	EventsByCategory   map[string]int  `json:"events_by_category"`
+	MarketPriceHistory []float64       `json:"market_price_history"`
+}
+
+type difficultyDefView struct {
+	ID                   string  `json:"id"`
+	Emoji                string  `json:"emoji"`
+	Label                string  `json:"label"`
+	Desc                 string  `json:"desc"`
+	EarnMult             float64 `json:"earn_mult"`
+	BillMult             float64 `json:"bill_mult"`
+	ThreatMult           float64 `json:"threat_mult"`
+	StarterCash          float64 `json:"starter_cash"`
+	MarketVolatilityMult float64 `json:"market_volatility_mult"`
+	EventFreqMult        float64 `json:"event_freq_mult"`
+	Current              bool    `json:"current"`
+}
+
+type langOptionView struct {
+	Code    string `json:"code"`
+	Label   string `json:"label"`
+	Current bool   `json:"current"`
+}
+
+type eventDefView struct {
+	ID          string `json:"id"`
+	Category    string `json:"category"`
+	Emoji       string `json:"emoji"`
+	Name        string `json:"name"`
+	Text        string `json:"text"`
+	Weight      int    `json:"weight"`
+	CooldownSec int    `json:"cooldown_sec"`
+}
+
 type actionRequest struct {
-	Action     string `json:"action"`
-	ID         string `json:"id"`
-	Dim        string `json:"dim"`
-	InstanceID int    `json:"instance_id"`
+	Action     string   `json:"action"`
+	ID         string   `json:"id"`
+	Dim        string   `json:"dim"`
+	InstanceID int      `json:"instance_id"`
+	Tier       int      `json:"tier,omitempty"`
+	Boosts     []string `json:"boosts,omitempty"`
+	Frags      int      `json:"frags,omitempty"`
 }
 
 func main() {
@@ -258,6 +414,41 @@ func (wg *webGame) handleAction(w http.ResponseWriter, r *http.Request) {
 		wg.lastEvent = nil
 		wg.lastEventRoll = 0
 		wg.lastEventSeq = 0
+	case "join_syndicate":
+		err = wg.state.JoinSyndicate(time.Now().Unix())
+	case "leave_syndicate":
+		err = wg.state.LeaveSyndicate()
+	case "start_research":
+		tier := req.Tier
+		if tier == 0 {
+			tier = 1
+		}
+		err = wg.state.StartResearch(tier, req.Boosts)
+	case "print_meowcore":
+		err = wg.state.PrintMEOWCore(req.ID)
+	case "retire":
+		var fresh *game.State
+		fresh, _, err = wg.state.Retire()
+		if err == nil && fresh != nil {
+			wg.state = fresh
+			wg.lastEvent = nil
+			wg.lastEventRoll = 0
+			wg.lastEventSeq = 0
+		}
+	case "set_difficulty":
+		wg.state.SetDifficulty(req.ID)
+	case "cycle_lang":
+		wg.state.CycleLang()
+	case "level_up_mastery":
+		_, err = wg.state.LevelUpMastery(req.ID)
+	case "convert_frags_to_btc":
+		_, err = wg.state.ConvertFragsToBTC(req.Frags)
+	case "trigger_pump_dump":
+		err = wg.state.TriggerPumpDump()
+	case "repair_all_broken":
+		wg.state.RepairAllBroken()
+	case "buy_legacy_perk":
+		err = game.BuyLegacyPerk(req.ID)
 	default:
 		err = fmt.Errorf("unknown action %q", req.Action)
 	}
@@ -289,27 +480,51 @@ func (wg *webGame) advanceLocked() {
 
 func (wg *webGame) makeSnapshotLocked() snapshot {
 	s := wg.state
+	now := time.Now().Unix()
 	currentEarn := s.RoomEarnRatePerSec(s.CurrentRoom)
 	currentBill := s.RoomBillRatePerSec(s.CurrentRoom)
+	legacy := game.LoadLegacy()
+
+	pumpDumpUnlocked := s.HasUnlock("pump_dump_action")
+	pumpDumpCD := int64(1800)
+	if s.HasSkill("pump_dump_ii") {
+		pumpDumpCD = 900
+	}
+	pumpDumpLeft := pumpDumpCD - (now - s.EventCooldown["pump_dump"])
+	if pumpDumpLeft < 0 || !pumpDumpUnlocked {
+		pumpDumpLeft = 0
+	}
+
 	out := snapshot{
 		State: stateView{
-			KittenName:        s.KittenName,
-			BTC:               s.BTC,
-			BTCFmt:            game.FmtBTC(s.BTC),
-			TechPoint:         s.TechPoint,
-			ResearchFrags:     s.ResearchFrags,
-			Reputation:        s.Reputation,
-			Karma:             s.Karma,
-			CurrentRoom:       s.CurrentRoom,
-			Paused:            s.Paused,
-			MarketPrice:       s.MarketPrice,
-			MarketTrend:       s.MarketTrend(),
-			LifetimeEarnedFmt: game.FmtBTC(s.LifetimeEarned),
-			RoomEarnFmt:       game.FmtBTC(currentEarn) + "/s",
-			RoomBillFmt:       game.FmtBTC(currentBill) + "/s",
-			RoomNetFmt:        game.FmtBTCSigned(currentEarn-currentBill) + "/s",
-			MiningPaused:      s.IsMiningPaused(time.Now().Unix()),
-			SyndicateJoined:   s.SyndicateJoined,
+			KittenName:              s.KittenName,
+			BTC:                     s.BTC,
+			BTCFmt:                  game.FmtBTC(s.BTC),
+			TechPoint:               s.TechPoint,
+			ResearchFrags:           s.ResearchFrags,
+			Reputation:              s.Reputation,
+			Karma:                   s.Karma,
+			CurrentRoom:             s.CurrentRoom,
+			Paused:                  s.Paused,
+			MarketPrice:             s.MarketPrice,
+			PrevMarketPrice:         s.PrevMarketPrice,
+			MarketTrend:             s.MarketTrend(),
+			LifetimeEarned:          s.LifetimeEarned,
+			LifetimeEarnedFmt:       game.FmtBTC(s.LifetimeEarned),
+			LegacyAvailable:         s.LegacyAvailable,
+			Difficulty:              s.Difficulty,
+			Lang:                    s.Lang,
+			RoomEarnFmt:             game.FmtBTC(currentEarn) + "/s",
+			RoomBillFmt:             game.FmtBTC(currentBill) + "/s",
+			RoomNetFmt:              game.FmtBTCSigned(currentEarn-currentBill) + "/s",
+			MiningPaused:            s.IsMiningPaused(now),
+			SyndicateJoined:         s.SyndicateJoined,
+			SyndicateCanJoin:        s.CanJoinSyndicate(),
+			SyndicateContribution:   s.SyndicateContribution,
+			SyndicateTotalDividends: s.SyndicateTotalDividends,
+			SyndicateNextPayoutSec:  s.SecondsUntilNextSyndicatePayout(),
+			PumpDumpUnlocked:        pumpDumpUnlocked,
+			PumpDumpCooldownSec:     pumpDumpLeft,
 		},
 		OK: true,
 	}
@@ -351,7 +566,6 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 		out.Rooms = append(out.Rooms, room)
 	}
 
-	nowUnix := time.Now().Unix()
 	for _, g := range s.GPUs {
 		name := g.DefID
 		if def, ok := data.GPUByID(g.DefID); ok {
@@ -360,20 +574,21 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 			name = "MEOWCore"
 		}
 		view := gpuView{
-			InstanceID: g.InstanceID,
-			DefID:      g.DefID,
-			Name:       name,
-			Status:     g.Status,
-			Room:       g.Room,
-			Upgrade:    g.UpgradeLevel,
-			OCLevel:    g.OCLevel,
-			HoursLeft:  g.HoursLeft,
-			EarnFmt:    game.FmtBTC(s.GPUEarnRatePerSec(g)) + "/s",
-			Repairable: g.Status == "broken",
+			InstanceID:  g.InstanceID,
+			DefID:       g.DefID,
+			BlueprintID: g.BlueprintID,
+			Name:        name,
+			Status:      g.Status,
+			Room:        g.Room,
+			Upgrade:     g.UpgradeLevel,
+			OCLevel:     g.OCLevel,
+			HoursLeft:   g.HoursLeft,
+			EarnFmt:     game.FmtBTC(s.GPUEarnRatePerSec(g)) + "/s",
+			Repairable:  g.Status == "broken",
 		}
 		if g.Status == "shipping" && g.ShipsAt > 0 {
 			view.ShipsAt = g.ShipsAt
-			eta := g.ShipsAt - nowUnix
+			eta := g.ShipsAt - now
 			if eta < 0 {
 				eta = 0
 			}
@@ -442,6 +657,202 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 		out.Log = append(out.Log, logView{Time: e.Time, Category: e.Category, Text: e.Text})
 	}
 	out.LastEvent = wg.lastEvent
+
+	out.Modifiers = make([]modifierView, 0, len(s.Modifiers))
+	for _, m := range s.Modifiers {
+		left := m.ExpiresAt - now
+		if left < 0 {
+			left = 0
+		}
+		out.Modifiers = append(out.Modifiers, modifierView{
+			Kind:        m.Kind,
+			Factor:      m.Factor,
+			ExpiresAt:   m.ExpiresAt,
+			SecondsLeft: left,
+		})
+	}
+
+	tiers := game.ResearchTiers()
+	if s.ActiveResearch != nil {
+		left := s.ActiveResearch.StartedAt + int64(s.ActiveResearch.DurationSec) - now
+		if left < 0 {
+			left = 0
+		}
+		out.ActiveResearch = &researchView{
+			Tier:        s.ActiveResearch.BlueprintTier,
+			Boosts:      append([]string{}, s.ActiveResearch.Boosts...),
+			StartedAt:   s.ActiveResearch.StartedAt,
+			DurationSec: s.ActiveResearch.DurationSec,
+			Progress:    s.ResearchProgress(),
+			SecondsLeft: left,
+		}
+	}
+
+	out.ResearchTiers = make([]researchTierView, 0, len(tiers))
+	for _, t := range tiers {
+		out.ResearchTiers = append(out.ResearchTiers, researchTierView{
+			Tier:        t.Tier,
+			Name:        t.Name,
+			DurationSec: t.Duration,
+			Frags:       t.Frags,
+			Money:       t.Money,
+			MinLvl:      t.MinLvl,
+		})
+	}
+
+	roomFree := s.RoomHasFreeSlot(s.CurrentRoom)
+	out.Blueprints = make([]blueprintView, 0, len(s.Blueprints))
+	for _, bp := range s.Blueprints {
+		var info *game.ResearchTierInfo
+		for i := range tiers {
+			if tiers[i].Tier == bp.Tier {
+				info = &tiers[i]
+				break
+			}
+		}
+		canPrint := false
+		btcCost := 0
+		fragCost := 0
+		if info != nil {
+			btcCost = info.Money * 3 / 10
+			fragCost = info.Frags / 5
+			canPrint = s.BTC >= float64(btcCost) && s.ResearchFrags >= fragCost && roomFree
+		}
+		out.Blueprints = append(out.Blueprints, blueprintView{
+			ID:            bp.ID,
+			Tier:          bp.Tier,
+			Boosts:        append([]string{}, bp.Boosts...),
+			CreatedAt:     bp.CreatedAt,
+			CanPrint:      canPrint,
+			PrintBTCCost:  btcCost,
+			PrintFragCost: fragCost,
+		})
+	}
+
+	out.Achievements = append([]string{}, s.Achievements...)
+
+	achDefs := data.Achievements()
+	out.AchievementDefs = make([]achievementDefView, 0, len(achDefs))
+	for _, def := range achDefs {
+		out.AchievementDefs = append(out.AchievementDefs, achievementDefView{
+			ID:       def.ID,
+			Emoji:    def.Emoji,
+			Name:     def.LocalName(),
+			Desc:     def.LocalDesc(),
+			TPReward: def.TPReward,
+			Earned:   s.HasAchievement(def.ID),
+		})
+	}
+
+	out.MasteryLevels = make(map[string]int, len(s.MasteryLevels))
+	for k, v := range s.MasteryLevels {
+		out.MasteryLevels[k] = v
+	}
+
+	mTracks := data.MasteryTracks()
+	out.MasteryTracks = make([]masteryTrackView, 0, len(mTracks))
+	for _, t := range mTracks {
+		lvl := s.MasteryLevel(t.ID)
+		out.MasteryTracks = append(out.MasteryTracks, masteryTrackView{
+			ID:       t.ID,
+			Emoji:    t.Emoji,
+			Name:     t.LocalName(),
+			Desc:     t.LocalDesc(),
+			Effect:   t.Effect,
+			PerLevel: t.PerLevel,
+			Level:    lvl,
+			MaxLevel: t.MaxLevel,
+			NextCost: t.CostFor(lvl),
+			Maxed:    lvl >= t.MaxLevel,
+		})
+	}
+
+	perks := game.LegacyPerks()
+	out.LegacyPerks = make([]legacyPerkView, 0, len(perks))
+	for _, p := range perks {
+		avail := p.Available(legacy)
+		out.LegacyPerks = append(out.LegacyPerks, legacyPerkView{
+			ID:        p.ID,
+			Name:      p.Name,
+			Desc:      p.Desc,
+			Cost:      p.Cost,
+			Available: avail,
+			Owned:     !avail,
+		})
+	}
+
+	out.Legacy = legacyView{
+		TotalEarned:        legacy.TotalEarned,
+		TotalEarnedFmt:     game.FmtBTC(legacy.TotalEarned),
+		TotalLP:            legacy.TotalLP,
+		SpentLP:            legacy.SpentLP,
+		LPAvailable:        legacy.LPAvailable(),
+		StarterCash:        legacy.StarterCash,
+		EfficiencyBoost:    legacy.EfficiencyBoost,
+		UnlockedUniversity: legacy.UnlockedUniversity,
+		CarriedTP:          legacy.CarriedTP,
+	}
+
+	eventsByCat := make(map[string]int, len(s.EventsByCategory))
+	for k, v := range s.EventsByCategory {
+		eventsByCat[k] = v
+	}
+	out.Stats = statsView{
+		TotalTicks:         s.TotalTicks,
+		TotalGPUsBought:    s.TotalGPUsBought,
+		TotalGPUsScrapped:  s.TotalGPUsScrapped,
+		OCTimeT1Sec:        s.OCTimeT1Sec,
+		OCTimeT2Sec:        s.OCTimeT2Sec,
+		TotalWagesPaid:     s.TotalWagesPaid,
+		TotalWagesPaidFmt:  game.FmtBTC(s.TotalWagesPaid),
+		MarketCrashCount:   s.MarketCrashCount,
+		LifetimeEarned:     s.LifetimeEarned,
+		LifetimeEarnedFmt:  game.FmtBTC(s.LifetimeEarned),
+		EventsByCategory:   eventsByCat,
+		MarketPriceHistory: append([]float64{}, s.MarketPriceHistory...),
+	}
+
+	diffs := data.Difficulties()
+	out.DifficultyDefs = make([]difficultyDefView, 0, len(diffs))
+	for _, d := range diffs {
+		out.DifficultyDefs = append(out.DifficultyDefs, difficultyDefView{
+			ID:                   d.ID,
+			Emoji:                d.Emoji,
+			Label:                d.LocalLabel(),
+			Desc:                 d.LocalDesc(),
+			EarnMult:             d.EarnMult,
+			BillMult:             d.BillMult,
+			ThreatMult:           d.ThreatMult,
+			StarterCash:          d.StarterCash,
+			MarketVolatilityMult: d.MarketVolatilityMult,
+			EventFreqMult:        d.EventFreqMult,
+			Current:              d.ID == s.Difficulty,
+		})
+	}
+
+	out.Langs = make([]langOptionView, 0, len(i18n.Languages))
+	for _, code := range i18n.Languages {
+		out.Langs = append(out.Langs, langOptionView{
+			Code:    code,
+			Label:   i18n.Label(code),
+			Current: code == s.Lang,
+		})
+	}
+
+	evDefs := data.Events()
+	out.EventDefs = make([]eventDefView, 0, len(evDefs))
+	for _, def := range evDefs {
+		out.EventDefs = append(out.EventDefs, eventDefView{
+			ID:          def.ID,
+			Category:    def.Category,
+			Emoji:       def.Emoji,
+			Name:        def.LocalName(),
+			Text:        def.LocalText(),
+			Weight:      def.Weight,
+			CooldownSec: def.CooldownSec,
+		})
+	}
+
 	return out
 }
 

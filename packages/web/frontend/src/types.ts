@@ -8,7 +8,21 @@ export interface Snapshot {
   merc_defs: MercDef[];
   log: LogEntry[];
   last_event?: GameEvent;
+  modifiers: Modifier[];
+  active_research?: ActiveResearch;
+  research_tiers: ResearchTier[];
+  blueprints: Blueprint[];
+  achievements: string[];
+  achievement_defs: AchievementDef[];
+  mastery_levels: Record<string, number>;
+  mastery_tracks: MasteryTrack[];
+  legacy_perks: LegacyPerk[];
+  legacy: LegacySummary;
+  stats: Stats;
   ok: boolean;
+  difficulty_defs: DifficultyDef[];
+  langs: LangOption[];
+  event_defs: EventDef[];
 }
 
 export interface GameState {
@@ -22,13 +36,24 @@ export interface GameState {
   current_room: string;
   paused: boolean;
   market_price: number;
+  prev_market_price: number;
   market_trend: number;
+  lifetime_earned: number;
   lifetime_earned_fmt: string;
+  legacy_available: number;
+  difficulty: string;
+  lang: string;
   room_earn_fmt: string;
   room_bill_fmt: string;
   room_net_fmt: string;
   mining_paused: boolean;
   syndicate_joined: boolean;
+  syndicate_can_join: boolean;
+  syndicate_contribution: number;
+  syndicate_total_dividends: number;
+  syndicate_next_payout_sec: number;
+  pump_dump_unlocked: boolean;
+  pump_dump_cooldown_sec: number;
 }
 
 export interface Room {
@@ -64,6 +89,7 @@ export interface Defense {
 export interface GPU {
   instance_id: number;
   def_id: string;
+  blueprint_id?: string;
   name: string;
   status: string;
   room: string;
@@ -131,11 +157,137 @@ export interface GameEvent {
   text: string;
 }
 
+export interface Modifier {
+  kind: string;
+  factor: number;
+  expires_at: number;
+  seconds_left: number;
+}
+
+export interface ActiveResearch {
+  tier: number;
+  boosts: string[];
+  started_at: number;
+  duration_sec: number;
+  progress: number;
+  seconds_left: number;
+}
+
+export interface ResearchTier {
+  tier: number;
+  name: string;
+  duration_sec: number;
+  frags: number;
+  money: number;
+  min_lvl: number;
+}
+
+export interface Blueprint {
+  id: string;
+  tier: number;
+  boosts: string[];
+  created_at: number;
+  can_print: boolean;
+  print_btc_cost: number;
+  print_frag_cost: number;
+}
+
+export interface AchievementDef {
+  id: string;
+  emoji: string;
+  name: string;
+  desc: string;
+  tp_reward: number;
+  earned: boolean;
+}
+
+export interface MasteryTrack {
+  id: string;
+  emoji: string;
+  name: string;
+  desc: string;
+  effect: string;
+  per_level: number;
+  level: number;
+  max_level: number;
+  next_cost: number;
+  maxed: boolean;
+}
+
+export interface LegacyPerk {
+  id: string;
+  name: string;
+  desc: string;
+  cost: number;
+  available: boolean;
+  owned: boolean;
+}
+
+export interface LegacySummary {
+  total_earned: number;
+  total_earned_fmt: string;
+  total_lp: number;
+  spent_lp: number;
+  lp_available: number;
+  starter_cash: number;
+  efficiency_boost: number;
+  unlocked_university: boolean;
+  carried_tp: number;
+}
+
+export interface Stats {
+  total_ticks: number;
+  total_gpus_bought: number;
+  total_gpus_scrapped: number;
+  oc_time_t1_sec: number;
+  oc_time_t2_sec: number;
+  total_wages_paid: number;
+  total_wages_paid_fmt: string;
+  market_crash_count: number;
+  lifetime_earned: number;
+  lifetime_earned_fmt: string;
+  events_by_category: Record<string, number>;
+  market_price_history: number[];
+}
+
+export interface DifficultyDef {
+  id: string;
+  emoji: string;
+  label: string;
+  desc: string;
+  earn_mult: number;
+  bill_mult: number;
+  threat_mult: number;
+  starter_cash: number;
+  market_volatility_mult: number;
+  event_freq_mult: number;
+  current: boolean;
+}
+
+export interface LangOption {
+  code: string;
+  label: string;
+  current: boolean;
+}
+
+export interface EventDef {
+  id: string;
+  category: string;
+  emoji: string;
+  name: string;
+  text: string;
+  weight: number;
+  cooldown_sec: number;
+}
+
 export interface ActionRequest {
   action: string;
   id?: string;
   dim?: string;
   instance_id?: number;
+  tier?: number;
+  boosts?: string[];
+  frags?: number;
 }
 
 export type TabId =
