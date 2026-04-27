@@ -207,25 +207,31 @@ func (s *State) advanceMining(now int64, dt float64) {
 		// in the room sits idle (no earn, no wear from heat). Mirrors the
 		// design's 2-minute "rebooting the rack" feel.
 		roomPSUPaused := room.PSUResumeAt > now
+		// Stale §7.2: room+pool fraction of work that gets rejected. Folded
+		// into both BTC earnings and the PPLNS share accumulator via a
+		// single staleMult so payout and credit stay aligned (you can't
+		// earn shares for work that didn't count).
+		staleMult := 1.0 - s.EffectiveStaleRate(roomID)
 
 		for _, g := range s.GPUs {
 			if g.Room != roomID || g.Status != "running" {
 				continue
 			}
 			eff, _, _, dur := s.GPUStats(g)
+			effEff := eff * staleMult
 			efficiencyFactor := 1.0
 			if room.Heat > 0.8*room.MaxHeat {
 				efficiencyFactor = 0.5
 			}
 			if !miningPaused && !roomPSUPaused && !poolSwitching {
 				// Pool(next-sprint): apply PoolFee + settlement-mode payout here.
-				earned := eff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult()
+				earned := effEff * dt * earnMult * efficiencyFactor * s.DifficultyEarnMult() * s.MarketPrice * MiningScale * s.MasteryEarnMult()
 				// Structural PPLNS share accumulator. dt seconds of work
 				// per running GPU, scaled by efficiency so a hotter rig
 				// contributes proportionally less to the share pool — the
 				// quantitative payout/decay logic lands next sprint.
 				if pplnsActive {
-					s.PoolShares += eff * dt
+					s.PoolShares += effEff * dt
 				}
 				// Syndicate cut: divert the agreed fraction into the
 				// contribution pool before crediting BTC so the player

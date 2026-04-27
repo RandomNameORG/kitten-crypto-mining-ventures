@@ -55,6 +55,7 @@ type RoomDef struct {
 	ElectricCostMult  float64  `json:"electric_cost_mult"`
 	RentPerHour       int      `json:"rent_per_hour"`
 	ThreatBase        float64  `json:"threat_base"`
+	StaleRate         float64  `json:"stale_rate"`
 	ThreatPool        []string `json:"threat_pool"`
 	UnlockCost        int      `json:"unlock_cost"`
 	UnlockedByDefault bool     `json:"unlocked_by_default"`
