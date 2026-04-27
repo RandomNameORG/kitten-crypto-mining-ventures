@@ -27,6 +27,12 @@ function snap(gpus: GPU[]): Snapshot {
     mercs: [],
     merc_defs: [],
     log: [],
+    modifiers: [],
+    research_tiers: [],
+    blueprints: [],
+    achievements: [],
+    mastery_levels: {},
+    stats: {} as Snapshot["stats"],
     ok: true,
   };
 }
