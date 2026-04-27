@@ -175,6 +175,24 @@ type State struct {
 	SyndicateContribution   float64 `json:"syndicate_contribution,omitempty"`
 	SyndicateTotalDividends float64 `json:"syndicate_total_dividends,omitempty"`
 
+	// PoolID is the player's currently-joined mining pool. Defaults to
+	// scratch_pool on new games and via migration. See packages/core/data/
+	// pools.json for the catalog and packages/core/game/pools.go for the
+	// pool helpers / SwitchPool transition mechanic.
+	PoolID string `json:"pool_id,omitempty"`
+	// PoolSwitchFrom is the pool we're transitioning away from while
+	// PoolSwitchAt > now. Empty when the player is stable on PoolID.
+	PoolSwitchFrom string `json:"pool_switch_from,omitempty"`
+	// PoolSwitchAt is the unix second when the 10-minute pool transition
+	// completes. 0 means stable. While >now mining is paused — see
+	// IsPoolSwitching.
+	PoolSwitchAt int64 `json:"pool_switch_at,omitempty"`
+	// PoolShares is the running PPLNS share accumulator. Voided when
+	// switching out of a PPLNS pool (per §5.5). Untouched when switching
+	// out of PPS / PPS+ / Solo. Pool(next-sprint) wires this into the
+	// settlement-mode payout math.
+	PoolShares float64 `json:"pool_shares,omitempty"`
+
 	// Lang persists the player's chosen language code ("en" | "zh"). Loaded
 	// by LoadFrom into the i18n package at startup.
 	Lang string `json:"lang,omitempty"`
@@ -265,6 +283,7 @@ func newStateWithLegacy(kittenName string, legacy *LegacyStore) *State {
 		MarketPrice:        1.0,
 		PrevMarketPrice:    1.0,
 		LastMarketTickUnix: now,
+		PoolID:             "scratch_pool",
 	}
 	// Unlock every room flagged as default.
 	for _, r := range data.Rooms() {
@@ -746,6 +765,13 @@ func (s *State) ensureInit() {
 	if s.MarketPrice == 0 {
 		s.MarketPrice = 1.0
 		s.PrevMarketPrice = 1.0
+	}
+	// Pool §5 migration: pre-pool saves have no PoolID. Default to
+	// scratch_pool — same as a fresh new game — so legacy saves migrate
+	// onto the safe mainstream pool. Balance-neutral: this sprint only
+	// wires the transition pause; fee/settlement payout lands next sprint.
+	if s.PoolID == "" {
+		s.PoolID = "scratch_pool"
 	}
 }
 
