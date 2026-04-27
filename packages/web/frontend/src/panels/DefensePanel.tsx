@@ -1,5 +1,6 @@
 import { ActionBar, ActionButton } from "../components/ActionButton";
 import type { ActionRequest, Snapshot } from "../types";
+import { defenseIconSrc } from "../util";
 
 interface Props {
   snapshot: Snapshot;
@@ -25,24 +26,27 @@ export function DefensePanel({ snapshot, dispatch }: Props) {
           const level = d[id] || 0;
           const maxed = level >= 8;
           return (
-            <article key={id} className="row">
-              <div className="row-head">
-                <span className="row-title">{label}</span>
-                <span className="tag">L{level}</span>
+            <article key={id} className="row item-row">
+              <img className="item-icon" src={defenseIconSrc(id)} alt="" loading="lazy" />
+              <div className="item-content">
+                <div className="row-head">
+                  <span className="row-title">{label}</span>
+                  <span className="tag">L{level}</span>
+                </div>
+                <div className="facts">
+                  <span className="fact">cost {(level + 1) * 250}</span>
+                  <span className="fact">max 8</span>
+                </div>
+                <ActionBar>
+                  <ActionButton
+                    label={maxed ? "已满级" : "升级"}
+                    icon="升"
+                    intent="primary"
+                    disabled={maxed}
+                    onClick={() => dispatch({ action: "upgrade_defense", dim: id })}
+                  />
+                </ActionBar>
               </div>
-              <div className="facts">
-                <span className="fact">cost {(level + 1) * 250}</span>
-                <span className="fact">max 8</span>
-              </div>
-              <ActionBar>
-                <ActionButton
-                  label={maxed ? "已满级" : "升级"}
-                  icon="升"
-                  intent="primary"
-                  disabled={maxed}
-                  onClick={() => dispatch({ action: "upgrade_defense", dim: id })}
-                />
-              </ActionBar>
             </article>
           );
         })}
