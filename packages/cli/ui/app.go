@@ -67,6 +67,9 @@ type App struct {
 	psuPickerActive bool
 	psuPickerCursor int
 	psuPickerMode   string // "install" | "replace"
+	// Pool picker overlay (Sprint 2 — Stats view).
+	poolPickerActive bool
+	poolPickerCursor int
 	skillsCursor   int
 	mercsCursor    int // index into hireable list when hiring; else 0
 	mercsOwnedCur  int // cursor in owned list
@@ -376,6 +379,7 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a, nil
 	case "0":
 		a.view = viewStats
+		a.poolPickerActive = false
 		return a, nil
 	case "?":
 		a.view = viewHelp
@@ -439,6 +443,8 @@ func (a App) handleKey(k tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return a.handlePrestigeKey(key)
 	case viewMastery:
 		return a.handleMasteryKey(key)
+	case viewStats:
+		return a.handleStatsKey(key)
 	}
 
 	// Dashboard-only fallbacks.

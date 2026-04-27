@@ -115,6 +115,7 @@ var enStrings = map[string]string{
 	"status.pump_fired":   "📈 Pump & Dump fired",
 	"status.vent":         "🧊 Emergency vent fired",
 	"status.error_prefix": "❌ ",
+	"status.pool_switching": "🔁 switching to %s",
 
 	// Store.
 	"store.title": "🛒 Store  ·  Shipping: ~30–180s",
@@ -189,6 +190,16 @@ var enStrings = map[string]string{
 	"stats.empty_history":  "(not enough samples yet)",
 	"stats.empty_events":   "(none yet)",
 
+	// Mining Pool panel (stats view, Sprint 2).
+	"pool.section":      "⛏  Mining Pool",
+	"pool.help":         "  [p] switch pool",
+	"pool.current":      "%s · %s · fee %.1f%% · risk %s",
+	"pool.shares":       "shares accumulated: %.1f",
+	"pool.switching":    "switching: %s → %s · resumes in %ds",
+	"pool.picker.title": "🔁 Switch Pool",
+	"pool.picker.help":  "↑/↓ select   [enter] confirm   [esc] cancel",
+	"pool.picker.row":   "%-22s  fee %.1f%%   %-6s   risk %s",
+
 	// Log.
 	"log.title": "📜 Full Event Log",
 	"log.help":  "[esc]/[1] back",
@@ -236,7 +247,7 @@ var enStrings = map[string]string{
 	"hint.lab":       "[t] tier  [b] boosts  [r] research  [p] print  [x] frag→₿",
 	"hint.mastery":   "↑/↓ select  [u] level up  [esc] back",
 	"hint.prestige":  "[p] perk  [R R] retire  [y]/[n] syndicate",
-	"hint.stats":     "[esc] back",
+	"hint.stats":     "[p] switch pool  [esc] back",
 
 	"help.mechanics":     "Game mechanics",
 	"help.mech.heat":     "\uf2c7 Heat — GPUs produce it; rooms have a max ceiling.",

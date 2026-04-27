@@ -115,6 +115,7 @@ var zhStrings = map[string]string{
 	"status.pump_fired":   "📈 拉盘已启动",
 	"status.vent":         "🧊 应急排热触发",
 	"status.error_prefix": "❌ ",
+	"status.pool_switching": "🔁 正在切换至 %s",
 
 	// Store.
 	"store.title": "🛒 商店  ·  快递：约 30–180 秒",
@@ -189,6 +190,16 @@ var zhStrings = map[string]string{
 	"stats.empty_history": "（采样还不够）",
 	"stats.empty_events":  "（暂无）",
 
+	// 矿池面板（统计视图，Sprint 2）。
+	"pool.section":      "⛏  矿池",
+	"pool.help":         "  [p] 切换矿池",
+	"pool.current":      "%s · %s · 手续费 %.1f%% · 风险 %s",
+	"pool.shares":       "累计份额：%.1f",
+	"pool.switching":    "切换中：%s → %s · %d 秒后恢复",
+	"pool.picker.title": "🔁 切换矿池",
+	"pool.picker.help":  "↑/↓ 选择   [enter] 确认   [esc] 取消",
+	"pool.picker.row":   "%-22s  手续费 %.1f%%   %-6s   风险 %s",
+
 	// Log.
 	"log.title": "📜 完整事件日志",
 	"log.help":  "[esc]/[1] 返回",
@@ -235,7 +246,7 @@ var zhStrings = map[string]string{
 	"hint.lab":       "[t] 档位  [b] 加成  [r] 研究  [p] 打印  [x] 碎片→₿",
 	"hint.mastery":   "↑/↓ 选择  [u] 升级  [esc] 返回",
 	"hint.prestige":  "[p] 特权  [R R] 退休  [y]/[n] 加盟/退盟",
-	"hint.stats":     "[esc] 返回",
+	"hint.stats":     "[p] 切换矿池  [esc] 返回",
 
 	"help.mechanics":     "核心机制",
 	"help.mech.heat":     "\uf2c7 温度 —— 显卡产生热量，房间有上限。",
