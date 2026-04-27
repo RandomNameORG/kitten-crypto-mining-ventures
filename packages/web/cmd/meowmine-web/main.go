@@ -100,6 +100,8 @@ type gpuView struct {
 	HoursLeft  float64 `json:"hours_left"`
 	EarnFmt    string  `json:"earn_fmt"`
 	Repairable bool    `json:"repairable"`
+	ShipsAt    int64   `json:"ships_at,omitempty"`
+	ShipEtaSec int64   `json:"ship_eta_sec,omitempty"`
 }
 
 type gpuDefView struct {
@@ -348,6 +350,7 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 		out.Rooms = append(out.Rooms, room)
 	}
 
+	nowUnix := time.Now().Unix()
 	for _, g := range s.GPUs {
 		name := g.DefID
 		if def, ok := data.GPUByID(g.DefID); ok {
@@ -355,7 +358,7 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 		} else if g.BlueprintID != "" {
 			name = "MEOWCore"
 		}
-		out.GPUs = append(out.GPUs, gpuView{
+		view := gpuView{
 			InstanceID: g.InstanceID,
 			DefID:      g.DefID,
 			Name:       name,
@@ -366,7 +369,16 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 			HoursLeft:  g.HoursLeft,
 			EarnFmt:    game.FmtBTC(s.GPUEarnRatePerSec(g)) + "/s",
 			Repairable: g.Status == "broken",
-		})
+		}
+		if g.Status == "shipping" && g.ShipsAt > 0 {
+			view.ShipsAt = g.ShipsAt
+			eta := g.ShipsAt - nowUnix
+			if eta < 0 {
+				eta = 0
+			}
+			view.ShipEtaSec = eta
+		}
+		out.GPUs = append(out.GPUs, view)
 	}
 
 	for _, def := range data.GPUs() {

@@ -72,6 +72,8 @@ export interface GPU {
   hours_left: number;
   earn_fmt: string;
   repairable: boolean;
+  ships_at?: number;
+  ship_eta_sec?: number;
 }
 
 export interface GPUDef {
