@@ -35,7 +35,15 @@ type GPUDef struct {
 	DurabilityHours int     `json:"durability_hours"`
 	Price           int     `json:"price"`
 	ScrapValue      int     `json:"scrap_value"`
-	Special         string  `json:"special,omitempty"`
+	// BaseResaleRatio is the fraction of original Price recovered on a sell
+	// at neutral market (MarketPrice = 1.0). See §8.1: scrap is 0.20, common
+	// 0.30–0.35, rare 0.40, epic 0.45, datacenter 0.50.
+	BaseResaleRatio float64 `json:"base_resale_ratio"`
+	// BtcSensitivity scales how much MarketPrice deviation from 1.0 swings
+	// resale value. Trash is barely BTC-correlated (0.3); flagship epics
+	// track BTC almost 1:1 (0.9). See §8.1.
+	BtcSensitivity float64 `json:"btc_sensitivity"`
+	Special        string  `json:"special,omitempty"`
 }
 
 // LocalName returns the GPU name in the currently-active language.

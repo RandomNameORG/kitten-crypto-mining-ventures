@@ -197,6 +197,13 @@ type State struct {
 	// settlement-mode payout math.
 	PoolShares float64 `json:"pool_shares,omitempty"`
 
+	// NetworkCongestion is the current on-chain congestion level driving
+	// the gas-fee surcharge on cashouts (§11.2). Drifts deterministically
+	// in [congestionMin, congestionMax] via advanceCongestion — no RNG
+	// path so sim determinism stays intact.
+	NetworkCongestion      float64 `json:"network_congestion,omitempty"`
+	LastCongestionTickUnix int64   `json:"last_congestion_tick_unix,omitempty"`
+
 	// Lang persists the player's chosen language code ("en" | "zh"). Loaded
 	// by LoadFrom into the i18n package at startup.
 	Lang string `json:"lang,omitempty"`
@@ -474,32 +481,35 @@ func (s *State) BuyGPU(defID string) error {
 	return nil
 }
 
-// SellGPU scraps a GPU for its scrap value (boosted by Tax Optimization skill).
+// SellGPU sells a GPU at its BTC-linked secondhand value (§8.1) minus the
+// gas-fee surcharge (§11.2). Research fragments still drop on every sell
+// — the Mastery scrap/frag multipliers apply to the gross before gas.
 func (s *State) SellGPU(instanceID int) error {
 	for i, g := range s.GPUs {
 		if g.InstanceID == instanceID {
-			base := 0
 			name := "Unknown"
 			if g.BlueprintID != "" {
-				// MEOWCore scrap value: mid-tier.
-				base = 2000 + (s.blueprintTier(g.BlueprintID)-1)*2000
 				name = fmt.Sprintf("MEOWCore v%d", s.blueprintTier(g.BlueprintID))
 			} else if def, ok := data.GPUByID(g.DefID); ok {
-				base = def.ScrapValue
 				name = def.LocalName()
 			}
-			value := float64(base) * s.ScrapValueMult() * s.MasteryScrapMult()
-			// Also grant 1-3 research fragments. Mastery scales the yield.
+			gross := s.GPUResalePrice(g) * s.ScrapValueMult() * s.MasteryScrapMult()
+			gas := s.GasFeeFor(gross)
+			net := gross - gas
+			if net < 0 {
+				net = 0
+			}
 			rawFrags := 1 + rand.Intn(3)
 			frags := int(float64(rawFrags) * s.MasteryFragMult())
 			if frags < rawFrags {
 				frags = rawFrags
 			}
-			s.BTC += value
+			s.BTC += net
 			s.ResearchFrags += frags
 			s.GPUs = append(s.GPUs[:i], s.GPUs[i+1:]...)
 			s.TotalGPUsScrapped++
-			s.appendLog("info", i18n.T("log.gpu.scrapped", name, FmtBTC(value), frags))
+			s.appendLog("info", i18n.T("log.gpu.scrapped", name, FmtBTC(net), frags))
+			s.appendLog("info", fmt.Sprintf("Gas fee: %s", FmtBTC(gas)))
 			if s.MarketPrice > 1.5 {
 				s.grantAchievement("peak_sell")
 			}
@@ -784,6 +794,12 @@ func (s *State) ensureInit() {
 	// wires the transition pause; fee/settlement payout lands next sprint.
 	if s.PoolID == "" {
 		s.PoolID = "scratch_pool"
+	}
+	// Gas/NetWorth §8/§11 migration: pre-sprint-4 saves have
+	// NetworkCongestion=0. Seed to the neutral 0.2 baseline so the first
+	// gas-fee calculation after load doesn't read as a free cashout.
+	if s.NetworkCongestion == 0 {
+		s.NetworkCongestion = 0.2
 	}
 }
 

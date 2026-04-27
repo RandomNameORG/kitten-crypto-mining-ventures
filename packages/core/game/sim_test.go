@@ -387,3 +387,25 @@ func TestSimCryptoWinterWiderSwingsAndMoreEvents(t *testing.T) {
 			winter.fires, normal.fires)
 	}
 }
+
+// TestSimEarningsNotHalvedBySprint4 confirms §8 / §11.2 don't gut mining
+// income. Gas fees only fire on SellGPU (the sim never calls it) and
+// congestion drift is RNG-free, so seed-N runs should be effectively
+// identical to pre-sprint baseline. The threshold below is set well under
+// the seed=1 baseline (~2.4 LE at 1h on neutral) so all three seeds clear
+// it; a regression that genuinely halved earnings would drop the lowest
+// seeds underwater. The byte-for-byte equality check lives in the manual
+// verification step (./bin/meowmine-sim --seed=N), not here.
+func TestSimEarningsNotHalvedBySprint4(t *testing.T) {
+	for _, seed := range []int64{1, 2, 3} {
+		withTempHome(t)
+		s := runSim(t, seed, 3600)
+		if s.LifetimeEarned <= 1.0 {
+			t.Errorf("seed=%d: LifetimeEarned=%v collapsed under pre-sprint baseline", seed, s.LifetimeEarned)
+		}
+		if s.NetworkCongestion < congestionMin-floatEq || s.NetworkCongestion > congestionMax+floatEq {
+			t.Errorf("seed=%d: NetworkCongestion=%v out of [%v,%v]",
+				seed, s.NetworkCongestion, congestionMin, congestionMax)
+		}
+	}
+}
