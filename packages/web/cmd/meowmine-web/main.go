@@ -100,8 +100,9 @@ type gpuView struct {
 	HoursLeft  float64 `json:"hours_left"`
 	EarnFmt    string  `json:"earn_fmt"`
 	Repairable bool    `json:"repairable"`
-	ShipsAt    int64   `json:"ships_at,omitempty"`
-	ShipEtaSec int64   `json:"ship_eta_sec,omitempty"`
+	ShipsAt      int64 `json:"ships_at,omitempty"`
+	ShipEtaSec   int64 `json:"ship_eta_sec,omitempty"`
+	ShipTotalSec int64 `json:"ship_total_sec,omitempty"`
 }
 
 type gpuDefView struct {
@@ -377,6 +378,7 @@ func (wg *webGame) makeSnapshotLocked() snapshot {
 				eta = 0
 			}
 			view.ShipEtaSec = eta
+			view.ShipTotalSec = g.ShipTotalSec
 		}
 		out.GPUs = append(out.GPUs, view)
 	}

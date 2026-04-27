@@ -99,6 +99,15 @@ func TestBuyAndSellGPUFlow(t *testing.T) {
 	if shipped == nil {
 		t.Fatal("new GPU should be in shipping state after BuyGPU")
 	}
+	// Window invariant: BuyGPU stamps both ShipsAt and ShipTotalSec from the
+	// same 30..180s draw, so the UI can render a correct progress bar without
+	// guessing the server-side window. Drift here = visible regression.
+	if shipped.ShipTotalSec < 30 || shipped.ShipTotalSec > 180 {
+		t.Errorf("ShipTotalSec out of [30,180]: %d", shipped.ShipTotalSec)
+	}
+	if shipped.ShipsAt == 0 {
+		t.Error("ShipsAt should be set on shipping GPU")
+	}
 	// Sell the starter GPU (which is running).
 	var starter *GPU
 	for _, g := range s.GPUs {

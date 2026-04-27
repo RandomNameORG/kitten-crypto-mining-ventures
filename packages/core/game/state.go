@@ -19,7 +19,8 @@ type GPU struct {
 	Status       string  `json:"status"` // running, broken, shipping, stolen, offline
 	UpgradeLevel int     `json:"upgrade_level"`
 	HoursLeft    float64 `json:"hours_left"`
-	ShipsAt      int64   `json:"ships_at,omitempty"` // unix time when shipping completes
+	ShipsAt      int64   `json:"ships_at,omitempty"`       // unix time when shipping completes
+	ShipTotalSec int64   `json:"ship_total_sec,omitempty"` // full shipping window in seconds; lets the UI compute a correct progress bar without guessing the server-side window
 	Room         string  `json:"room"`
 	// BlueprintID is set for MEOWCore instances; maps to a Blueprint for stats.
 	BlueprintID string `json:"blueprint_id,omitempty"`
@@ -348,7 +349,9 @@ func (s *State) addGPU(defID, room string, shipping bool) *GPU {
 	s.NextGPUID++
 	if shipping {
 		g.Status = "shipping"
-		g.ShipsAt = time.Now().Unix() + int64(30+rand.Intn(150))
+		total := int64(30 + rand.Intn(150))
+		g.ShipsAt = time.Now().Unix() + total
+		g.ShipTotalSec = total
 	}
 	s.GPUs = append(s.GPUs, g)
 	s.TotalGPUsBought++
@@ -658,6 +661,14 @@ func (s *State) ensureInit() {
 		}
 		if g.OCLevel < 0 || g.OCLevel > 2 {
 			g.OCLevel = 0
+		}
+		// Migration: pre-ShipTotalSec saves had no per-instance window; back-fill
+		// using the remaining ShipsAt window so the UI's progress math doesn't
+		// divide by zero. Past arrival, leave at 0 — Tick() will flip Status anyway.
+		if g.Status == "shipping" && g.ShipTotalSec == 0 {
+			if remaining := g.ShipsAt - time.Now().Unix(); remaining > 0 {
+				g.ShipTotalSec = remaining
+			}
 		}
 		alive = append(alive, g)
 	}

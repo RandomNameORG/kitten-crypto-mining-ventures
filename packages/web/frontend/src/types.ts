@@ -74,6 +74,7 @@ export interface GPU {
   repairable: boolean;
   ships_at?: number;
   ship_eta_sec?: number;
+  ship_total_sec?: number;
 }
 
 export interface GPUDef {
